@@ -161,7 +161,7 @@ export default function AdminDashboardPage() {
       }
       const stateResponse = await fetch("/api/inmo-state", { cache: "no-store" });
       if (!stateResponse.ok) return;
-      updateState(await stateResponse.json());
+      updateState(await stateResponse.json(), { silent: true });
       setTokkoSyncNotice("Sincronización ejecutada correctamente.");
     } finally {
       setSyncingTokko(false);
@@ -205,20 +205,20 @@ export default function AdminDashboardPage() {
         <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 group hover:bg-primary transition-colors duration-300">
           <div className="flex justify-between items-start">
             <span
-              className="material-symbols-outlined text-primary group-hover:text-on-primary"
+              className="material-symbols-outlined text-primary group-hover:text-white"
               data-icon="real_estate_agent"
             >
               real_estate_agent
             </span>
-            <span className="text-[10px] font-bold text-primary-container bg-primary-fixed px-2 py-1 rounded-full">
+            <span className="text-[10px] font-bold text-primary-container bg-primary-fixed px-2 py-1 rounded-full transition-colors group-hover:bg-white/15 group-hover:text-white">
               Inventario
             </span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant group-hover:text-on-primary/60 font-bold">
+            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant group-hover:text-white/80 font-bold">
               Propiedades Totales
             </p>
-            <h3 className="text-3xl font-extrabold text-primary group-hover:text-on-primary">
+            <h3 className="text-3xl font-extrabold text-primary group-hover:text-white">
               {listings.length}
             </h3>
           </div>
@@ -227,20 +227,20 @@ export default function AdminDashboardPage() {
         <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 group hover:bg-primary transition-colors duration-300">
           <div className="flex justify-between items-start">
             <span
-              className="material-symbols-outlined text-primary group-hover:text-on-primary"
+              className="material-symbols-outlined text-primary group-hover:text-white"
               data-icon="check_circle"
             >
               check_circle
             </span>
-            <span className="text-[10px] font-bold text-primary-container bg-primary-fixed px-2 py-1 rounded-full">
+            <span className="text-[10px] font-bold text-primary-container bg-primary-fixed px-2 py-1 rounded-full transition-colors group-hover:bg-white/15 group-hover:text-white">
               Disponibles
             </span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant group-hover:text-on-primary/60 font-bold">
+            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant group-hover:text-white/80 font-bold">
               Activas
             </p>
-            <h3 className="text-3xl font-extrabold text-primary group-hover:text-on-primary">
+            <h3 className="text-3xl font-extrabold text-primary group-hover:text-white">
               {availableCount}
             </h3>
           </div>
@@ -249,20 +249,20 @@ export default function AdminDashboardPage() {
         <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 group hover:bg-primary transition-colors duration-300">
           <div className="flex justify-between items-start">
             <span
-              className="material-symbols-outlined text-primary group-hover:text-on-primary"
+              className="material-symbols-outlined text-primary group-hover:text-white"
               data-icon="hourglass_top"
             >
               hourglass_top
             </span>
-            <span className="text-[10px] font-bold text-error bg-error-container px-2 py-1 rounded-full">
+            <span className="text-[10px] font-bold text-error bg-error-container px-2 py-1 rounded-full transition-colors group-hover:bg-white/15 group-hover:text-white">
               Reservas
             </span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant group-hover:text-on-primary/60 font-bold">
+            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant group-hover:text-white/80 font-bold">
               Reservadas
             </p>
-            <h3 className="text-3xl font-extrabold text-primary group-hover:text-on-primary">
+            <h3 className="text-3xl font-extrabold text-primary group-hover:text-white">
               {reservedCount}
             </h3>
           </div>
@@ -271,20 +271,20 @@ export default function AdminDashboardPage() {
         <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 group hover:bg-primary transition-colors duration-300">
           <div className="flex justify-between items-start">
             <span
-              className="material-symbols-outlined text-primary group-hover:text-on-primary"
+              className="material-symbols-outlined text-primary group-hover:text-white"
               data-icon="payments"
             >
               payments
             </span>
-            <span className="text-[10px] font-bold text-primary-container bg-primary-fixed px-2 py-1 rounded-full">
+            <span className="text-[10px] font-bold text-primary-container bg-primary-fixed px-2 py-1 rounded-full transition-colors group-hover:bg-white/15 group-hover:text-white">
               Promedio
             </span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant group-hover:text-on-primary/60 font-bold">
+            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant group-hover:text-white/80 font-bold">
               Precio Medio
             </p>
-            <h3 className="text-2xl font-extrabold text-primary group-hover:text-on-primary">
+            <h3 className="text-2xl font-extrabold text-primary group-hover:text-white">
               {formatPrice(avgPrice || 0, "venta", "ARS")}
             </h3>
           </div>

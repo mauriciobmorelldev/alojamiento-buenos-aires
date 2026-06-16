@@ -6,6 +6,7 @@ create table if not exists platform_settings (
   home_content jsonb not null default '{}'::jsonb,
   filter_groups jsonb not null default '[]'::jsonb,
   tokko_config jsonb not null default '{}'::jsonb,
+  email_config jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
 
@@ -17,6 +18,9 @@ alter table platform_settings
 
 alter table platform_settings
   add column if not exists tokko_config jsonb not null default '{}'::jsonb;
+
+alter table platform_settings
+  add column if not exists email_config jsonb not null default '{}'::jsonb;
 
 create table if not exists roles (
   id text primary key,

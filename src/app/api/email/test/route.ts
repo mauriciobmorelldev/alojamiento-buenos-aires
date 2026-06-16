@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireOwnerFromRequest } from "@/lib/server/adminAuth";
-import { sendEmail } from "@/lib/server/email";
+import { readEmailSettings, sendEmail, toPublicEmailSettings } from "@/lib/server/email";
 
 export async function POST(request: Request) {
   const context = await requireOwnerFromRequest(request);
@@ -18,11 +18,11 @@ export async function POST(request: Request) {
     `,
   });
   return NextResponse.json({
-    ok: result.sent,
+    ok: result.sent || result.provider === "preview",
     provider: result.provider,
     reason: result.reason,
-    configured: Boolean(process.env.RESEND_API_KEY),
-  }, { status: result.sent ? 200 : 500 });
+    configured: result.sent || result.provider === "preview",
+  }, { status: result.sent || result.provider === "preview" ? 200 : 500 });
 }
 
 export async function GET(request: Request) {
@@ -30,9 +30,6 @@ export async function GET(request: Request) {
   if (!context) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
-  return NextResponse.json({
-    ok: true,
-    configured: Boolean(process.env.RESEND_API_KEY),
-    from: process.env.EMAIL_FROM || "Connexa <no-reply@connexa.com>",
-  });
+  const settings = await readEmailSettings();
+  return NextResponse.json({ ok: true, settings: toPublicEmailSettings(settings) });
 }

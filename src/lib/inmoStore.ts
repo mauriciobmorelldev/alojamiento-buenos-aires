@@ -84,14 +84,17 @@ export const loadState = (): InmoState => {
   return mergeState(defaultState, stored);
 };
 
-export const saveState = (state: InmoState) => {
+export const saveState = (state: InmoState, options?: { silent?: boolean }) => {
   if (!isBrowser) return;
   inMemoryState = state;
   writeStorage(JSON.stringify(state));
   void persistRemoteState(state);
 
   // Dispatch async to avoid cross-component setState while React is rendering.
-  const notify = () => window.dispatchEvent(new Event(UPDATE_EVENT));
+  const notify = () =>
+    window.dispatchEvent(
+      new CustomEvent(UPDATE_EVENT, { detail: { silent: Boolean(options?.silent) } })
+    );
   if (typeof queueMicrotask === "function") {
     queueMicrotask(notify);
     return;
@@ -140,11 +143,14 @@ export const useInmoStore = () => {
   }, []);
 
   const updateState = useCallback(
-    (updater: InmoState | ((prev: InmoState) => InmoState)) => {
+    (
+      updater: InmoState | ((prev: InmoState) => InmoState),
+      options?: { silent?: boolean }
+    ) => {
       setState((prev) => {
         const nextState =
           typeof updater === "function" ? updater(prev) : updater;
-        saveState(nextState);
+        saveState(nextState, options);
         return nextState;
       });
     },

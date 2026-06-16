@@ -94,6 +94,7 @@ export default function AdminShell({
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [saveToast, setSaveToast] = useState("");
   const mobileBellRef = useRef<HTMLButtonElement | null>(null);
+  const saveToastTimeoutRef = useRef<number | undefined>(undefined);
   const [mobileNotifPos, setMobileNotifPos] = useState<{ top: number; left: number } | null>(
     null
   );
@@ -192,6 +193,7 @@ export default function AdminShell({
       (admin) => admin.id === session.adminId && admin.active
     );
   }, [adminUsers, session]);
+  const hasAuthedAdmin = Boolean(authedAdmin);
   const visibleNavItems = useMemo(() => {
     if (authedAdmin?.role === "owner") return navItems;
     return navItems.filter((item) => item.id === "propiedades");
@@ -315,19 +317,19 @@ export default function AdminShell({
   }, [session]);
 
   useEffect(() => {
-    if (!authedAdmin) return;
-    let timeout: number | undefined;
-    const showSaved = () => {
+    if (!hasAuthedAdmin) return;
+    const showSaved = (event: Event) => {
+      const detail = (event as CustomEvent<{ silent?: boolean }>).detail;
+      if (detail?.silent) return;
       setSaveToast("Cambios guardados");
-      if (timeout) window.clearTimeout(timeout);
-      timeout = window.setTimeout(() => setSaveToast(""), 2200);
+      if (saveToastTimeoutRef.current) window.clearTimeout(saveToastTimeoutRef.current);
+      saveToastTimeoutRef.current = window.setTimeout(() => setSaveToast(""), 2200);
     };
     window.addEventListener("inmo:updated", showSaved);
     return () => {
-      if (timeout) window.clearTimeout(timeout);
       window.removeEventListener("inmo:updated", showSaved);
     };
-  }, [authedAdmin]);
+  }, [hasAuthedAdmin]);
 
   if (!authedAdmin) {
     if (!mounted) {

@@ -52,6 +52,10 @@ export async function GET() {
     .from("platform_settings")
     .select("tokko_config")
     .limit(1);
+  const emailConfigColumn = await supabase
+    .from("platform_settings")
+    .select("email_config")
+    .limit(1);
   const columnChecks = [
     {
       column: "platform_settings.filter_groups",
@@ -62,6 +66,11 @@ export async function GET() {
       column: "platform_settings.tokko_config",
       ok: !tokkoConfigColumn.error,
       error: tokkoConfigColumn.error?.message,
+    },
+    {
+      column: "platform_settings.email_config",
+      ok: !emailConfigColumn.error,
+      error: emailConfigColumn.error?.message,
     },
   ];
 

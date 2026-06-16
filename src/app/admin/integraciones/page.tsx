@@ -13,6 +13,13 @@ type PublicTokkoSettings = {
   hasApiKey: boolean;
 };
 
+type PublicEmailSettings = {
+  mode: "preview" | "resend";
+  from: string;
+  hasResendApiKey: boolean;
+  configured: boolean;
+};
+
 const defaultSettings: PublicTokkoSettings = {
   baseUrl: "https://www.tokkobroker.com/api/v1",
   syncSecret: "",
@@ -30,8 +37,15 @@ export default function AdminIntegracionesPage() {
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [emailConfigured, setEmailConfigured] = useState(false);
-  const [emailFrom, setEmailFrom] = useState("");
+  const [emailSettings, setEmailSettings] = useState<PublicEmailSettings>({
+    mode: "preview",
+    from: "Connexa <no-reply@connexa.com>",
+    hasResendApiKey: false,
+    configured: true,
+  });
+  const [resendApiKey, setResendApiKey] = useState("");
+  const [clearResendApiKey, setClearResendApiKey] = useState(false);
+  const [savingEmail, setSavingEmail] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
 
   const getAdminHeaders = (): Record<string, string> => {
@@ -52,16 +66,14 @@ export default function AdminIntegracionesPage() {
       if (response.ok && payload?.settings) {
         setSettings(payload.settings);
       }
-      const emailResponse = await fetch("/api/email/test", {
+      const emailResponse = await fetch("/api/email/settings", {
         cache: "no-store",
         headers: getAdminHeaders(),
       });
       const emailPayload = await emailResponse.json().catch(() => null) as {
-        configured?: boolean;
-        from?: string;
+        settings?: PublicEmailSettings;
       } | null;
-      setEmailConfigured(Boolean(emailPayload?.configured));
-      setEmailFrom(emailPayload?.from ?? "");
+      if (emailPayload?.settings) setEmailSettings(emailPayload.settings);
     };
     void loadSettings();
   }, []);
@@ -150,7 +162,7 @@ export default function AdminIntegracionesPage() {
         throw new Error(payload?.error || "No se pudo sincronizar Tokko.");
       }
       const stateResponse = await fetch("/api/inmo-state", { cache: "no-store" });
-      if (stateResponse.ok) updateState(await stateResponse.json());
+      if (stateResponse.ok) updateState(await stateResponse.json(), { silent: true });
       setNotice(payload.log?.message || `Sincronización ejecutada. Importadas: ${payload.log?.importedCount ?? 0}.`);
     } catch (syncError) {
       setError(syncError instanceof Error ? syncError.message : "No se pudo sincronizar Tokko.");
@@ -181,6 +193,43 @@ export default function AdminIntegracionesPage() {
       setError(emailError instanceof Error ? emailError.message : "No se pudo probar email.");
     } finally {
       setTestingEmail(false);
+    }
+  };
+
+  const handleEmailSave = async () => {
+    setSavingEmail(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/email/settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAdminHeaders(),
+        },
+        body: JSON.stringify({
+          mode: emailSettings.mode,
+          from: emailSettings.from,
+          resendApiKey,
+          clearResendApiKey,
+        }),
+      });
+      const payload = await response.json().catch(() => null) as {
+        ok?: boolean;
+        error?: string;
+        settings?: PublicEmailSettings;
+      } | null;
+      if (!response.ok || !payload?.ok || !payload.settings) {
+        throw new Error(payload?.error || "No se pudo guardar email.");
+      }
+      setEmailSettings(payload.settings);
+      setResendApiKey("");
+      setClearResendApiKey(false);
+      setNotice("Email transaccional actualizado.");
+    } catch (emailError) {
+      setError(emailError instanceof Error ? emailError.message : "No se pudo guardar email.");
+    } finally {
+      setSavingEmail(false);
     }
   };
 
@@ -322,19 +371,79 @@ export default function AdminIntegracionesPage() {
             <div className="rounded-2xl bg-surface-container-low p-4">
               <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Email transaccional</p>
               <p className="mt-2 text-sm font-bold text-primary">
-                {emailConfigured ? "Resend configurado" : "Pendiente RESEND_API_KEY"}
+                {emailSettings.mode === "preview"
+                  ? "Modo preview activo"
+                  : emailSettings.hasResendApiKey
+                    ? "Resend configurado"
+                    : "Pendiente API key Resend"}
               </p>
-              {emailFrom ? (
-                <p className="mt-1 break-all text-xs text-on-surface-variant">{emailFrom}</p>
-              ) : null}
-              <button
-                type="button"
-                onClick={handleEmailTest}
-                disabled={testingEmail || !emailConfigured}
-                className="mt-4 rounded-full border border-outline-variant/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary disabled:opacity-40"
-              >
-                {testingEmail ? "Enviando" : "Enviar prueba"}
-              </button>
+              <div className="mt-4 grid gap-3">
+                <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                  Modo
+                  <select
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-2 text-xs text-primary"
+                    value={emailSettings.mode}
+                    onChange={(event) =>
+                      setEmailSettings((prev) => ({
+                        ...prev,
+                        mode: event.target.value === "resend" ? "resend" : "preview",
+                      }))
+                    }
+                  >
+                    <option value="preview">Preview sin enviar</option>
+                    <option value="resend">Enviar con Resend</option>
+                  </select>
+                </label>
+                <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                  Remitente
+                  <input
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-2 text-xs text-primary"
+                    value={emailSettings.from}
+                    onChange={(event) =>
+                      setEmailSettings((prev) => ({ ...prev, from: event.target.value }))
+                    }
+                  />
+                </label>
+                <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                  API key Resend
+                  <input
+                    type="password"
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-2 text-xs text-primary"
+                    placeholder={emailSettings.hasResendApiKey ? "Key guardada. Escribí una nueva para reemplazarla." : "re_..."}
+                    value={resendApiKey}
+                    onChange={(event) => setResendApiKey(event.target.value)}
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-xs font-semibold text-primary">
+                  <input
+                    type="checkbox"
+                    checked={clearResendApiKey}
+                    onChange={(event) => setClearResendApiKey(event.target.checked)}
+                  />
+                  Quitar API key guardada
+                </label>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleEmailSave}
+                  disabled={savingEmail}
+                  className="rounded-full bg-primary px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-on-primary disabled:opacity-40"
+                >
+                  {savingEmail ? "Guardando" : "Guardar email"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleEmailTest}
+                  disabled={testingEmail || (emailSettings.mode === "resend" && !emailSettings.hasResendApiKey)}
+                  className="rounded-full border border-outline-variant/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary disabled:opacity-40"
+                >
+                  {testingEmail ? "Probando" : "Probar"}
+                </button>
+              </div>
+              <p className="mt-3 text-xs text-on-surface-variant">
+                En modo preview el OTP aparece en pantalla y en logs; sirve para probar sin dominio empresarial.
+              </p>
             </div>
           </div>
           <p className="mt-6 text-sm leading-relaxed text-on-surface-variant">
