@@ -20,6 +20,22 @@ type PublicEmailSettings = {
   configured: boolean;
 };
 
+type TokkoAuditResult = {
+  total: number;
+  withDescription: number;
+  withoutDescription: number;
+  samplesWithDescription: Array<{
+    id: string;
+    title: string;
+    descriptionLength: number;
+    descriptionPreview: string;
+  }>;
+  samplesWithoutDescription: Array<{
+    id: string;
+    title: string;
+  }>;
+};
+
 const defaultSettings: PublicTokkoSettings = {
   baseUrl: "https://www.tokkobroker.com/api/v1",
   syncSecret: "",
@@ -37,6 +53,8 @@ export default function AdminIntegracionesPage() {
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [auditingTokko, setAuditingTokko] = useState(false);
+  const [tokkoAudit, setTokkoAudit] = useState<TokkoAuditResult | null>(null);
   const [emailSettings, setEmailSettings] = useState<PublicEmailSettings>({
     mode: "preview",
     from: "Connexa <no-reply@connexa.com>",
@@ -176,6 +194,35 @@ export default function AdminIntegracionesPage() {
       setError(syncError instanceof Error ? syncError.message : "No se pudo sincronizar Tokko.");
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleAuditTokko = async () => {
+    setAuditingTokko(true);
+    setError("");
+    setNotice("");
+    setTokkoAudit(null);
+    try {
+      const response = await fetch("/api/tokko/audit", {
+        method: "POST",
+        headers: getAdminHeaders(),
+      });
+      const payload = await response.json().catch(() => null) as {
+        ok?: boolean;
+        error?: string;
+        audit?: TokkoAuditResult;
+      } | null;
+      if (!response.ok || !payload?.ok || !payload.audit) {
+        throw new Error(payload?.error || "No se pudo auditar Tokko.");
+      }
+      setTokkoAudit(payload.audit);
+      setNotice(
+        `Auditoría Tokko lista: ${payload.audit.withDescription} de ${payload.audit.total} propiedades tienen descripción.`
+      );
+    } catch (auditError) {
+      setError(auditError instanceof Error ? auditError.message : "No se pudo auditar Tokko.");
+    } finally {
+      setAuditingTokko(false);
     }
   };
 
@@ -339,7 +386,81 @@ export default function AdminIntegracionesPage() {
             >
               {syncing ? "Sincronizando" : "Sincronizar ahora"}
             </button>
+            <button
+              type="button"
+              onClick={handleAuditTokko}
+              disabled={auditingTokko || !settings.hasApiKey}
+              className="rounded-full border border-primary/30 bg-surface-container-low px-6 py-3 text-xs font-bold uppercase tracking-widest text-primary disabled:opacity-40"
+            >
+              {auditingTokko ? "Auditando" : "Auditar descripciones"}
+            </button>
           </div>
+
+          {tokkoAudit ? (
+            <div className="mt-5 rounded-3xl bg-surface-container-low p-5">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl bg-surface-container-lowest p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Total API</p>
+                  <p className="mt-2 text-2xl font-bold text-primary">{tokkoAudit.total}</p>
+                </div>
+                <div className="rounded-2xl bg-surface-container-lowest p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Con descripción</p>
+                  <p className="mt-2 text-2xl font-bold text-primary">{tokkoAudit.withDescription}</p>
+                </div>
+                <div className="rounded-2xl bg-surface-container-lowest p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Sin descripción</p>
+                  <p className="mt-2 text-2xl font-bold text-primary">{tokkoAudit.withoutDescription}</p>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                    Muestras con descripción
+                  </p>
+                  <div className="mt-3 grid gap-3">
+                    {tokkoAudit.samplesWithDescription.length ? (
+                      tokkoAudit.samplesWithDescription.map((sample) => (
+                        <div key={sample.id} className="rounded-2xl bg-surface-container-lowest p-4">
+                          <p className="text-sm font-bold text-primary">{sample.title}</p>
+                          <p className="mt-1 text-[10px] uppercase tracking-widest text-on-surface-variant">
+                            {sample.id} · {sample.descriptionLength} caracteres
+                          </p>
+                          <p className="mt-2 text-xs leading-5 text-on-surface-variant">
+                            {sample.descriptionPreview}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="rounded-2xl bg-surface-container-lowest p-4 text-sm text-on-surface-variant">
+                        No encontramos propiedades con descripción en la respuesta.
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                    Muestras sin descripción
+                  </p>
+                  <div className="mt-3 grid gap-3">
+                    {tokkoAudit.samplesWithoutDescription.length ? (
+                      tokkoAudit.samplesWithoutDescription.map((sample) => (
+                        <div key={sample.id} className="rounded-2xl bg-surface-container-lowest p-4">
+                          <p className="text-sm font-bold text-primary">{sample.title}</p>
+                          <p className="mt-1 text-[10px] uppercase tracking-widest text-on-surface-variant">
+                            {sample.id}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="rounded-2xl bg-surface-container-lowest p-4 text-sm text-on-surface-variant">
+                        Todas las propiedades auditadas tienen descripción.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           {notice ? (
             <p className="mt-5 rounded-2xl bg-surface-container-low px-4 py-3 text-sm text-primary">

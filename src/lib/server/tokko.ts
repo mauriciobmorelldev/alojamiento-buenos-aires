@@ -502,6 +502,33 @@ export const testTokkoConnection = async () => {
   };
 };
 
+export const auditTokkoDescriptions = async () => {
+  const settings = await readTokkoSettings();
+  const objects = await fetchAllTokkoProperties(settings);
+  const normalized = objects.map(normalizeTokkoProperty);
+  const withDescription = normalized.filter((property) => property.description.trim());
+  const withoutDescription = normalized.filter((property) => !property.description.trim());
+
+  return {
+    total: normalized.length,
+    withDescription: withDescription.length,
+    withoutDescription: withoutDescription.length,
+    samplesWithDescription: withDescription.slice(0, 5).map((property) => ({
+      id: property.id,
+      title: property.title,
+      descriptionLength: property.description.length,
+      descriptionPreview:
+        property.description.length > 220
+          ? `${property.description.slice(0, 220).trim()}...`
+          : property.description,
+    })),
+    samplesWithoutDescription: withoutDescription.slice(0, 5).map((property) => ({
+      id: property.id,
+      title: property.title,
+    })),
+  };
+};
+
 export const syncTokkoProperties = async (state: InmoState): Promise<InmoState> => {
   const startedAt = new Date().toISOString();
   const settings = await readTokkoSettings();
