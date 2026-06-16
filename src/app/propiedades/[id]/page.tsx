@@ -30,6 +30,28 @@ const fallbackImages = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuBPwVzgXPJm0swtY64CQbdnTef3BTgOiLpJyMC05lfsZ3vahhPB3JlrNwGPyzKnqC4edrrCpfXf0gRe1MltU-8HvUvqm9U62TxGf-TMbEaq4MuXzJyzMo0ql2RbO4ma5EOI1My4_3oXEEbpcsuJMScmmgFOOonN8dZHI-fiOJ0rWkRBY1c4Z8TYUTMAOkYdFP7L3FNk8qMiO4iJyOxj_PHaGnpiGspDEtM2oLtCXNIPPp8HPKPQjDZNpujgpXVREeeTMApubcs4lg",
 ];
 
+const BuildingHouseLoader = () => (
+  <div className="flex min-h-screen items-center justify-center bg-background px-8 text-primary">
+    <div className="text-center">
+      <div className="relative mx-auto h-32 w-40">
+        <span className="absolute left-8 top-16 h-1 w-24 origin-left animate-[build_stick_0.8s_ease-in-out_infinite_alternate] rounded-full bg-primary" />
+        <span className="absolute left-8 top-16 h-1 w-20 origin-left -rotate-45 animate-[build_stick_0.9s_ease-in-out_0.1s_infinite_alternate] rounded-full bg-primary" />
+        <span className="absolute right-8 top-16 h-1 w-20 origin-right rotate-45 animate-[build_stick_0.9s_ease-in-out_0.18s_infinite_alternate] rounded-full bg-primary" />
+        <span className="absolute left-9 top-[4.25rem] h-16 w-1 origin-top animate-[build_stick_0.85s_ease-in-out_0.24s_infinite_alternate] rounded-full bg-primary" />
+        <span className="absolute right-9 top-[4.25rem] h-16 w-1 origin-top animate-[build_stick_0.85s_ease-in-out_0.3s_infinite_alternate] rounded-full bg-primary" />
+        <span className="absolute bottom-0 left-14 h-10 w-8 origin-bottom animate-[build_stick_0.9s_ease-in-out_0.38s_infinite_alternate] rounded-t-lg border-4 border-primary border-b-0" />
+        <span className="absolute bottom-5 right-14 h-7 w-7 origin-bottom animate-[build_stick_0.9s_ease-in-out_0.46s_infinite_alternate] rounded border-4 border-primary" />
+      </div>
+      <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+        Construyendo ficha
+      </p>
+      <p className="mt-2 text-sm text-on-surface-variant">
+        Estamos preparando la propiedad.
+      </p>
+    </div>
+  </div>
+);
+
 export default function DetallePropiedadPage() {
   const params = useParams<{ id: string | string[] }>();
   const propertyId = Array.isArray(params?.id) ? params.id[0] : params?.id;
@@ -57,6 +79,7 @@ export default function DetallePropiedadPage() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfError, setPdfError] = useState("");
   const [clientSession] = useState(() => readClientSession());
+  const [isResolvingProperty, setIsResolvingProperty] = useState(true);
 
   const agent = useMemo(
     () => agents.find((item) => item.id === property?.agentId),
@@ -96,6 +119,16 @@ export default function DetallePropiedadPage() {
     }
     window.setTimeout(resetGallery, 0);
   }, [propertyId]);
+
+  useEffect(() => {
+    if (property) {
+      setIsResolvingProperty(false);
+      return;
+    }
+    setIsResolvingProperty(true);
+    const timeout = window.setTimeout(() => setIsResolvingProperty(false), 900);
+    return () => window.clearTimeout(timeout);
+  }, [property]);
 
   const attributes = useMemo(
     () => (property ? resolveAttributes(filterGroups, property.attributes) : []),
@@ -190,6 +223,10 @@ export default function DetallePropiedadPage() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [closeViewer, isViewerOpen, moveViewer]);
+
+  if (!property && isResolvingProperty) {
+    return <BuildingHouseLoader />;
+  }
 
   if (!property) {
     return (

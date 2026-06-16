@@ -28,13 +28,35 @@ const asRecord = (value: unknown): Record<string, unknown> =>
 
 const asArray = (value: unknown): unknown[] => Array.isArray(value) ? value : [];
 
-const firstString = (...values: unknown[]) => {
+const firstString = (...values: unknown[]): string => {
   for (const value of values) {
     if (typeof value === "string" && value.trim()) return value.trim();
     if (typeof value === "number" && Number.isFinite(value)) return String(value);
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      const record = value as Record<string, unknown>;
+      const nested = firstString(
+        record["es-AR"],
+        record.es,
+        record.es_ar,
+        record.value,
+        record.text,
+        record.description
+      );
+      if (nested) return nested;
+    }
   }
   return "";
 };
+
+const cleanDescription = (value: string) =>
+  value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
 const firstNumber = (...values: unknown[]) => {
   for (const value of values) {
@@ -91,6 +113,14 @@ const extractOperation = (item: TokkoRemoteProperty) => {
   };
 };
 
+const extractAttributeValue = (item: TokkoRemoteProperty, code: string) => {
+  const attributes = asArray(item.attributes);
+  const match = attributes
+    .map((attribute) => asRecord(attribute))
+    .find((attribute) => firstString(attribute.code).toLowerCase() === code.toLowerCase());
+  return match?.value;
+};
+
 const extractNeighborhood = (item: TokkoRemoteProperty) => {
   const location = asRecord(item.location);
   return firstString(
@@ -109,7 +139,18 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
     item.total_surface,
     item.surface,
     item.roofed_surface,
-    item.area
+    item.area,
+    extractAttributeValue(item, "total_surface"),
+    extractAttributeValue(item, "roofed_surface")
+  );
+  const description = cleanDescription(
+    firstString(
+      item.description,
+      item.publication_description,
+      item.rich_description,
+      item.web_description,
+      item.portal_description
+    )
   );
 
   return {
@@ -124,10 +165,16 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
     currency: operation.currency,
     neighborhood: extractNeighborhood(item),
     area: surface,
-    rooms: firstNumber(item.room_amount, item.rooms, item.suite_amount) || 1,
+    rooms:
+      firstNumber(
+        item.room_amount,
+        item.rooms,
+        item.suite_amount,
+        extractAttributeValue(item, "room_amount")
+      ) || 1,
     tag: "Tokko",
     highlight: "Sincronizada desde Tokko",
-    description: firstString(item.description, item.rich_description, item.publication_description),
+    description,
     images: extractImages(item),
     videos: [],
     coverIndex: 0,
@@ -220,12 +267,16 @@ const TOKKO_MAX_PAGES = 50;
 
 const buildTokkoPropertyUrl = (settings: TokkoSettings, limit = 50, offset = 0) => {
   const cleanBase = (settings.baseUrl || DEFAULT_TOKKO_BASE_URL).replace(/\/$/, "");
-  const endpoint = cleanBase.endsWith("/property") || cleanBase.endsWith("/property/")
+  const isFreePortal = cleanBase.includes("/freeportals");
+  const endpoint = isFreePortal || cleanBase.endsWith("/property") || cleanBase.endsWith("/property/")
     ? cleanBase
     : `${cleanBase}/property/`;
   const url = new URL(endpoint);
-  if (settings.apiKey) url.searchParams.set("key", settings.apiKey);
+  if (settings.apiKey) {
+    url.searchParams.set(isFreePortal ? "api_key" : "key", settings.apiKey);
+  }
   url.searchParams.set("format", "json");
+  if (isFreePortal) url.searchParams.set("lang", "es-AR");
   url.searchParams.set("limit", String(limit));
   url.searchParams.set("offset", String(offset));
   return url.toString();
