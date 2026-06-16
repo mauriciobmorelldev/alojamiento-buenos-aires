@@ -58,6 +58,34 @@ const cleanDescription = (value: string) =>
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 
+const descriptionKeyPattern = /(description|descripcion|observations|remarks|publication_text|web_text)/i;
+
+const findNestedDescription = (value: unknown, depth = 0): string => {
+  if (depth > 5) return "";
+  if (typeof value === "string") return cleanDescription(value);
+  if (!value || typeof value !== "object") return "";
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findNestedDescription(item, depth + 1);
+      if (found) return found;
+    }
+    return "";
+  }
+
+  const record = value as Record<string, unknown>;
+  const prioritizedKeys = Object.keys(record).filter((key) => descriptionKeyPattern.test(key));
+  for (const key of prioritizedKeys) {
+    const found = findNestedDescription(record[key], depth + 1);
+    if (found) return found;
+  }
+  for (const key of Object.keys(record)) {
+    if (["photos", "images", "pictures", "operations", "prices"].includes(key)) continue;
+    const found = findNestedDescription(record[key], depth + 1);
+    if (found) return found;
+  }
+  return "";
+};
+
 const firstNumber = (...values: unknown[]) => {
   for (const value of values) {
     if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -124,6 +152,7 @@ const extractAttributeValue = (item: TokkoRemoteProperty, code: string) => {
 const extractDescription = (item: TokkoRemoteProperty) => {
   const direct = firstString(
     item.description,
+    item.descripcion,
     item.description_only,
     item.description_es,
     item.description_es_ar,
@@ -151,7 +180,7 @@ const extractDescription = (item: TokkoRemoteProperty) => {
       return firstString(record.description, record.text, record.value);
     })
     .find(Boolean);
-  return cleanDescription(tagDescription ?? "");
+  return cleanDescription(tagDescription ?? "") || findNestedDescription(item);
 };
 
 const extractNeighborhood = (item: TokkoRemoteProperty) => {
@@ -352,9 +381,17 @@ const fetchTokkoPropertyDetail = async (
   });
   if (!response.ok) return item;
   const payload = await response.json() as unknown;
+  const record = asRecord(payload);
+  const detail = asRecord(
+    record.object ??
+    record.property ??
+    record.data ??
+    record.result ??
+    payload
+  );
   return {
     ...item,
-    ...asRecord(payload),
+    ...detail,
   };
 };
 

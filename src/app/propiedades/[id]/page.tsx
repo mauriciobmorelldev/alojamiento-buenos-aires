@@ -174,8 +174,6 @@ export default function DetallePropiedadPage() {
   const images = property?.images.length ? property.images : fallbackImages;
   const mainImage = images[activeImage] ?? images[0];
   const mainVideo = property?.videos?.[0] ?? "";
-  const sideImages = images.slice(1, 3);
-  const extraCount = images.length - 3;
   const themeStyles = buildThemeStyles(theme);
 
   const openViewer = (index: number) => {
@@ -389,7 +387,7 @@ export default function DetallePropiedadPage() {
       <main className="pt-20">
         <section className="mx-auto max-w-screen-2xl px-6 lg:px-8 pt-8">
           <div className="grid gap-10 lg:grid-cols-12 lg:items-start">
-            <div className="lg:sticky lg:top-24 lg:col-span-7 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:pr-2">
+            <div className="lg:sticky lg:top-24 lg:col-span-7">
               <div className="relative overflow-hidden rounded-2xl bg-surface-container-lowest">
                 <div className="relative aspect-[16/10] overflow-hidden">
                   {mainVideo ? (
@@ -444,10 +442,7 @@ export default function DetallePropiedadPage() {
                     <button
                       key={`${image}-${index}`}
                       type="button"
-                      onClick={() => {
-                        setActiveImage(index);
-                        openViewer(index);
-                      }}
+                      onClick={() => setActiveImage(index)}
                       className={`relative shrink-0 overflow-hidden rounded-xl border ${
                         activeImage === index
                           ? "border-primary"
@@ -465,46 +460,6 @@ export default function DetallePropiedadPage() {
                     </button>
                   ))}
                 </div>
-              </div>
-
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {sideImages.map((image, index) => (
-                  <button
-                    key={image}
-                    type="button"
-                    onClick={() => openViewer(index + 1)}
-                    className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-surface-container-lowest"
-                  >
-                    <img
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      src={image}
-                      alt={`Imagen ${index + 2} de ${property.title}`}
-                    />
-                    <span className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-lowest/88 text-primary backdrop-blur">
-                      <span className="material-symbols-outlined text-lg">open_in_full</span>
-                    </span>
-                  </button>
-                ))}
-                {extraCount > 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => openViewer(2)}
-                    className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-surface-container-lowest text-left"
-                  >
-                    <img className="h-full w-full object-cover" src={images[2]} alt="Más" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-primary/40">
-                      <span className="text-lg font-headline font-bold text-on-primary">
-                        +{extraCount} Fotos
-                      </span>
-                    </div>
-                  </button>
-                ) : (
-                  images.length <= 1 ? (
-                    <div className="rounded-2xl bg-surface-container-low p-6 text-sm text-on-surface-variant">
-                      Galería completa disponible en la ficha.
-                    </div>
-                  ) : null
-                )}
               </div>
             </div>
 
