@@ -346,10 +346,10 @@ export default function ResultsStitch() {
       />
 
       <main className="mx-auto min-h-screen max-w-screen-2xl px-4 pb-16 pt-24 sm:px-6 lg:px-8 lg:pb-20 lg:pt-28">
-        <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-12">
           <aside className="hidden w-full flex-shrink-0 lg:block lg:w-80">
-            <div className="sticky top-28 rounded-3xl bg-surface-container-lowest p-5 shadow-[0_30px_60px_-36px_rgba(27,54,93,0.32)]">
-                <h3 className="mb-6 text-lg font-headline font-bold text-primary">
+            <div className="h-full rounded-3xl bg-surface-container-lowest p-5 shadow-[0_30px_60px_-36px_rgba(27,54,93,0.32)]">
+              <h3 className="mb-6 text-lg font-headline font-bold text-primary">
                 Filtrar propiedades
               </h3>
               {filterContent}
