@@ -125,7 +125,7 @@ export default function DetallePropiedadPage() {
       return;
     }
     setIsResolvingProperty(true);
-    const timeout = window.setTimeout(() => setIsResolvingProperty(false), 900);
+    const timeout = window.setTimeout(() => setIsResolvingProperty(false), 1800);
     return () => window.clearTimeout(timeout);
   }, [property]);
 
