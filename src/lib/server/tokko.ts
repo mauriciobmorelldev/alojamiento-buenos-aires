@@ -307,6 +307,75 @@ const buildTokkoPropertyUrl = (settings: TokkoSettings, limit = 50, offset = 0) 
   return url.toString();
 };
 
+const addTokkoAuthParams = (url: URL, settings: TokkoSettings) => {
+  const isFreePortal = url.pathname.includes("/freeportals");
+  if (settings.apiKey) {
+    url.searchParams.set(isFreePortal ? "api_key" : "key", settings.apiKey);
+  }
+  url.searchParams.set("format", "json");
+  if (isFreePortal) url.searchParams.set("lang", "es-AR");
+};
+
+const buildTokkoPropertyDetailUrl = (settings: TokkoSettings, item: TokkoRemoteProperty) => {
+  const cleanBase = (settings.baseUrl || DEFAULT_TOKKO_BASE_URL).replace(/\/$/, "");
+  const resourceUri = firstString(item.resource_uri, item.resourceUri, item.url);
+  const id = firstString(item.id, item.reference_code, item.code);
+  let url: URL | null = null;
+
+  if (resourceUri) {
+    url = resourceUri.startsWith("http")
+      ? new URL(resourceUri)
+      : new URL(resourceUri, cleanBase.includes("/api/") ? "https://www.tokkobroker.com" : `${cleanBase}/`);
+  } else if (id && !cleanBase.includes("/freeportals")) {
+    const endpoint = cleanBase.endsWith("/property")
+      ? `${cleanBase}/${id}/`
+      : cleanBase.endsWith("/property/")
+        ? `${cleanBase}${id}/`
+        : `${cleanBase}/property/${id}/`;
+    url = new URL(endpoint);
+  }
+
+  if (!url) return "";
+  addTokkoAuthParams(url, settings);
+  return url.toString();
+};
+
+const fetchTokkoPropertyDetail = async (
+  settings: TokkoSettings,
+  item: TokkoRemoteProperty
+) => {
+  const detailUrl = buildTokkoPropertyDetailUrl(settings, item);
+  if (!detailUrl) return item;
+  const response = await fetch(detailUrl, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  if (!response.ok) return item;
+  const payload = await response.json() as unknown;
+  return {
+    ...item,
+    ...asRecord(payload),
+  };
+};
+
+const hydrateTokkoPropertyDetails = async (
+  settings: TokkoSettings,
+  items: TokkoRemoteProperty[]
+) => {
+  const hydrated: TokkoRemoteProperty[] = [];
+  const batchSize = 6;
+  for (let index = 0; index < items.length; index += batchSize) {
+    const batch = items.slice(index, index + batchSize);
+    const details = await Promise.all(
+      batch.map((item) =>
+        extractDescription(item) ? Promise.resolve(item) : fetchTokkoPropertyDetail(settings, item)
+      )
+    );
+    hydrated.push(...details);
+  }
+  return hydrated;
+};
+
 const fetchTokkoProperties = async (settings: TokkoSettings, limit = 50) => {
   if (!settings.apiKey) {
     throw new Error("Falta API key de Tokko.");
@@ -321,7 +390,7 @@ const fetchTokkoProperties = async (settings: TokkoSettings, limit = 50) => {
   const payload = await response.json() as unknown;
   const record = asRecord(payload);
   const items = asArray(record.objects ?? record.properties ?? record.results ?? payload);
-  return items.map((item) => asRecord(item));
+  return hydrateTokkoPropertyDetails(settings, items.map((item) => asRecord(item)));
 };
 
 const fetchAllTokkoProperties = async (settings: TokkoSettings) => {
@@ -349,7 +418,7 @@ const fetchAllTokkoProperties = async (settings: TokkoSettings) => {
     if (!next && items.length < TOKKO_PAGE_SIZE) break;
     offset += TOKKO_PAGE_SIZE;
   }
-  return allItems;
+  return hydrateTokkoPropertyDetails(settings, allItems);
 };
 
 export const testTokkoConnection = async () => {
