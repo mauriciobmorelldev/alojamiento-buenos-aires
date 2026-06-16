@@ -5,6 +5,7 @@ create table if not exists platform_settings (
   theme jsonb not null default '{}'::jsonb,
   home_content jsonb not null default '{}'::jsonb,
   filter_groups jsonb not null default '[]'::jsonb,
+  tokko_config jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
 
@@ -13,6 +14,9 @@ alter table platform_settings
 
 alter table platform_settings
   add column if not exists filter_groups jsonb not null default '[]'::jsonb;
+
+alter table platform_settings
+  add column if not exists tokko_config jsonb not null default '{}'::jsonb;
 
 create table if not exists roles (
   id text primary key,
@@ -140,7 +144,7 @@ create table if not exists property_metrics (
   last_viewed_at timestamptz
 );
 
-create table if not exists tocco_sync_logs (
+create table if not exists tokko_sync_logs (
   id text primary key,
   status text not null check (status in ('mocked','success','failed')),
   message text not null,
@@ -148,6 +152,16 @@ create table if not exists tocco_sync_logs (
   started_at timestamptz not null,
   finished_at timestamptz not null
 );
+
+do $$
+begin
+  if to_regclass('public.tocco_sync_logs') is not null then
+    insert into tokko_sync_logs (id, status, message, imported_count, started_at, finished_at)
+    select id, status, message, imported_count, started_at, finished_at
+    from tocco_sync_logs
+    on conflict (id) do nothing;
+  end if;
+end $$;
 
 create index if not exists idx_properties_agent on properties(agent_id);
 create index if not exists idx_properties_created_by_admin on properties(created_by_admin_id);

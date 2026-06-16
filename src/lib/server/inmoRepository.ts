@@ -83,7 +83,6 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
     leads,
     leadEvents,
     metrics,
-    toccoLogs,
   ] = await Promise.all([
     supabase.from("platform_settings").select("*").eq("id", SETTINGS_ID).maybeSingle(),
     supabase.from("profiles").select("*"),
@@ -95,8 +94,14 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
     supabase.from("leads").select("*"),
     supabase.from("lead_events").select("*"),
     supabase.from("property_metrics").select("*"),
-    supabase.from("tocco_sync_logs").select("*").order("started_at", { ascending: false }),
   ]);
+  const primaryTokkoLogs = await supabase
+    .from("tokko_sync_logs")
+    .select("*")
+    .order("started_at", { ascending: false });
+  const tokkoLogs = primaryTokkoLogs.error?.message.includes("tokko_sync_logs")
+    ? await supabase.from("tocco_sync_logs").select("*").order("started_at", { ascending: false })
+    : primaryTokkoLogs;
 
   const readErrors = [
     ["platform_settings", settings.error?.message],
@@ -109,7 +114,7 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
     ["leads", leads.error?.message],
     ["lead_events", leadEvents.error?.message],
     ["property_metrics", metrics.error?.message],
-    ["tocco_sync_logs", toccoLogs.error?.message],
+    ["tokko_sync_logs", tokkoLogs.error?.message],
   ].filter(([, error]) => error);
 
   if (readErrors.length) {
@@ -217,7 +222,7 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
       favorites: Number(metric.favorites ?? 0),
       lastViewedAt: metric.last_viewed_at ?? undefined,
     })),
-    toccoSyncLogs: ensureArray(toccoLogs.data).map((log) => ({
+    tokkoSyncLogs: ensureArray(tokkoLogs.data).map((log) => ({
       id: log.id,
       status: log.status,
       message: log.message,
@@ -238,7 +243,7 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
       leads: incoming.leads ?? [],
       leadEvents: incoming.leadEvents ?? [],
       propertyMetrics: incoming.propertyMetrics ?? [],
-      toccoSyncLogs: incoming.toccoSyncLogs ?? [],
+      tokkoSyncLogs: incoming.tokkoSyncLogs ?? [],
     },
     source: "supabase",
   };
@@ -381,17 +386,24 @@ export const writeInmoState = async (state: InmoState) => {
     ), "upsert property_metrics");
   }
 
-  if (state.toccoSyncLogs.length) {
-    assertSupabaseOk(await supabase.from("tocco_sync_logs").upsert(
-      state.toccoSyncLogs.map((log) => ({
-        id: log.id,
-        status: log.status,
-        message: log.message,
-        imported_count: log.importedCount,
-        started_at: log.startedAt,
-        finished_at: log.finishedAt,
-      }))
-    ), "upsert tocco_sync_logs");
+  if (state.tokkoSyncLogs.length) {
+    const logRows = state.tokkoSyncLogs.map((log) => ({
+      id: log.id,
+      status: log.status,
+      message: log.message,
+      imported_count: log.importedCount,
+      started_at: log.startedAt,
+      finished_at: log.finishedAt,
+    }));
+    const logResult = await supabase.from("tokko_sync_logs").upsert(logRows);
+    if (logResult.error?.message.includes("tokko_sync_logs")) {
+      assertSupabaseOk(
+        await supabase.from("tocco_sync_logs").upsert(logRows),
+        "upsert tokko_sync_logs"
+      );
+    } else {
+      assertSupabaseOk(logResult, "upsert tokko_sync_logs");
+    }
   }
 
   return { source: "supabase" as const };

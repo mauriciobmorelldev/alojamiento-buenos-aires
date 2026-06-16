@@ -11,7 +11,7 @@ El alcance implementado toma como base el contrato y suma las ampliaciones solic
 - Estadisticas operativas avanzadas.
 - Home editable desde el administrador.
 - Roles de administrador principal y colaborador.
-- Preparacion de integracion con Tocco.
+- Preparacion de integracion con Tokko.
 - Identidad visual Connexa con la paleta del documento.
 - Animaciones y mejoras UX/UI en home, cards, filtros, header y visualizador de imagenes.
 
@@ -44,7 +44,7 @@ Inmobiliaria/
   src/components/inmo/     Componentes principales del front y admin
   src/components/ui/       Utilidades visuales de scroll y progreso
   src/lib/                 Tipos, estado, sesiones, validaciones y helpers
-  src/lib/server/          Repositorio Supabase, metricas, email y Tocco
+  src/lib/server/          Repositorio Supabase, metricas, email y Tokko
   src/lib/supabase/        Cliente server de Supabase
   stitch/                  Artefactos visuales base generados por Stitch
   supabase.sql             Schema SQL del proyecto
@@ -372,7 +372,7 @@ Entidades principales:
 - `Lead`: consultas.
 - `LeadEvent`: historial de cambios de lead.
 - `PropertyMetric`: metricas por propiedad.
-- `ToccoSyncLog`: logs de sincronizacion.
+- `TokkoSyncLog`: logs de sincronizacion.
 
 Estados de propiedad:
 
@@ -422,7 +422,7 @@ Tablas creadas:
 - `leads`
 - `lead_events`
 - `property_metrics`
-- `tocco_sync_logs`
+- `tokko_sync_logs`
 
 Indices relevantes:
 
@@ -557,38 +557,38 @@ Incluye:
 - Rendimiento por agente.
 - Propiedades mas relevantes por vistas, leads y favoritos.
 
-### `POST /api/tocco/sync`
+### `POST /api/tokko/sync`
 
-Ejecuta sincronizacion Tocco.
+Ejecuta sincronizacion Tokko.
 
 Requiere header:
 
 ```text
-x-tocco-sync-secret: <TOCCO_SYNC_SECRET>
+x-tokko-sync-secret: <TOKKO_SYNC_SECRET>
 ```
 
-Si faltan `TOCCO_API_BASE_URL` o `TOCCO_API_KEY`, registra un log mock sin modificar propiedades.
+Si faltan `TOKKO_API_BASE_URL` o `TOKKO_API_KEY`, registra un log mock sin modificar propiedades.
 
-## 11. Integracion Tocco
+## 11. Integracion Tokko
 
 Archivos:
 
 ```text
-src/app/api/tocco/sync/route.ts
-src/lib/server/tocco.ts
+src/app/api/tokko/sync/route.ts
+src/lib/server/tokko.ts
 ```
 
 Estado actual:
 
-- Preparado para consultar `GET {TOCCO_API_BASE_URL}/properties`.
-- Usa bearer token con `TOCCO_API_KEY`.
+- Preparado para consultar `GET {TOKKO_API_BASE_URL}/property/?key=...&format=json`.
+- Usa bearer token con `TOKKO_API_KEY`.
 - Normaliza propiedades externas al modelo interno `Listing`.
-- Reemplaza propiedades importadas por ID `tocco-*`.
+- Reemplaza propiedades importadas por ID `tokko-*`.
 - Registra logs de exito, error o mock.
 
 Pendiente para integracion real:
 
-- Documentacion oficial de endpoints Tocco.
+- Documentacion oficial de endpoints Tokko.
 - Credenciales reales.
 - Mapeo definitivo de campos.
 - Reglas de actualizacion y eliminacion.
@@ -667,7 +667,7 @@ Validado en APIs:
 La escritura remota requiere secretos:
 
 - `INMO_STATE_WRITE_SECRET`
-- `TOCCO_SYNC_SECRET`
+- `TOKKO_SYNC_SECRET`
 
 ## 15. Estadisticas Operativas
 
@@ -727,7 +727,7 @@ Mejoras ya aplicadas:
 - Login admin por API.
 - Login cliente por API.
 - Escritura remota protegida por secreto.
-- Sync Tocco protegido por secreto.
+- Sync Tokko protegido por secreto.
 - Colaborador limitado por rol y propiedad creadora.
 - Cliente limitado a su perfil, favoritos y consultas.
 - Remocion de botones tipo reset demo.
@@ -754,9 +754,9 @@ INMO_STATE_WRITE_SECRET=
 NEXT_PUBLIC_SITE_URL=
 RESEND_API_KEY=
 EMAIL_FROM=
-TOCCO_API_BASE_URL=
-TOCCO_API_KEY=
-TOCCO_SYNC_SECRET=
+TOKKO_API_BASE_URL=
+TOKKO_API_KEY=
+TOKKO_SYNC_SECRET=
 ```
 
 Uso:
@@ -768,9 +768,9 @@ Uso:
 - `NEXT_PUBLIC_SITE_URL`: URL base para links de confirmacion.
 - `RESEND_API_KEY`: envio de emails.
 - `EMAIL_FROM`: remitente de emails.
-- `TOCCO_API_BASE_URL`: URL base de API Tocco.
-- `TOCCO_API_KEY`: token Tocco.
-- `TOCCO_SYNC_SECRET`: protege sincronizacion Tocco.
+- `TOKKO_API_BASE_URL`: URL base de API Tokko.
+- `TOKKO_API_KEY`: token Tokko.
+- `TOKKO_SYNC_SECRET`: protege sincronizacion Tokko.
 
 ## 19. Setup Local
 
@@ -861,7 +861,7 @@ npm run build
 
 - `GET /api/inmo-state` no debe devolver passwords.
 - `PUT /api/inmo-state` sin secreto debe responder 401.
-- `POST /api/tocco/sync` sin secreto debe responder 401.
+- `POST /api/tokko/sync` sin secreto debe responder 401.
 - Login cliente no verificado debe responder 403.
 - Login con credenciales invalidas debe responder 401.
 
@@ -909,7 +909,7 @@ Prioridad baja:
 - Reportes PDF.
 - Exportacion de leads.
 - Filtros mas avanzados.
-- Integracion definitiva Tocco cuando exista documentacion.
+- Integracion definitiva Tokko cuando exista documentacion.
 
 ## 24. Archivos Clave
 
@@ -920,7 +920,7 @@ Prioridad baja:
 - `src/lib/inmoStore.ts`: estado cliente y persistencia local/remota.
 - `src/lib/server/inmoRepository.ts`: lectura/escritura Supabase.
 - `src/lib/server/analytics.ts`: metricas operativas.
-- `src/lib/server/tocco.ts`: adaptador Tocco.
+- `src/lib/server/tokko.ts`: adaptador Tokko.
 - `src/lib/clientValidation.ts`: validaciones de registro.
 - `src/lib/session.ts`: sesiones locales.
 - `src/app/api/*`: APIs internas.
@@ -928,4 +928,3 @@ Prioridad baja:
 - `src/components/inmo/PropertyCatalog.tsx`: catalogo.
 - `src/app/propiedades/[id]/page.tsx`: ficha de propiedad.
 - `src/components/inmo/admin/AdminShell.tsx`: layout/seguridad del admin.
-

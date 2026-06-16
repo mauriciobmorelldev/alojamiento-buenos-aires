@@ -26,7 +26,8 @@ export type AdminSection =
   | "leads"
   | "administradores"
   | "branding"
-  | "filtros";
+  | "filtros"
+  | "integraciones";
 
 type AdminShellProps = {
   activeSection: AdminSection;
@@ -63,6 +64,7 @@ const navItems: Array<{
   },
   { id: "branding", label: "Branding y Home", href: "/admin/branding", icon: "palette" },
   { id: "filtros", label: "Filtros", href: "/admin/filtros", icon: "tune" },
+  { id: "integraciones", label: "Integraciones", href: "/admin/integraciones", icon: "sync_alt" },
 ];
 
 const ADMIN_IDLE_TIMEOUT_MS = 10 * 60 * 1000;

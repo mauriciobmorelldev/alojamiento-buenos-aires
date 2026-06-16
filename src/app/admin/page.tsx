@@ -6,13 +6,14 @@ import AdminShell from "@/components/inmo/admin/AdminShell";
 import { propertyTypeLabels, statusLabels } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { formatPrice, getListingComparablePriceInArs } from "@/lib/pricing";
+import { readAdminSession } from "@/lib/session";
 
 export default function AdminDashboardPage() {
   const { state, updateState } = useInmoStore();
-  const { listings, agents, leads, propertyFavorites, propertyMetrics, toccoSyncLogs, theme } =
+  const { listings, agents, leads, propertyFavorites, propertyMetrics, tokkoSyncLogs, theme } =
     state;
-  const [syncingTocco, setSyncingTocco] = useState(false);
-  const [toccoSyncNotice, setToccoSyncNotice] = useState("");
+  const [syncingTokko, setSyncingTokko] = useState(false);
+  const [tokkoSyncNotice, setTokkoSyncNotice] = useState("");
 
   const availableCount = listings.filter((item) => item.status === "disponible").length;
   const pausedCount = listings.filter((item) => item.status === "pausado").length;
@@ -153,21 +154,25 @@ export default function AdminDashboardPage() {
     })
     .sort((a, b) => b.views + b.leads + b.favorites - (a.views + a.leads + a.favorites))
     .slice(0, 5);
-  const handleToccoSync = async () => {
-    setSyncingTocco(true);
-    setToccoSyncNotice("");
+  const handleTokkoSync = async () => {
+    setSyncingTokko(true);
+    setTokkoSyncNotice("");
     try {
-      const response = await fetch("/api/tocco/sync", { method: "POST" });
+      const adminId = readAdminSession()?.adminId;
+      const response = await fetch("/api/tokko/sync", {
+        method: "POST",
+        headers: adminId ? { "x-admin-id": adminId } : {},
+      });
       if (!response.ok) {
-        setToccoSyncNotice("Sincronización protegida. Configurá TOCCO_SYNC_SECRET y credenciales reales para habilitarla.");
+        setTokkoSyncNotice("Configurá Tokko desde Admin > Integraciones antes de sincronizar.");
         return;
       }
       const stateResponse = await fetch("/api/inmo-state", { cache: "no-store" });
       if (!stateResponse.ok) return;
       updateState(await stateResponse.json());
-      setToccoSyncNotice("Sincronización ejecutada correctamente.");
+      setTokkoSyncNotice("Sincronización ejecutada correctamente.");
     } finally {
-      setSyncingTocco(false);
+      setSyncingTokko(false);
     }
   };
   const pendingTasks = [
@@ -486,7 +491,7 @@ export default function AdminDashboardPage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h3 className="text-xl font-headline font-bold text-primary">
-                Sincronización Tocco
+                Sincronización Tokko
               </h3>
               <p className="mt-1 text-xs text-on-surface-variant">
                 Requiere credenciales reales y secreto server-side para producción.
@@ -494,26 +499,26 @@ export default function AdminDashboardPage() {
             </div>
             <button
               type="button"
-              onClick={handleToccoSync}
-              disabled={syncingTocco}
+              onClick={handleTokkoSync}
+              disabled={syncingTokko}
               className="rounded-full bg-primary px-5 py-2 text-xs font-semibold uppercase tracking-widest text-on-primary disabled:opacity-60"
               style={{ color: "var(--color-on-primary)" }}
             >
-              {syncingTocco ? "Sincronizando" : "Sincronizar"}
+              {syncingTokko ? "Sincronizando" : "Sincronizar"}
             </button>
           </div>
-          {toccoSyncNotice ? (
+          {tokkoSyncNotice ? (
             <p className="mt-4 rounded-2xl bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
-              {toccoSyncNotice}
+              {tokkoSyncNotice}
             </p>
           ) : null}
           <div className="mt-6 grid gap-3">
-            {toccoSyncLogs.length === 0 ? (
+            {tokkoSyncLogs.length === 0 ? (
               <p className="text-sm text-on-surface-variant">
                 Todavía no hay ejecuciones registradas.
               </p>
             ) : (
-              toccoSyncLogs.slice(0, 3).map((log) => (
+              tokkoSyncLogs.slice(0, 3).map((log) => (
                 <div
                   key={log.id}
                   className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4"

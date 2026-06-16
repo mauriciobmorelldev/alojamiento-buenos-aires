@@ -17,7 +17,7 @@ const tables = [
   "leads",
   "lead_events",
   "property_metrics",
-  "tocco_sync_logs",
+  "tokko_sync_logs",
 ];
 
 export async function GET() {
@@ -47,11 +47,20 @@ export async function GET() {
     .from("platform_settings")
     .select("filter_groups")
     .limit(1);
+  const tokkoConfigColumn = await supabase
+    .from("platform_settings")
+    .select("tokko_config")
+    .limit(1);
   const columnChecks = [
     {
       column: "platform_settings.filter_groups",
       ok: !filterGroupsColumn.error,
       error: filterGroupsColumn.error?.message,
+    },
+    {
+      column: "platform_settings.tokko_config",
+      ok: !tokkoConfigColumn.error,
+      error: tokkoConfigColumn.error?.message,
     },
   ];
 

@@ -38,7 +38,7 @@ Se desarrollo una plataforma inmobiliaria con:
 - Gestion de leads.
 - Estadisticas operativas.
 - Branding configurable.
-- Base preparada para integracion con sistemas externos como Tocco.
+- Base preparada para integracion con sistemas externos como Tokko.
 
 ## 4. Valor Para Una Inmobiliaria
 
@@ -199,7 +199,7 @@ Beneficio:
 
 La inmobiliaria puede tomar decisiones con informacion interna simple y accionable.
 
-### Modulo 9 - Integracion Tocco
+### Modulo 9 - Integracion Tokko
 
 Incluye:
 
@@ -295,7 +295,7 @@ Incluye todo el paquete profesional, mas:
 
 - Estadisticas operativas.
 - Reportes.
-- Adaptador Tocco.
+- Adaptador Tokko.
 - Integraciones externas.
 - Storage/CDN para imagenes.
 - Hardening de seguridad productiva.
@@ -338,7 +338,7 @@ Ya implementado:
 - Estadisticas.
 - Supabase schema.
 - APIs internas.
-- Tocco mock/adapter.
+- Tokko mock/adapter.
 - Validaciones de registro.
 - Confirmacion de email.
 - Documentacion tecnica.
@@ -364,7 +364,7 @@ Connexa es una plataforma inmobiliaria web lista para personalizar por marca. Pe
 
 ## 13. Version Pitch De 30 Segundos
 
-"Desarrollamos una plataforma inmobiliaria completa, no solo una pagina web. La inmobiliaria puede cargar propiedades, administrar agentes, recibir consultas, gestionar clientes, editar la home y ver estadisticas. El cliente final puede buscar, filtrar, abrir fichas con galeria, guardar favoritos y consultar desde el celular. Ademas, la plataforma esta preparada para integrarse con sistemas externos como Tocco y se puede adaptar rapidamente a otras marcas inmobiliarias."
+"Desarrollamos una plataforma inmobiliaria completa, no solo una pagina web. La inmobiliaria puede cargar propiedades, administrar agentes, recibir consultas, gestionar clientes, editar la home y ver estadisticas. El cliente final puede buscar, filtrar, abrir fichas con galeria, guardar favoritos y consultar desde el celular. Ademas, la plataforma esta preparada para integrarse con sistemas externos como Tokko y se puede adaptar rapidamente a otras marcas inmobiliarias."
 
 ## 14. Cierre Comercial
 

@@ -11,6 +11,7 @@ type FrontHeaderProps = {
   showSearch?: boolean;
   searchValue?: string;
   onSearchChange?: (value: string) => void;
+  hideBrand?: boolean;
 };
 
 const ConnexaWordmark = ({ compact = false }: { compact?: boolean }) => (
@@ -37,6 +38,7 @@ export default function FrontHeader({
   showSearch = false,
   searchValue,
   onSearchChange,
+  hideBrand = false,
 }: FrontHeaderProps) {
   const { state } = useInmoStore();
   const { theme } = state;
@@ -51,7 +53,7 @@ export default function FrontHeader({
   const whatsappUrl = whatsappPhone
     ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
         theme.whatsappMessage?.trim() ||
-          "Hola, quiero consultar por una propiedad en Connexa."
+          "Hola, quiero consultar por una propiedad."
       )}`
     : "";
 
@@ -99,20 +101,22 @@ export default function FrontHeader({
               menu
             </span>
           </button>
-          <Link
-            href="/"
-            className="flex min-w-0 items-center gap-3"
-          >
-            {theme.logo ? (
-              <img
-                src={theme.logo}
-                alt={theme.name || "Logo"}
-                className="h-9 w-auto object-contain"
-              />
-            ) : (
-              <ConnexaWordmark />
-            )}
-          </Link>
+          {hideBrand ? null : (
+            <Link
+              href="/"
+              className="flex min-w-0 items-center gap-3"
+            >
+              {theme.logo ? (
+                <img
+                  src={theme.logo}
+                  alt={theme.name || "Logo"}
+                  className="h-9 w-auto object-contain"
+                />
+              ) : (
+                <ConnexaWordmark />
+              )}
+            </Link>
+          )}
         </div>
 
         <div className="hidden items-center rounded-full border border-outline-variant/25 bg-surface-container-lowest/90 px-6 py-2 shadow-[0_25px_50px_-35px_rgba(27,27,28,0.35)] backdrop-blur md:flex">
@@ -233,7 +237,11 @@ export default function FrontHeader({
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {theme.logo ? (
+              {hideBrand ? (
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                  Menú
+                </span>
+              ) : theme.logo ? (
                 <img
                   src={theme.logo}
                   alt={theme.name || "Logo"}

@@ -69,9 +69,9 @@ export const mergeState = (
   propertyMetrics: Array.isArray(incoming.propertyMetrics)
     ? incoming.propertyMetrics
     : base.propertyMetrics,
-  toccoSyncLogs: Array.isArray(incoming.toccoSyncLogs)
-    ? incoming.toccoSyncLogs
-    : base.toccoSyncLogs,
+  tokkoSyncLogs: Array.isArray(incoming.tokkoSyncLogs)
+    ? incoming.tokkoSyncLogs
+    : base.tokkoSyncLogs,
   agents: Array.isArray(incoming.agents) ? incoming.agents : base.agents,
   filterGroups: Array.isArray(incoming.filterGroups)
     ? incoming.filterGroups

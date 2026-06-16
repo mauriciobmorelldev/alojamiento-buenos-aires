@@ -8,7 +8,7 @@ El contrato incluye:
 
 - Sitio web inmobiliario responsive.
 - Panel de administracion para gestion de propiedades.
-- Integracion via API con Tocco para sincronizacion de informacion.
+- Integracion via API con Tokko para sincronizacion de informacion.
 - Creacion y configuracion de usuarios administrativos.
 - Roles y permisos para colaboradores con acceso restringido.
 - Configuracion inicial de hosting y despliegue productivo.
@@ -109,13 +109,13 @@ El panel admin muestra:
 - Propiedades con mas vistas, leads y favoritos.
 - Evolucion de leads.
 
-### 7. Tocco
+### 7. Tokko
 
-La integracion queda preparada en `/api/tocco/sync`.
+La integracion queda preparada en `/api/tokko/sync`.
 
-- Si faltan `TOCCO_API_BASE_URL` o `TOCCO_API_KEY`, se registra una sincronizacion mock sin modificar propiedades.
-- Si las credenciales existen, el adaptador intenta leer `GET {TOCCO_API_BASE_URL}/properties`.
-- El mapeo definitivo puede ajustarse cuando Tocco entregue documentacion real.
+- Si faltan `TOKKO_API_BASE_URL` o `TOKKO_API_KEY`, se registra una sincronizacion mock sin modificar propiedades.
+- Si las credenciales existen, el adaptador intenta leer `GET {TOKKO_API_BASE_URL}/property/?key=...&format=json`.
+- El mapeo definitivo puede ajustarse cuando Tokko entregue documentacion real.
 
 ### 8. Branding y Home Editable
 
@@ -142,8 +142,8 @@ Completar:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-TOCCO_API_BASE_URL=
-TOCCO_API_KEY=
+TOKKO_API_BASE_URL=
+TOKKO_API_KEY=
 ```
 
 Crear tablas con:
@@ -167,7 +167,7 @@ El build de Next puede requerir acceso de red para descargar Google Fonts.
 - Codigo fuente Next.js.
 - Schema Supabase: `supabase.sql`.
 - Variables de entorno de referencia: `.env.example`.
-- APIs internas para estado, metricas y Tocco.
+- APIs internas para estado, metricas y Tokko.
 - Panel admin funcional.
 - Sitio publico responsive.
 - Home editable con banners y textos administrables.

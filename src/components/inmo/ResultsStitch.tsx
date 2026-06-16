@@ -342,6 +342,7 @@ export default function ResultsStitch() {
         showSearch
         searchValue={query}
         onSearchChange={setQuery}
+        hideBrand
       />
 
       <main className="mx-auto min-h-screen max-w-screen-2xl px-4 pb-16 pt-24 sm:px-6 lg:px-8 lg:pb-20 lg:pt-28">

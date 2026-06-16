@@ -117,7 +117,7 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
 
   return (
     <div style={themeStyles} className="min-h-screen bg-background text-on-background">
-      <FrontHeader active="catalog" />
+      <FrontHeader active="catalog" hideBrand />
 
       {showHero ? (
         <section className="pt-28">

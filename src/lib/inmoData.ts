@@ -152,7 +152,7 @@ export type PropertyMetric = {
   lastViewedAt?: string;
 };
 
-export type ToccoSyncLog = {
+export type TokkoSyncLog = {
   id: string;
   status: "mocked" | "success" | "failed";
   message: string;
@@ -196,7 +196,7 @@ export type InmoState = {
   leads: Lead[];
   leadEvents: LeadEvent[];
   propertyMetrics: PropertyMetric[];
-  toccoSyncLogs: ToccoSyncLog[];
+  tokkoSyncLogs: TokkoSyncLog[];
   agents: Agent[];
   filterGroups: FilterGroup[];
   listings: Listing[];
@@ -283,7 +283,7 @@ export const defaultState: InmoState = {
   leads: [],
   leadEvents: [],
   propertyMetrics: [],
-  toccoSyncLogs: [],
+  tokkoSyncLogs: [],
   agents: [],
   filterGroups: [
     {

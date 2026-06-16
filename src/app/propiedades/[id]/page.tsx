@@ -348,7 +348,7 @@ export default function DetallePropiedadPage() {
 
   return (
     <div style={themeStyles} className="bg-background text-on-background font-body">
-      <FrontHeader active="detail" />
+      <FrontHeader active="detail" hideBrand />
 
       <main className="pt-20">
         <section className="mx-auto max-w-screen-2xl px-6 lg:px-8 pt-8">
@@ -578,7 +578,7 @@ export default function DetallePropiedadPage() {
                 </div>
               ) : (
                 <p className="mt-4 text-sm text-on-surface-variant">
-                  Un asesor de Connexa va a responder tu consulta.
+                  Un asesor va a responder tu consulta.
                 </p>
               )}
               <button
