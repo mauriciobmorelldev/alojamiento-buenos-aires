@@ -62,7 +62,6 @@ const descriptionKeyPattern = /(description|descripcion|observations|remarks|pub
 
 const findNestedDescription = (value: unknown, depth = 0): string => {
   if (depth > 5) return "";
-  if (typeof value === "string") return cleanDescription(value);
   if (!value || typeof value !== "object") return "";
   if (Array.isArray(value)) {
     for (const item of value) {
@@ -75,11 +74,15 @@ const findNestedDescription = (value: unknown, depth = 0): string => {
   const record = value as Record<string, unknown>;
   const prioritizedKeys = Object.keys(record).filter((key) => descriptionKeyPattern.test(key));
   for (const key of prioritizedKeys) {
-    const found = findNestedDescription(record[key], depth + 1);
+    const current = record[key];
+    const found = typeof current === "string"
+      ? cleanDescription(current)
+      : findNestedDescription(current, depth + 1);
     if (found) return found;
   }
   for (const key of Object.keys(record)) {
     if (["photos", "images", "pictures", "operations", "prices"].includes(key)) continue;
+    if (typeof record[key] !== "object") continue;
     const found = findNestedDescription(record[key], depth + 1);
     if (found) return found;
   }
@@ -103,9 +106,18 @@ const normalizeCurrency = (value: unknown): PriceCurrency => {
 };
 
 const normalizeStatus = (value: unknown): PropertyStatus => {
+  if (typeof value === "number") {
+    if (value === 3) return "reservado";
+    if (value === 4) return "vendido";
+    return "disponible";
+  }
   const status = firstString(value).toLowerCase();
+  if (status === "3") return "reservado";
+  if (status === "4") return "vendido";
+  if (status === "1" || status === "2") return "disponible";
   if (status.includes("vend") || status.includes("alquil")) return "vendido";
   if (status.includes("reserv")) return "reservado";
+  if (status.includes("no disponible")) return "vendido";
   if (status.includes("paus") || status.includes("suspend")) return "pausado";
   return "disponible";
 };
@@ -135,9 +147,17 @@ const extractOperation = (item: TokkoRemoteProperty) => {
   const prices = asArray(operation.prices);
   const price = asRecord(prices[0]);
   return {
-    label: firstString(operationType.name, operation.type, item.operation, item.operation_type),
-    price: firstNumber(price.price, price.amount, item.web_price, item.price),
-    currency: normalizeCurrency(firstString(price.currency, item.currency)),
+    label: firstString(
+      operationType.name,
+      operation.type,
+      item.operation_type,
+      item.operation,
+      item.operation_category
+    ),
+    price: firstNumber(price.price, price.amount, item.web_price, item.operation_amount, item.price),
+    currency: normalizeCurrency(
+      firstString(price.currency, item.operation_currency, item.currency, item.operation_currency_description)
+    ),
   };
 };
 
@@ -173,6 +193,16 @@ const extractDescription = (item: TokkoRemoteProperty) => {
   );
   if (attributesDescription) return cleanDescription(attributesDescription);
 
+  const extraAttributesDescription = asArray(item.extra_attributes)
+    .map((attribute) => {
+      const record = asRecord(attribute);
+      const name = firstString(record.name).toLowerCase();
+      if (!name.includes("descrip")) return "";
+      return firstString(record.value);
+    })
+    .find(Boolean);
+  if (extraAttributesDescription) return cleanDescription(extraAttributesDescription);
+
   const customTags = asArray(item.custom_tags);
   const tagDescription = customTags
     .map((tag) => {
@@ -195,7 +225,7 @@ const extractNeighborhood = (item: TokkoRemoteProperty) => {
 };
 
 const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
-  const id = firstString(item.id, item.reference_code, item.code) || `${Date.now()}`;
+  const id = firstString(item.id, item.reference_code, item.code, item.tokko_id, item.publication_id) || `${Date.now()}`;
   const operation = extractOperation(item);
   const surface = firstNumber(
     item.total_surface,
@@ -348,7 +378,7 @@ const addTokkoAuthParams = (url: URL, settings: TokkoSettings) => {
 const buildTokkoPropertyDetailUrl = (settings: TokkoSettings, item: TokkoRemoteProperty) => {
   const cleanBase = (settings.baseUrl || DEFAULT_TOKKO_BASE_URL).replace(/\/$/, "");
   const resourceUri = firstString(item.resource_uri, item.resourceUri, item.url);
-  const id = firstString(item.id, item.reference_code, item.code);
+  const id = firstString(item.id, item.tokko_id);
   let url: URL | null = null;
 
   if (resourceUri) {
@@ -461,10 +491,14 @@ const fetchAllTokkoProperties = async (settings: TokkoSettings) => {
 export const testTokkoConnection = async () => {
   const settings = await readTokkoSettings();
   const objects = await fetchTokkoProperties(settings, 1);
+  const sample = objects[0] ? normalizeTokkoProperty(objects[0]) : null;
   const tested = await writeTokkoSettings({ ...settings, lastTestedAt: new Date().toISOString() });
   return {
     settings: tested,
     sampleCount: objects.length,
+    sampleTitle: sample?.title ?? "",
+    sampleHasDescription: Boolean(sample?.description),
+    sampleDescriptionLength: sample?.description.length ?? 0,
   };
 };
 

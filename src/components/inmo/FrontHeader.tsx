@@ -136,18 +136,6 @@ export default function FrontHeader({
                 ? "text-primary"
                 : "text-primary/60 hover:text-primary"
             } rounded-full px-3 py-1 transition-all hover:-translate-y-0.5`}
-            href="/propiedades?operacion=venta"
-          >
-            Comprar
-          </Link>
-          <Link
-            className="rounded-full px-3 py-1 text-primary/60 transition-all hover:-translate-y-0.5 hover:text-primary"
-            href="/propiedades?operacion=alquiler"
-          >
-            Alquilar
-          </Link>
-          <Link
-            className="rounded-full px-3 py-1 text-primary/60 transition-all hover:-translate-y-0.5 hover:text-primary"
             href="/propiedades"
           >
             Propiedades
@@ -267,20 +255,6 @@ export default function FrontHeader({
               className="rounded-2xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
             >
               Inicio
-            </Link>
-            <Link
-              href="/propiedades?operacion=venta"
-              onClick={() => setShowMobileMenu(false)}
-              className="rounded-2xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
-            >
-              Comprar
-            </Link>
-            <Link
-              href="/propiedades?operacion=alquiler"
-              onClick={() => setShowMobileMenu(false)}
-              className="rounded-2xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
-            >
-              Alquilar
             </Link>
             <Link
               href="/propiedades"

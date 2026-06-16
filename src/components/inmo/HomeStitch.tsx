@@ -295,18 +295,12 @@ export default function HomeStitch() {
                     Guardá y compará
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div>
                   <Link
-                    href="/propiedades?operacion=venta"
+                    href="/propiedades"
                     className="flex min-h-14 items-center justify-center rounded-2xl bg-primary-fixed px-6 py-3 text-center text-sm font-bold text-primary shadow-[0_18px_35px_-28px_rgba(255,243,194,0.8)]"
                   >
-                    Comprar
-                  </Link>
-                  <Link
-                    href="/propiedades?operacion=alquiler"
-                    className="flex min-h-14 items-center justify-center rounded-2xl bg-surface-container-high px-6 py-3 text-center text-sm font-bold text-primary"
-                  >
-                    Alquilar
+                    Propiedades
                   </Link>
                 </div>
                 <motion.div whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }}>
@@ -383,9 +377,9 @@ export default function HomeStitch() {
               className="rounded-3xl bg-surface-container-lowest p-6 pro-card"
             >
               <span className="material-symbols-outlined text-3xl text-primary">home_work</span>
-              <p className="mt-4 text-sm font-bold text-primary">Comprar con foco</p>
+              <p className="mt-4 text-sm font-bold text-primary">Catálogo claro</p>
               <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                Entrá directo a propiedades en venta y compará precio, zona y características.
+                Explorá propiedades con datos completos, fotos y características relevantes.
               </p>
             </motion.div>
             <motion.div
@@ -398,9 +392,9 @@ export default function HomeStitch() {
               className="rounded-3xl bg-surface-container-lowest p-6 pro-card"
             >
               <span className="material-symbols-outlined text-3xl text-primary">apartment</span>
-              <p className="mt-4 text-sm font-bold text-primary">Alquilar más simple</p>
+              <p className="mt-4 text-sm font-bold text-primary">Filtros simples</p>
               <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                Filtrá opciones mensuales o temporarias sin mezclar operaciones.
+                Encontrá opciones por zona, tipo, ambientes y estado sin pasos innecesarios.
               </p>
             </motion.div>
             <motion.div
@@ -611,42 +605,26 @@ export default function HomeStitch() {
                 Ver propiedades
               </Link>
             </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
               <motion.div whileHover={{ y: -6, scale: 1.01 }}>
                 <Link
-                href="/propiedades?operacion=venta"
+                  href="/propiedades"
                   className="block rounded-3xl bg-surface-container-low p-6"
                 >
                   <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">
-                    Comprar
+                    Propiedades
                   </p>
                   <h3 className="mt-2 text-xl font-bold text-primary">
-                    Ver propiedades en venta
+                    Ver catálogo completo
                   </h3>
                   <p className="mt-2 text-sm text-on-surface-variant">
-                    Listado enfocado para buscar unidades disponibles para compra.
+                    Explorá todas las propiedades disponibles desde un solo lugar.
                   </p>
                 </Link>
               </motion.div>
               <motion.div whileHover={{ y: -6, scale: 1.01 }}>
                 <Link
-                href="/propiedades?operacion=alquiler"
-                  className="block rounded-3xl bg-surface-container-low p-6"
-                >
-                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">
-                    Alquilar
-                  </p>
-                  <h3 className="mt-2 text-xl font-bold text-primary">
-                    Ver alquileres disponibles
-                  </h3>
-                  <p className="mt-2 text-sm text-on-surface-variant">
-                    Opciones mensuales y temporarias separadas de las ventas.
-                  </p>
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ y: -6, scale: 1.01 }}>
-                <Link
-                href="/registro"
+                  href="/registro"
                   className="block rounded-3xl bg-surface-container-low p-6"
                 >
                   <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">

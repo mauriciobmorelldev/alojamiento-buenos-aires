@@ -130,13 +130,21 @@ export default function AdminIntegracionesPage() {
         ok?: boolean;
         error?: string;
         sampleCount?: number;
+        sampleTitle?: string;
+        sampleHasDescription?: boolean;
+        sampleDescriptionLength?: number;
         settings?: PublicTokkoSettings;
       } | null;
       if (!response.ok || !payload?.ok || !payload.settings) {
         throw new Error(payload?.error || "No se pudo probar Tokko.");
       }
       setSettings(payload.settings);
-      setNotice(`Tokko respondió correctamente. Muestra recibida: ${payload.sampleCount ?? 0}.`);
+      const descriptionStatus = payload.sampleHasDescription
+        ? `Descripción detectada (${payload.sampleDescriptionLength ?? 0} caracteres).`
+        : "La muestra no trae descripción publicable.";
+      setNotice(
+        `Tokko respondió correctamente. Muestra recibida: ${payload.sampleCount ?? 0}. ${descriptionStatus}`
+      );
     } catch (testError) {
       setError(testError instanceof Error ? testError.message : "No se pudo probar Tokko.");
     } finally {

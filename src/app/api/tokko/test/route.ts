@@ -12,6 +12,9 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       sampleCount: result.sampleCount,
+      sampleTitle: result.sampleTitle,
+      sampleHasDescription: result.sampleHasDescription,
+      sampleDescriptionLength: result.sampleDescriptionLength,
       settings: toPublicTokkoSettings(result.settings),
     });
   } catch (error) {
