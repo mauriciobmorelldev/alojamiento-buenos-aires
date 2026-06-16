@@ -215,7 +215,10 @@ export const writeTokkoSettings = async (incoming: Partial<TokkoSettings> & { cl
   return next;
 };
 
-const buildTokkoPropertyUrl = (settings: TokkoSettings, limit = 50) => {
+const TOKKO_PAGE_SIZE = 100;
+const TOKKO_MAX_PAGES = 50;
+
+const buildTokkoPropertyUrl = (settings: TokkoSettings, limit = 50, offset = 0) => {
   const cleanBase = (settings.baseUrl || DEFAULT_TOKKO_BASE_URL).replace(/\/$/, "");
   const endpoint = cleanBase.endsWith("/property") || cleanBase.endsWith("/property/")
     ? cleanBase
@@ -224,6 +227,7 @@ const buildTokkoPropertyUrl = (settings: TokkoSettings, limit = 50) => {
   if (settings.apiKey) url.searchParams.set("key", settings.apiKey);
   url.searchParams.set("format", "json");
   url.searchParams.set("limit", String(limit));
+  url.searchParams.set("offset", String(offset));
   return url.toString();
 };
 
@@ -231,7 +235,7 @@ const fetchTokkoProperties = async (settings: TokkoSettings, limit = 50) => {
   if (!settings.apiKey) {
     throw new Error("Falta API key de Tokko.");
   }
-  const response = await fetch(buildTokkoPropertyUrl(settings, limit), {
+  const response = await fetch(buildTokkoPropertyUrl(settings, limit, 0), {
     headers: { Accept: "application/json" },
     cache: "no-store",
   });
@@ -242,6 +246,34 @@ const fetchTokkoProperties = async (settings: TokkoSettings, limit = 50) => {
   const record = asRecord(payload);
   const items = asArray(record.objects ?? record.properties ?? record.results ?? payload);
   return items.map((item) => asRecord(item));
+};
+
+const fetchAllTokkoProperties = async (settings: TokkoSettings) => {
+  if (!settings.apiKey) {
+    throw new Error("Falta API key de Tokko.");
+  }
+  const allItems: TokkoRemoteProperty[] = [];
+  let offset = 0;
+  for (let page = 0; page < TOKKO_MAX_PAGES; page += 1) {
+    const response = await fetch(buildTokkoPropertyUrl(settings, TOKKO_PAGE_SIZE, offset), {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      throw new Error(`Tokko respondió ${response.status}`);
+    }
+    const payload = await response.json() as unknown;
+    const record = asRecord(payload);
+    const meta = asRecord(record.meta);
+    const items = asArray(record.objects ?? record.properties ?? record.results ?? payload)
+      .map((item) => asRecord(item));
+    allItems.push(...items);
+
+    const next = typeof meta.next === "string" ? meta.next : "";
+    if (!next && items.length < TOKKO_PAGE_SIZE) break;
+    offset += TOKKO_PAGE_SIZE;
+  }
+  return allItems;
 };
 
 export const testTokkoConnection = async () => {
@@ -274,7 +306,7 @@ export const syncTokkoProperties = async (state: InmoState): Promise<InmoState> 
   }
 
   try {
-    const imported = (await fetchTokkoProperties(settings, 100)).map(normalizeTokkoProperty);
+    const imported = (await fetchAllTokkoProperties(settings)).map(normalizeTokkoProperty);
     const importedIds = new Set(imported.map((property) => property.id));
     const localWithoutImported = state.listings.filter(
       (property) => !importedIds.has(property.id)
