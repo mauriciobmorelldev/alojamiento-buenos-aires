@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import {
   useEffect,
   useMemo,
@@ -13,6 +14,7 @@ import { useInmoStore } from "@/lib/inmoStore";
 import {
   clearAdminSession,
   readAdminSession,
+  touchAdminSession,
   writeAdminSession,
   type AdminSession,
 } from "@/lib/session";
@@ -82,34 +84,56 @@ export default function AdminShell({
   const [session, setSession] = useState<AdminSession | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otpChallengeId, setOtpChallengeId] = useState("");
+  const [otpEmail, setOtpEmail] = useState("");
+  const [otpPreviewCode, setOtpPreviewCode] = useState("");
+  const [authStep, setAuthStep] = useState<"credentials" | "otp">("credentials");
   const [loginError, setLoginError] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
+  const [saveToast, setSaveToast] = useState("");
   const mobileBellRef = useRef<HTMLButtonElement | null>(null);
   const [mobileNotifPos, setMobileNotifPos] = useState<{ top: number; left: number } | null>(
     null
   );
-  const [notifications, setNotifications] = useState([
-    {
-      id: "n1",
-      title: "Nueva consulta",
-      subtitle: "Lote 32 · Recoleta",
-      unread: true,
-    },
-    {
-      id: "n2",
-      title: "Favorito agregado",
-      subtitle: "Cliente final",
-      unread: true,
-    },
-    {
-      id: "n3",
-      title: "Lead asignado",
-      subtitle: "Sofía Girard",
-      unread: false,
-    },
-  ]);
+  const [readNotificationIds, setReadNotificationIds] = useState<string[]>([]);
   const themeStyles = buildThemeStyles(theme);
+  const notifications = useMemo(() => {
+    const leadItems = [...state.leads]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 4)
+      .map((lead) => {
+        const property = state.listings.find((listing) => listing.id === lead.propertyId);
+        return {
+          id: `lead-${lead.id}`,
+          title: "Nueva consulta",
+          subtitle: `${lead.name}${property ? ` · ${property.title}` : ""}`,
+          unread: !readNotificationIds.includes(`lead-${lead.id}`),
+        };
+      });
+    const favoriteItems = [...state.propertyFavorites]
+      .slice(-3)
+      .reverse()
+      .map((favorite) => {
+        const property = state.listings.find((listing) => listing.id === favorite.propertyId);
+        return {
+          id: `fav-${favorite.id}`,
+          title: "Favorito agregado",
+          subtitle: property?.title ?? "Propiedad guardada por cliente",
+          unread: !readNotificationIds.includes(`fav-${favorite.id}`),
+        };
+      });
+    const tokkoLog = state.tokkoSyncLogs[0]
+      ? [{
+          id: `tokko-${state.tokkoSyncLogs[0].id}`,
+          title: "Sincronización Tokko",
+          subtitle: state.tokkoSyncLogs[0].message,
+          unread: !readNotificationIds.includes(`tokko-${state.tokkoSyncLogs[0].id}`),
+        }]
+      : [];
+    return [...leadItems, ...favoriteItems, ...tokkoLog].slice(0, 8);
+  }, [readNotificationIds, state.leads, state.listings, state.propertyFavorites, state.tokkoSyncLogs]);
 
   useEffect(() => {
     const hydrate = () => {
@@ -185,7 +209,12 @@ export default function AdminShell({
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
+    setLoginError("");
     const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) {
+      setLoginError("Completá email y contraseña.");
+      return;
+    }
     const response = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -193,35 +222,66 @@ export default function AdminShell({
     });
     const result = (await response.json().catch(() => null)) as {
       ok?: boolean;
-      admin?: { id: string; email: string; role?: string };
+      requiresOtp?: boolean;
+      challenge?: {
+        challengeId?: string;
+        emailSent?: boolean;
+        previewCode?: string;
+      };
+      error?: string;
     } | null;
-    const localAdmin = adminUsers.find(
-      (item) =>
-        item.active &&
-        item.email.trim().toLowerCase() === normalizedEmail &&
-        item.password === password
-    );
 
-    const loggedAdmin = response.ok && result?.ok && result.admin
-      ? result.admin
-      : localAdmin
-        ? { id: localAdmin.id, email: localAdmin.email, role: localAdmin.role }
-        : null;
-
-    if (!loggedAdmin) {
-      setLoginError("Email o contraseña incorrectos.");
+    if (!response.ok || !result?.ok || !result.requiresOtp || !result.challenge?.challengeId) {
+      setLoginError(result?.error || "Email o contraseña incorrectos.");
       return;
     }
 
+    setOtp(["", "", "", "", "", ""]);
+    setOtpChallengeId(result.challenge.challengeId);
+    setOtpEmail(normalizedEmail);
+    setOtpPreviewCode(result.challenge.previewCode ?? "");
+    setAuthStep("otp");
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    setOtp((prev) => prev.map((item, itemIndex) => itemIndex === index ? digit : item));
+    if (digit) {
+      const next = document.querySelector<HTMLInputElement>(`[data-otp-index="${index + 1}"]`);
+      next?.focus();
+    }
+  };
+
+  const handleOtpSubmit = async (event: FormEvent) => {
+    event.preventDefault();
     setLoginError("");
+    const code = otp.join("");
+    if (code.length !== 6) {
+      setLoginError("Ingresá los 6 dígitos del código.");
+      return;
+    }
+    const response = await fetch("/api/admin/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ challengeId: otpChallengeId, code }),
+    });
+    const result = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      admin?: { id: string; email: string; role?: string };
+      error?: string;
+    } | null;
+    if (!response.ok || !result?.ok || !result.admin) {
+      setLoginError(result?.error || "Código incorrecto.");
+      return;
+    }
     const nextSession = {
-      adminId: loggedAdmin.id,
-      email: loggedAdmin.email,
+      adminId: result.admin.id,
+      email: result.admin.email,
       issuedAt: new Date().toISOString(),
     };
     writeAdminSession(nextSession);
     setSession(nextSession);
-    window.location.href = loggedAdmin.role === "colaborador" ? "/admin/propiedades" : "/admin";
+    window.location.href = result.admin.role === "colaborador" ? "/admin/propiedades" : "/admin";
   };
 
   const handleLogout = () => {
@@ -241,6 +301,7 @@ export default function AdminShell({
       window.location.href = "/admin";
     };
     const resetTimer = () => {
+      touchAdminSession();
       if (timeout) window.clearTimeout(timeout);
       timeout = window.setTimeout(logoutForInactivity, ADMIN_IDLE_TIMEOUT_MS);
     };
@@ -252,6 +313,21 @@ export default function AdminShell({
       events.forEach((event) => window.removeEventListener(event, resetTimer));
     };
   }, [session]);
+
+  useEffect(() => {
+    if (!authedAdmin) return;
+    let timeout: number | undefined;
+    const showSaved = () => {
+      setSaveToast("Cambios guardados");
+      if (timeout) window.clearTimeout(timeout);
+      timeout = window.setTimeout(() => setSaveToast(""), 2200);
+    };
+    window.addEventListener("inmo:updated", showSaved);
+    return () => {
+      if (timeout) window.clearTimeout(timeout);
+      window.removeEventListener("inmo:updated", showSaved);
+    };
+  }, [authedAdmin]);
 
   if (!authedAdmin) {
     if (!mounted) {
@@ -282,44 +358,137 @@ export default function AdminShell({
                 </p>
               </div>
 
-              <form className="grid gap-4" onSubmit={handleLogin}>
-                <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-                  Email
-                  <input
-                    required
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                    placeholder="usuario@connexa.com"
-                  />
-                </label>
-                <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-                  Contraseña
-                  <input
-                    required
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                    placeholder="••••••••"
-                  />
-                </label>
-                {loginError ? <p className="text-sm text-error">{loginError}</p> : null}
-                <button
-                  type="submit"
-                  className="mt-2 w-full rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-on-primary shadow-[0_20px_40px_-25px_rgba(7,22,13,0.6)]"
-                  style={{ color: "var(--color-on-primary)" }}
-                >
-                  Ingresar al panel
-                </button>
-                <Link
-                  href="/"
-                  className="text-center text-xs font-semibold uppercase tracking-widest text-on-surface-variant"
-                >
-                  Volver al front
-                </Link>
-              </form>
+              <AnimatePresence mode="wait">
+                {authStep === "credentials" ? (
+                  <motion.form
+                    key="credentials"
+                    initial={{ opacity: 0, x: 18, filter: "blur(8px)" }}
+                    animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, x: -18, filter: "blur(8px)" }}
+                    transition={{ type: "spring", stiffness: 210, damping: 24 }}
+                    className="grid gap-4"
+                    onSubmit={handleLogin}
+                  >
+                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                      Email
+                      <input
+                        required
+                        type="email"
+                        autoComplete="username"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+                        placeholder="usuario@connexa.com"
+                      />
+                    </label>
+                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                      Contraseña
+                      <input
+                        required
+                        type="password"
+                        autoComplete="current-password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+                        placeholder="••••••••"
+                      />
+                    </label>
+                    {loginError ? (
+                      <motion.p
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-xl bg-error-container px-3 py-2 text-sm text-error"
+                      >
+                        {loginError}
+                      </motion.p>
+                    ) : null}
+                    <button
+                      type="submit"
+                      className="mt-2 w-full rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-on-primary shadow-[0_20px_40px_-25px_rgba(7,22,13,0.6)]"
+                      style={{ color: "var(--color-on-primary)" }}
+                    >
+                      Continuar
+                    </button>
+                    <Link
+                      href="/"
+                      className="text-center text-xs font-semibold uppercase tracking-widest text-on-surface-variant"
+                    >
+                      Volver al front
+                    </Link>
+                  </motion.form>
+                ) : (
+                  <motion.form
+                    key="otp"
+                    initial={{ opacity: 0, x: 18, filter: "blur(8px)" }}
+                    animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, x: -18, filter: "blur(8px)" }}
+                    transition={{ type: "spring", stiffness: 210, damping: 24 }}
+                    className="grid gap-4"
+                    onSubmit={handleOtpSubmit}
+                  >
+                    <div className="rounded-2xl bg-surface-container-low p-4">
+                      <p className="text-xs font-semibold text-primary">
+                        Te enviamos un código a {otpEmail}.
+                      </p>
+                      <p className="mt-1 text-[11px] text-on-surface-variant">
+                        Expira en 10 minutos. Si Resend no está configurado, el código aparece en consola.
+                      </p>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      {otp.map((digit, index) => (
+                        <motion.input
+                          key={index}
+                          data-otp-index={index}
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={digit}
+                          onChange={(event) => handleOtpChange(index, event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Backspace" && !otp[index]) {
+                              document.querySelector<HTMLInputElement>(`[data-otp-index="${index - 1}"]`)?.focus();
+                            }
+                          }}
+                          whileFocus={{ y: -3, scale: 1.04 }}
+                          className="h-12 w-10 rounded-xl border border-outline-variant/40 bg-surface-container-lowest text-center text-lg font-bold text-primary outline-none focus:border-primary sm:h-14 sm:w-12"
+                        />
+                      ))}
+                    </div>
+                    {otpPreviewCode ? (
+                      <p className="rounded-xl bg-primary-fixed px-3 py-2 text-xs font-semibold text-primary">
+                        Modo preview: {otpPreviewCode}
+                      </p>
+                    ) : null}
+                    {loginError ? (
+                      <motion.p
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-xl bg-error-container px-3 py-2 text-sm text-error"
+                      >
+                        {loginError}
+                      </motion.p>
+                    ) : null}
+                    <button
+                      type="submit"
+                      className="mt-2 w-full rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-on-primary"
+                      style={{ color: "var(--color-on-primary)" }}
+                    >
+                      Validar código
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthStep("credentials");
+                        setOtpChallengeId("");
+                        setOtpPreviewCode("");
+                        setLoginError("");
+                      }}
+                      className="text-center text-xs font-semibold uppercase tracking-widest text-on-surface-variant"
+                    >
+                      Cambiar usuario
+                    </button>
+                  </motion.form>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -442,6 +611,20 @@ export default function AdminShell({
         </div>
       </aside>
 
+      <AnimatePresence>
+        {saveToast ? (
+          <motion.div
+            initial={{ opacity: 0, y: -18, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -18, scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 320, damping: 24 }}
+            className="fixed right-5 top-5 z-[90] rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-bold text-emerald-800 shadow-[0_24px_55px_-30px_rgba(16,185,129,0.75)]"
+          >
+            {saveToast}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
       <main className="min-h-screen lg:ml-72">
         <header className="px-6 lg:px-10 py-4 sticky top-0 bg-background/90 backdrop-blur-md z-40 border-b border-outline-variant/10">
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -510,8 +693,8 @@ export default function AdminShell({
                     <button
                       type="button"
                       onClick={() =>
-                        setNotifications((prev) =>
-                          prev.map((item) => ({ ...item, unread: false }))
+                        setReadNotificationIds((prev) =>
+                          Array.from(new Set([...prev, ...notifications.map((item) => item.id)]))
                         )
                       }
                       className="text-[10px] font-bold uppercase tracking-widest text-primary"
@@ -520,7 +703,7 @@ export default function AdminShell({
                     </button>
                   </div>
                   <div className="mt-3 grid gap-2">
-                    {notifications.map((item) => (
+                    {notifications.length ? notifications.map((item) => (
                       <div
                         key={item.id}
                         className={`rounded-xl border border-outline-variant/20 px-3 py-2 text-xs ${
@@ -532,7 +715,11 @@ export default function AdminShell({
                           {item.subtitle}
                         </p>
                       </div>
-                    ))}
+                    )) : (
+                      <p className="rounded-xl bg-surface-container-low px-3 py-3 text-xs text-on-surface-variant">
+                        No hay novedades operativas.
+                      </p>
+                    )}
                   </div>
                 </div>
               ) : null}
@@ -677,8 +864,8 @@ export default function AdminShell({
                 <button
                   type="button"
                   onClick={() =>
-                    setNotifications((prev) =>
-                      prev.map((item) => ({ ...item, unread: false }))
+                    setReadNotificationIds((prev) =>
+                      Array.from(new Set([...prev, ...notifications.map((item) => item.id)]))
                     )
                   }
                   className="text-[10px] font-bold uppercase tracking-widest text-primary"
@@ -687,7 +874,7 @@ export default function AdminShell({
                 </button>
               </div>
               <div className="mt-3 grid gap-2">
-                {notifications.map((item) => (
+                {notifications.length ? notifications.map((item) => (
                   <div
                     key={item.id}
                     className={`rounded-xl border border-outline-variant/20 px-3 py-2 text-xs ${
@@ -699,7 +886,11 @@ export default function AdminShell({
                       {item.subtitle}
                     </p>
                   </div>
-                ))}
+                )) : (
+                  <p className="rounded-xl bg-surface-container-low px-3 py-3 text-xs text-on-surface-variant">
+                    No hay novedades operativas.
+                  </p>
+                )}
               </div>
             </div>
           </div>

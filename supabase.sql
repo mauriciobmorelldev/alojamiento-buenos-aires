@@ -43,6 +43,18 @@ create table if not exists profiles (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists admin_otp_challenges (
+  id text primary key,
+  admin_id text not null references profiles(id) on delete cascade,
+  email text not null,
+  code_hash text not null,
+  attempts integer not null default 0,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_admin_otp_expires_at on admin_otp_challenges(expires_at);
+
 create table if not exists agents (
   id text primary key,
   name text not null,

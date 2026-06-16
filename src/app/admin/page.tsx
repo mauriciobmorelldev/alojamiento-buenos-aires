@@ -54,14 +54,6 @@ export default function AdminDashboardPage() {
   ];
   const maxInventoryValue = Math.max(1, ...inventoryChart.map((item) => item.value));
   const [trendView, setTrendView] = useState<"dia" | "semana" | "mes">("mes");
-  const leadTrendMap = useMemo(
-    () => ({
-      dia: [4, 9, 6, 11, 8, 13, 9, 6, 10, 14, 7, 5],
-      semana: [8, 14, 11, 18, 16, 20, 15, 12, 19, 22, 14, 13],
-      mes: [12, 22, 16, 28, 32, 25, 18, 29, 40, 26, 14, 20],
-    }),
-    []
-  );
   const leadTrends = useMemo(() => {
     const buckets = new Array(12).fill(0);
     const now = new Date();
@@ -86,10 +78,10 @@ export default function AdminDashboardPage() {
         buckets[11 - diff] += 1;
       }
     });
-    const hasData = buckets.some((value) => value > 0);
-    return hasData ? buckets : leadTrendMap[trendView];
-  }, [leadTrendMap, leads, trendView]);
+    return buckets;
+  }, [leads, trendView]);
   const maxLeadTrend = Math.max(...leadTrends, 1);
+  const hasLeadTrendData = leadTrends.some((value) => value > 0);
   const pipelineChart = [
     {
       id: "inquiries",
@@ -176,31 +168,32 @@ export default function AdminDashboardPage() {
     }
   };
   const pendingTasks = [
-    {
-      id: "lead-review",
-      title: "Revisión de lead",
-      subtitle: "Penthouse B • 14:00",
-      icon: "fact_check",
-      tone: "bg-tertiary-fixed",
-      text: "text-on-tertiary-fixed",
-    },
-    {
-      id: "callback",
-      title: "Callback: Elena Rose",
-      subtitle: "Prioridad alta • 16:30",
-      icon: "call",
-      tone: "bg-secondary-fixed",
-      text: "text-on-secondary-fixed",
-    },
-    {
-      id: "shoot",
-      title: "Aprobación de fotos",
-      subtitle: "Lote 23 • Mañana",
-      icon: "photo_camera",
-      tone: "bg-primary-fixed",
-      text: "text-on-primary-fixed",
-    },
-  ];
+    ...leads
+      .filter((lead) => lead.status === "nuevo")
+      .slice(-3)
+      .reverse()
+      .map((lead) => ({
+        id: `lead-${lead.id}`,
+        title: `Responder consulta: ${lead.name}`,
+        subtitle:
+          listings.find((listing) => listing.id === lead.propertyId)?.title ??
+          "Consulta sin propiedad asignada",
+        icon: "fact_check",
+        tone: "bg-tertiary-fixed",
+        text: "text-on-tertiary-fixed",
+      })),
+    ...listings
+      .filter((listing) => listing.status === "pausado")
+      .slice(0, 2)
+      .map((listing) => ({
+        id: `paused-${listing.id}`,
+        title: "Revisar publicación pausada",
+        subtitle: listing.title,
+        icon: "visibility_off",
+        tone: "bg-secondary-fixed",
+        text: "text-on-secondary-fixed",
+      })),
+  ].slice(0, 4);
 
   return (
     <AdminShell
@@ -367,19 +360,26 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="mt-8 flex h-52 items-end gap-3 rounded-2xl bg-surface-container-low p-4">
-            {leadTrends.map((value, index) => {
-              const height = Math.max(14, Math.round((value / maxLeadTrend) * 100));
-              const isActive = index === 6;
-              return (
-                <div
-                  key={`lead-${index}`}
-                  className={`flex-1 rounded-t-lg ${
-                    isActive ? "bg-primary" : "bg-primary-fixed/40"
-                  }`}
-                  style={{ height: `${height}%` }}
-                />
-              );
-            })}
+            {hasLeadTrendData ? (
+              leadTrends.map((value, index) => {
+                const height = Math.max(8, Math.round((value / maxLeadTrend) * 100));
+                const isActive = index === 11;
+                return (
+                  <div
+                    key={`lead-${index}`}
+                    className={`flex-1 rounded-t-lg transition-all duration-500 ${
+                      isActive ? "bg-primary" : "bg-primary-fixed/40"
+                    }`}
+                    style={{ height: `${height}%` }}
+                    title={`${value} leads`}
+                  />
+                );
+              })
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-center text-sm text-on-surface-variant">
+                Todavía no hay leads para graficar.
+              </div>
+            )}
           </div>
         </div>
 
@@ -422,7 +422,7 @@ export default function AdminDashboardPage() {
               </span>
             </div>
             <div className="mt-6 space-y-3">
-              {pendingTasks.map((task) => (
+              {pendingTasks.length ? pendingTasks.map((task) => (
                 <div
                   key={task.id}
                   className="flex items-center gap-4 rounded-2xl bg-surface-container-low p-4"
@@ -441,7 +441,11 @@ export default function AdminDashboardPage() {
                     </p>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <p className="rounded-2xl bg-surface-container-low p-4 text-sm text-on-surface-variant">
+                  No hay tareas operativas pendientes.
+                </p>
+              )}
             </div>
           </div>
         </div>

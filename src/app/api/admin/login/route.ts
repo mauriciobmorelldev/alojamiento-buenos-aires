@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createAdminOtpChallenge } from "@/lib/server/adminOtp";
 import { readInmoState } from "@/lib/server/inmoRepository";
 
 export async function POST(request: Request) {
@@ -22,13 +23,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Invalid credentials" }, { status: 401 });
   }
 
+  const challenge = await createAdminOtpChallenge({
+    adminId: admin.id,
+    email: admin.email,
+    name: admin.name,
+  });
+
   return NextResponse.json({
     ok: true,
-    admin: {
-      id: admin.id,
-      email: admin.email,
-      name: admin.name,
-      role: admin.role,
-    },
+    requiresOtp: true,
+    challenge,
   });
 }

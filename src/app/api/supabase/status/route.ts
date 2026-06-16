@@ -9,6 +9,7 @@ const tables = [
   "platform_settings",
   "roles",
   "profiles",
+  "admin_otp_challenges",
   "agents",
   "clients",
   "properties",

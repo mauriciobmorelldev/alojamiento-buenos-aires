@@ -30,6 +30,9 @@ export default function AdminIntegracionesPage() {
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [emailConfigured, setEmailConfigured] = useState(false);
+  const [emailFrom, setEmailFrom] = useState("");
+  const [testingEmail, setTestingEmail] = useState(false);
 
   const getAdminHeaders = (): Record<string, string> => {
     const adminId = readAdminSession()?.adminId;
@@ -49,6 +52,16 @@ export default function AdminIntegracionesPage() {
       if (response.ok && payload?.settings) {
         setSettings(payload.settings);
       }
+      const emailResponse = await fetch("/api/email/test", {
+        cache: "no-store",
+        headers: getAdminHeaders(),
+      });
+      const emailPayload = await emailResponse.json().catch(() => null) as {
+        configured?: boolean;
+        from?: string;
+      } | null;
+      setEmailConfigured(Boolean(emailPayload?.configured));
+      setEmailFrom(emailPayload?.from ?? "");
     };
     void loadSettings();
   }, []);
@@ -143,6 +156,31 @@ export default function AdminIntegracionesPage() {
       setError(syncError instanceof Error ? syncError.message : "No se pudo sincronizar Tokko.");
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleEmailTest = async () => {
+    setTestingEmail(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/email/test", {
+        method: "POST",
+        headers: getAdminHeaders(),
+      });
+      const payload = await response.json().catch(() => null) as {
+        ok?: boolean;
+        reason?: string;
+        provider?: string;
+      } | null;
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.reason || "No se pudo enviar el email de prueba.");
+      }
+      setNotice(`Email de prueba enviado por ${payload.provider}.`);
+    } catch (emailError) {
+      setError(emailError instanceof Error ? emailError.message : "No se pudo probar email.");
+    } finally {
+      setTestingEmail(false);
     }
   };
 
@@ -280,6 +318,23 @@ export default function AdminIntegracionesPage() {
                   ? new Date(settings.lastTestedAt).toLocaleString("es-AR")
                   : "Sin pruebas registradas"}
               </p>
+            </div>
+            <div className="rounded-2xl bg-surface-container-low p-4">
+              <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Email transaccional</p>
+              <p className="mt-2 text-sm font-bold text-primary">
+                {emailConfigured ? "Resend configurado" : "Pendiente RESEND_API_KEY"}
+              </p>
+              {emailFrom ? (
+                <p className="mt-1 break-all text-xs text-on-surface-variant">{emailFrom}</p>
+              ) : null}
+              <button
+                type="button"
+                onClick={handleEmailTest}
+                disabled={testingEmail || !emailConfigured}
+                className="mt-4 rounded-full border border-outline-variant/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary disabled:opacity-40"
+              >
+                {testingEmail ? "Enviando" : "Enviar prueba"}
+              </button>
             </div>
           </div>
           <p className="mt-6 text-sm leading-relaxed text-on-surface-variant">
