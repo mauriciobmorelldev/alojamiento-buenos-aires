@@ -121,6 +121,39 @@ const extractAttributeValue = (item: TokkoRemoteProperty, code: string) => {
   return match?.value;
 };
 
+const extractDescription = (item: TokkoRemoteProperty) => {
+  const direct = firstString(
+    item.description,
+    item.description_only,
+    item.description_es,
+    item.description_es_ar,
+    item.publication_description,
+    item.rich_description,
+    item.web_description,
+    item.portal_description,
+    item.long_description,
+    item.observations,
+    item.publication_text
+  );
+  if (direct) return cleanDescription(direct);
+
+  const attributesDescription = firstString(
+    extractAttributeValue(item, "description"),
+    extractAttributeValue(item, "publication_description"),
+    extractAttributeValue(item, "web_description")
+  );
+  if (attributesDescription) return cleanDescription(attributesDescription);
+
+  const customTags = asArray(item.custom_tags);
+  const tagDescription = customTags
+    .map((tag) => {
+      const record = asRecord(tag);
+      return firstString(record.description, record.text, record.value);
+    })
+    .find(Boolean);
+  return cleanDescription(tagDescription ?? "");
+};
+
 const extractNeighborhood = (item: TokkoRemoteProperty) => {
   const location = asRecord(item.location);
   return firstString(
@@ -143,15 +176,7 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
     extractAttributeValue(item, "total_surface"),
     extractAttributeValue(item, "roofed_surface")
   );
-  const description = cleanDescription(
-    firstString(
-      item.description,
-      item.publication_description,
-      item.rich_description,
-      item.web_description,
-      item.portal_description
-    )
-  );
+  const description = extractDescription(item);
 
   return {
     id: `tokko-${id}`,

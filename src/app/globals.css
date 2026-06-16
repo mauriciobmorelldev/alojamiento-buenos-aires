@@ -193,17 +193,6 @@ body {
   }
 }
 
-@keyframes build_stick {
-  from {
-    opacity: 0.35;
-    transform: scaleX(0.35);
-  }
-  to {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-}
-
 .ghost-border {
   border: 1px solid rgba(47, 93, 161, 0.14);
 }

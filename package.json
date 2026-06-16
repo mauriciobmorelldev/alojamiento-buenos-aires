@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@lottiefiles/dotlottie-react": "^0.19.4",
     "@supabase/supabase-js": "^2.107.0",
     "jspdf": "^4.2.1",
     "motion": "^12.38.0",

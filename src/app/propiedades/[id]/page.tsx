@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
 import { propertyTypeLabels, type FilterGroup } from "@/lib/inmoData";
@@ -33,16 +34,14 @@ const fallbackImages = [
 const BuildingHouseLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background px-8 text-primary">
     <div className="text-center">
-      <div className="relative mx-auto h-32 w-40">
-        <span className="absolute left-8 top-16 h-1 w-24 origin-left animate-[build_stick_0.8s_ease-in-out_infinite_alternate] rounded-full bg-primary" />
-        <span className="absolute left-8 top-16 h-1 w-20 origin-left -rotate-45 animate-[build_stick_0.9s_ease-in-out_0.1s_infinite_alternate] rounded-full bg-primary" />
-        <span className="absolute right-8 top-16 h-1 w-20 origin-right rotate-45 animate-[build_stick_0.9s_ease-in-out_0.18s_infinite_alternate] rounded-full bg-primary" />
-        <span className="absolute left-9 top-[4.25rem] h-16 w-1 origin-top animate-[build_stick_0.85s_ease-in-out_0.24s_infinite_alternate] rounded-full bg-primary" />
-        <span className="absolute right-9 top-[4.25rem] h-16 w-1 origin-top animate-[build_stick_0.85s_ease-in-out_0.3s_infinite_alternate] rounded-full bg-primary" />
-        <span className="absolute bottom-0 left-14 h-10 w-8 origin-bottom animate-[build_stick_0.9s_ease-in-out_0.38s_infinite_alternate] rounded-t-lg border-4 border-primary border-b-0" />
-        <span className="absolute bottom-5 right-14 h-7 w-7 origin-bottom animate-[build_stick_0.9s_ease-in-out_0.46s_infinite_alternate] rounded border-4 border-primary" />
+      <div className="mx-auto h-56 w-56">
+        <DotLottieReact
+          src="https://lottie.host/fb1730d2-9648-4008-ba55-f8a989c5e15e/E9ZNH6CJo7.lottie"
+          loop
+          autoplay
+        />
       </div>
-      <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+      <p className="mt-3 text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">
         Construyendo ficha
       </p>
       <p className="mt-2 text-sm text-on-surface-variant">
@@ -571,7 +570,9 @@ export default function DetallePropiedadPage() {
               </h2>
               <div className="prose prose-stone max-w-none space-y-4 text-on-surface-variant">
                 <p>{property.description || "Descripción pendiente."}</p>
-                <p>{property.highlight}</p>
+                {property.highlight && property.highlight !== "Sincronizada desde Tokko" ? (
+                  <p>{property.highlight}</p>
+                ) : null}
               </div>
             </div>
 
