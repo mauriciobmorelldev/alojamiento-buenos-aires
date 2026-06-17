@@ -274,7 +274,7 @@ export default function HomeStitch() {
               variants={sectionReveal}
               className="mt-8 max-w-5xl rounded-[2rem] bg-surface-container-lowest/95 p-3 shadow-[0_40px_70px_-24px_rgba(27,54,93,0.5)] backdrop-blur sm:mt-12"
             >
-              <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_1.65fr_auto]">
+              <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_auto]">
                 <div className="rounded-xl bg-surface-container-low p-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">
                     Propiedades
@@ -294,14 +294,6 @@ export default function HomeStitch() {
                   <p className="mt-2 text-sm font-bold leading-6 text-primary">
                     Guardá y compará
                   </p>
-                </div>
-                <div>
-                  <Link
-                    href="/propiedades"
-                    className="flex min-h-14 items-center justify-center rounded-2xl bg-primary-fixed px-6 py-3 text-center text-sm font-bold text-primary shadow-[0_18px_35px_-28px_rgba(255,243,194,0.8)]"
-                  >
-                    Propiedades
-                  </Link>
                 </div>
                 <motion.div whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }}>
                   <Link

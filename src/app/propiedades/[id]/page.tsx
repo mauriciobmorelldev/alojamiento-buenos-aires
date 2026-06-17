@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
@@ -30,6 +30,126 @@ const fallbackImages = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDI0K-3EhAsC26dD0_BayXjOCzeNuH20nxavwc4HLYyK1W8lmuyKoiNzSfyrjyS-T-oTiWd1HAvTSQG4R1JQrUZSjvWhWhLPKIErJI1sx8gjlWrwQumL4CKJ1-SJnVea2epp1jyuZ-pbSSiN09GVnDH2NouRR0pr7_1cvzrxCLdkp33_zUYVry2zh716dnQRPQansaLiUNHVZxz8kvq-qEq35qC1ciJztFsnuiUcECmtlHSgSDt4b9Fgu9NaPipKH8mp-uWLNphw",
   "https://lh3.googleusercontent.com/aida-public/AB6AXuBPwVzgXPJm0swtY64CQbdnTef3BTgOiLpJyMC05lfsZ3vahhPB3JlrNwGPyzKnqC4edrrCpfXf0gRe1MltU-8HvUvqm9U62TxGf-TMbEaq4MuXzJyzMo0ql2RbO4ma5EOI1My4_3oXEEbpcsuJMScmmgFOOonN8dZHI-fiOJ0rWkRBY1c4Z8TYUTMAOkYdFP7L3FNk8qMiO4iJyOxj_PHaGnpiGspDEtM2oLtCXNIPPp8HPKPQjDZNpujgpXVREeeTMApubcs4lg",
 ];
+
+const isSectionTitle = (line: string) => /:\s*$/.test(line) && line.length <= 80;
+
+const isListLikeLine = (line: string) =>
+  line.length <= 85 &&
+  !/[.!?]$/.test(line) &&
+  !/^\d+\s*(amb|ambiente|m²|m2)/i.test(line);
+
+const PropertyDescription = ({
+  description,
+  highlight,
+}: {
+  description: string;
+  highlight?: string;
+}) => {
+  const lines = description
+    .replace(/\r/g, "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length) {
+    return (
+      <p className="rounded-2xl bg-surface-container-low p-5 text-sm leading-7 text-on-surface-variant">
+        Descripción pendiente.
+      </p>
+    );
+  }
+
+  const elements: ReactNode[] = [];
+  let listItems: string[] = [];
+  let lastWasHeading = false;
+
+  const flushList = () => {
+    if (!listItems.length) return;
+    elements.push(
+      <ul
+        key={`list-${elements.length}`}
+        className="grid gap-2 rounded-2xl bg-surface-container-low p-5 text-sm text-on-surface-variant sm:grid-cols-2"
+      >
+        {listItems.map((item, itemIndex) => (
+          <li key={`${item}-${itemIndex}`} className="flex gap-2 leading-6">
+            <span className="material-symbols-outlined mt-0.5 text-base text-primary">
+              check_circle
+            </span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    );
+    listItems = [];
+  };
+
+  lines.forEach((line, index) => {
+    if (index === 0 && line === line.toUpperCase() && line.length <= 40) {
+      flushList();
+      elements.push(
+        <p
+          key={`eyebrow-${index}`}
+          className="text-xs font-bold uppercase tracking-[0.28em] text-primary"
+        >
+          {line}
+        </p>
+      );
+      lastWasHeading = false;
+      return;
+    }
+
+    if (index === 1 && elements.length === 1 && line.length <= 120) {
+      flushList();
+      elements.push(
+        <h3 key={`lead-${index}`} className="text-xl font-headline font-bold text-primary">
+          {line}
+        </h3>
+      );
+      lastWasHeading = false;
+      return;
+    }
+
+    if (isSectionTitle(line)) {
+      flushList();
+      elements.push(
+        <h3
+          key={`section-${index}`}
+          className="pt-3 text-lg font-headline font-bold text-primary"
+        >
+          {line.replace(/:\s*$/, "")}
+        </h3>
+      );
+      lastWasHeading = true;
+      return;
+    }
+
+    if (lastWasHeading && isListLikeLine(line)) {
+      listItems.push(line);
+      return;
+    }
+
+    flushList();
+    elements.push(
+      <p key={`paragraph-${index}`} className="text-base leading-8 text-on-surface-variant">
+        {line}
+      </p>
+    );
+    lastWasHeading = false;
+  });
+
+  flushList();
+
+  return (
+    <div className="space-y-5">
+      {elements}
+      {highlight && highlight !== "Sincronizada desde Tokko" ? (
+        <p className="rounded-2xl bg-surface-container-low p-5 text-sm leading-7 text-on-surface-variant">
+          {highlight}
+        </p>
+      ) : null}
+    </div>
+  );
+};
 
 const BuildingHouseLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background px-8 text-primary">
@@ -523,12 +643,10 @@ export default function DetallePropiedadPage() {
               <h2 className="text-2xl font-headline font-bold tracking-tight">
                 Sobre esta propiedad
               </h2>
-              <div className="prose prose-stone max-w-none space-y-4 text-on-surface-variant">
-                <p>{property.description || "Descripción pendiente."}</p>
-                {property.highlight && property.highlight !== "Sincronizada desde Tokko" ? (
-                  <p>{property.highlight}</p>
-                ) : null}
-              </div>
+              <PropertyDescription
+                description={property.description}
+                highlight={property.highlight}
+              />
             </div>
 
             {attributes.length ? (
