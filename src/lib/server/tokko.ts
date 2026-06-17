@@ -7,7 +7,8 @@ import {
 } from "@/lib/supabase/server";
 
 const SETTINGS_ID = "default";
-const DEFAULT_TOKKO_BASE_URL = "https://www.tokkobroker.com/api/v1";
+const LEGACY_TOKKO_BASE_URL = "https://www.tokkobroker.com/api/v1";
+const DEFAULT_TOKKO_BASE_URL = "https://www.tokkobroker.com/portals/simple_portal/api/v1/freeportals/";
 
 export type TokkoSettings = {
   baseUrl: string;
@@ -287,10 +288,11 @@ const createLog = ({
 
 const normalizeSettings = (value: unknown): TokkoSettings => {
   const config = asRecord(value);
+  const baseUrl = firstString(config.baseUrl, config.base_url, process.env.TOKKO_API_BASE_URL);
   return {
-    baseUrl:
-      firstString(config.baseUrl, config.base_url, process.env.TOKKO_API_BASE_URL) ||
-      DEFAULT_TOKKO_BASE_URL,
+    baseUrl: !baseUrl || baseUrl.replace(/\/$/, "") === LEGACY_TOKKO_BASE_URL
+      ? DEFAULT_TOKKO_BASE_URL
+      : baseUrl,
     apiKey: firstString(config.apiKey, config.api_key, process.env.TOKKO_API_KEY) || undefined,
     syncSecret:
       firstString(config.syncSecret, config.sync_secret, process.env.TOKKO_SYNC_SECRET) ||
@@ -460,70 +462,6 @@ const fetchTokkoProperties = async (settings: TokkoSettings, limit = 50) => {
   return hydrateTokkoPropertyDetails(settings, items.map((item) => asRecord(item)));
 };
 
-export const fetchTokkoRawPreview = async ({
-  limit = 5,
-  offset = 0,
-}: {
-  limit?: number;
-  offset?: number;
-}) => {
-  const settings = await readTokkoSettings();
-  if (!settings.apiKey) {
-    throw new Error("Falta API key de Tokko.");
-  }
-
-  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 25);
-  const safeOffset = Math.max(Math.trunc(offset), 0);
-  const url = buildTokkoPropertyUrl(settings, safeLimit, safeOffset);
-  const response = await fetch(url, {
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
-  const payload = await response.json().catch(() => null) as unknown;
-  if (!response.ok) {
-    throw new Error(`Tokko respondió ${response.status}`);
-  }
-
-  const record = asRecord(payload);
-  const items = asArray(record.objects ?? record.properties ?? record.results ?? payload)
-    .map((item) => asRecord(item));
-  const hydratedItems = await hydrateTokkoPropertyDetails(settings, items);
-  const urlWithoutKey = new URL(url);
-  urlWithoutKey.searchParams.delete("key");
-  urlWithoutKey.searchParams.delete("api_key");
-
-  return {
-    request: {
-      url: urlWithoutKey.toString(),
-      limit: safeLimit,
-      offset: safeOffset,
-    },
-    meta: record.meta ?? null,
-    rawPayload: payload,
-    rawKeys: items[0] ? Object.keys(items[0]).sort() : [],
-    normalizedPreview: hydratedItems.slice(0, safeLimit).map((item) => {
-      const property = normalizeTokkoProperty(item);
-      return {
-        id: property.id,
-        title: property.title,
-        status: property.status,
-        price: property.price,
-        currency: property.currency,
-        priceUnit: property.priceUnit,
-        neighborhood: property.neighborhood,
-        rooms: property.rooms,
-        area: property.area,
-        images: property.images.length,
-        descriptionLength: property.description.length,
-        descriptionPreview:
-          property.description.length > 260
-            ? `${property.description.slice(0, 260).trim()}...`
-            : property.description,
-      };
-    }),
-  };
-};
-
 const fetchAllTokkoProperties = async (settings: TokkoSettings) => {
   if (!settings.apiKey) {
     throw new Error("Falta API key de Tokko.");
@@ -616,7 +554,7 @@ export const syncTokkoProperties = async (state: InmoState): Promise<InmoState> 
     const imported = (await fetchAllTokkoProperties(settings)).map(normalizeTokkoProperty);
     const importedIds = new Set(imported.map((property) => property.id));
     const localWithoutImported = state.listings.filter(
-      (property) => !importedIds.has(property.id)
+      (property) => !property.id.startsWith("tokko-") && !importedIds.has(property.id)
     );
 
     return {

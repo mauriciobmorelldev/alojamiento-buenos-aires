@@ -436,6 +436,36 @@ export const upsertListing = async (property: Listing) => {
   return { source: "supabase" as const };
 };
 
+export const deleteObsoleteTokkoListings = async (keepIds: string[]) => {
+  const supabase = getSupabaseWriteClient();
+  if (!supabase || !isSupabaseWriteConfigured()) {
+    return { source: "fallback" as const };
+  }
+
+  const keepSet = new Set(keepIds);
+  const existing = await supabase
+    .from("properties")
+    .select("id")
+    .like("id", "tokko-%");
+  assertSupabaseOk(existing, "select obsolete tokko properties");
+
+  const obsoleteIds = ensureArray(existing.data)
+    .map((property) => property.id)
+    .filter((id) => typeof id === "string" && !keepSet.has(id));
+
+  for (let index = 0; index < obsoleteIds.length; index += 100) {
+    const chunk = obsoleteIds.slice(index, index + 100);
+    if (chunk.length) {
+      assertSupabaseOk(
+        await supabase.from("properties").delete().in("id", chunk),
+        "delete obsolete tokko properties"
+      );
+    }
+  }
+
+  return { source: "supabase" as const, deletedCount: obsoleteIds.length };
+};
+
 export const deleteListing = async (propertyId: string) => {
   const supabase = getSupabaseWriteClient();
   if (!supabase || !isSupabaseWriteConfigured()) {

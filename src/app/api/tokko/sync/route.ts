@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { readInmoState, writeInmoState } from "@/lib/server/inmoRepository";
+import {
+  deleteObsoleteTokkoListings,
+  readInmoState,
+  writeInmoState,
+} from "@/lib/server/inmoRepository";
 import { requireOwnerFromRequest } from "@/lib/server/adminAuth";
 import { readTokkoSettings, syncTokkoProperties } from "@/lib/server/tokko";
 
@@ -15,6 +19,11 @@ export async function POST(request: Request) {
   const { data } = await readInmoState();
   const nextState = await syncTokkoProperties(data);
   await writeInmoState(nextState);
+  await deleteObsoleteTokkoListings(
+    nextState.listings
+      .filter((property) => property.id.startsWith("tokko-"))
+      .map((property) => property.id)
+  );
   return NextResponse.json({
     ok: true,
     log: nextState.tokkoSyncLogs[0] ?? null,
