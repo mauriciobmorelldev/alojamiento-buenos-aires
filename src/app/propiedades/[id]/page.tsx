@@ -183,6 +183,7 @@ export default function DetallePropiedadPage() {
     propertyFavorites,
     filterGroups,
     theme,
+    adminUsers,
   } = state;
   const property = listings.find((item) => item.id === propertyId);
   const [activeImage, setActiveImage] = useState(0);
@@ -374,6 +375,13 @@ export default function DetallePropiedadPage() {
       )
   );
   const availability = getAvailability(property.status);
+  const isFromCollaborator = Boolean(
+    property.createdByAdminId &&
+      adminUsers.some(
+        (admin) =>
+          admin.id === property.createdByAdminId && admin.role === "colaborador"
+      )
+  );
 
   const toggleFavorite = () => {
     if (!client) {
@@ -604,6 +612,11 @@ export default function DetallePropiedadPage() {
                       <span className={`h-1.5 w-1.5 rounded-full ${availability.dotClassName}`} />
                       {availability.label}
                     </span>
+                    {isFromCollaborator ? (
+                      <span className="inline-flex items-center rounded-full border border-primary/15 bg-surface-container-high px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                        Colaborador
+                      </span>
+                    ) : null}
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3">

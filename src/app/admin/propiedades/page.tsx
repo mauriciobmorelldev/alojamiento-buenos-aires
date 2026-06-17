@@ -66,6 +66,8 @@ const setPinnedHomeAttribute = (
   pinned_home: pinned ? ["true"] : [],
 });
 
+const PAGE_SIZE = 20;
+
 export default function AdminPropertiesPage() {
   const { state, updateState } = useInmoStore();
   const { listings, agents, filterGroups, adminUsers } = state;
@@ -93,6 +95,12 @@ export default function AdminPropertiesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [successNotice, setSuccessNotice] = useState("");
   const [mediaNotice, setMediaNotice] = useState("");
+  const [inventoryQuery, setInventoryQuery] = useState("");
+  const [inventoryStatus, setInventoryStatus] = useState<PropertyStatus | "all">("all");
+  const [inventoryOperation, setInventoryOperation] = useState<PriceUnit | "all">("all");
+  const [inventoryPinned, setInventoryPinned] = useState<"all" | "pinned" | "unpinned">("all");
+  const [inventorySource, setInventorySource] = useState<"all" | "tokko" | "manual">("all");
+  const [inventoryPage, setInventoryPage] = useState(1);
   const imageFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -116,6 +124,47 @@ export default function AdminPropertiesPage() {
   const availableCount = visibleListings.filter((item) => item.status === "disponible").length;
   const reservedCount = visibleListings.filter((item) => item.status === "reservado").length;
   const soldCount = visibleListings.filter((item) => item.status === "vendido").length;
+  const normalizedQuery = inventoryQuery.trim().toLowerCase();
+  const filteredInventory = visibleListings.filter((listing) => {
+    const tokkoSku = getTokkoSku(listing);
+    const isTokko = listing.id.startsWith("tokko-") || Boolean(tokkoSku);
+    const matchesQuery =
+      !normalizedQuery ||
+      [
+        listing.title,
+        listing.neighborhood,
+        listing.description,
+        listing.id,
+        tokkoSku,
+        listing.attributes.reference_code?.[0] ?? "",
+        listing.attributes.publication_id?.[0] ?? "",
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery);
+    const matchesStatus = inventoryStatus === "all" || listing.status === inventoryStatus;
+    const matchesOperation =
+      inventoryOperation === "all" || listing.priceUnit === inventoryOperation;
+    const matchesPinned =
+      inventoryPinned === "all" ||
+      (inventoryPinned === "pinned"
+        ? isPinnedHome(listing.attributes)
+        : !isPinnedHome(listing.attributes));
+    const matchesSource =
+      inventorySource === "all" ||
+      (inventorySource === "tokko" ? isTokko : !isTokko);
+    return matchesQuery && matchesStatus && matchesOperation && matchesPinned && matchesSource;
+  });
+  const totalInventoryPages = Math.max(1, Math.ceil(filteredInventory.length / PAGE_SIZE));
+  const safeInventoryPage = Math.min(inventoryPage, totalInventoryPages);
+  const paginatedInventory = filteredInventory.slice(
+    (safeInventoryPage - 1) * PAGE_SIZE,
+    safeInventoryPage * PAGE_SIZE
+  );
+
+  useEffect(() => {
+    setInventoryPage(1);
+  }, [inventoryOperation, inventoryPinned, inventoryQuery, inventorySource, inventoryStatus]);
 
   const openNewListingForm = () => {
     setEditingListingId(null);
@@ -231,6 +280,10 @@ export default function AdminPropertiesPage() {
   const handleTogglePinnedHome = async (listing: Listing) => {
     if (!authedAdmin) {
       setFormError("Iniciá sesión para destacar propiedades.");
+      return;
+    }
+    if (!isOwner) {
+      setFormError("Solo el owner puede fijar propiedades en el inicio.");
       return;
     }
     const isOwnListing =
@@ -647,6 +700,7 @@ export default function AdminPropertiesPage() {
             ) : null}
           </div>
 
+          {isOwner ? (
           <label className="flex items-center justify-between gap-4 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4 text-sm font-semibold text-primary">
             <span>
               Fijar en el inicio
@@ -669,6 +723,7 @@ export default function AdminPropertiesPage() {
               className="h-5 w-5"
             />
           </label>
+          ) : null}
 
           <textarea
             className="min-h-[120px] rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
@@ -913,11 +968,112 @@ export default function AdminPropertiesPage() {
             : "Estas propiedades ya se ven en el front y en resultados de búsqueda."}
         </p>
 
+        <div className="mt-6 grid gap-3 rounded-3xl border border-outline-variant/20 bg-surface-container-low p-4 lg:grid-cols-[1.7fr_1fr_1fr_1fr_1fr]">
+          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+            Buscar
+            <input
+              value={inventoryQuery}
+              onChange={(event) => setInventoryQuery(event.target.value)}
+              placeholder="Título, barrio, SKU o código"
+              className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold normal-case tracking-normal text-on-surface focus:border-primary focus:outline-none"
+            />
+          </label>
+          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+            Estado
+            <select
+              value={inventoryStatus}
+              onChange={(event) =>
+                setInventoryStatus(event.target.value as PropertyStatus | "all")
+              }
+              className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-3 text-sm font-semibold normal-case tracking-normal text-on-surface focus:border-primary focus:outline-none"
+            >
+              <option value="all">Todos</option>
+              {statusOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+            Operación
+            <select
+              value={inventoryOperation}
+              onChange={(event) =>
+                setInventoryOperation(event.target.value as PriceUnit | "all")
+              }
+              className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-3 text-sm font-semibold normal-case tracking-normal text-on-surface focus:border-primary focus:outline-none"
+            >
+              <option value="all">Todas</option>
+              {priceUnitOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+            Inicio
+            <select
+              value={inventoryPinned}
+              onChange={(event) =>
+                setInventoryPinned(event.target.value as typeof inventoryPinned)
+              }
+              className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-3 text-sm font-semibold normal-case tracking-normal text-on-surface focus:border-primary focus:outline-none"
+            >
+              <option value="all">Todas</option>
+              {isOwner ? <option value="pinned">Fijadas</option> : null}
+              {isOwner ? <option value="unpinned">No fijadas</option> : null}
+            </select>
+          </label>
+          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+            Origen
+            <select
+              value={inventorySource}
+              onChange={(event) =>
+                setInventorySource(event.target.value as typeof inventorySource)
+              }
+              className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-3 text-sm font-semibold normal-case tracking-normal text-on-surface focus:border-primary focus:outline-none"
+            >
+              <option value="all">Todos</option>
+              <option value="tokko">Tokko</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-on-surface-variant">
+          <p>
+            Mostrando {paginatedInventory.length} de {filteredInventory.length} resultados
+            {filteredInventory.length !== visibleListings.length
+              ? ` (${visibleListings.length} totales)`
+              : ""}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setInventoryQuery("");
+              setInventoryStatus("all");
+              setInventoryOperation("all");
+              setInventoryPinned("all");
+              setInventorySource("all");
+              setInventoryPage(1);
+            }}
+            className="rounded-full border border-outline-variant/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
         <div className="mt-6 grid gap-4">
           {visibleListings.length === 0 ? (
             <p className="text-sm text-on-surface-variant">Todavía no hay propiedades cargadas.</p>
+          ) : filteredInventory.length === 0 ? (
+            <p className="rounded-2xl bg-surface-container-low p-6 text-sm text-on-surface-variant">
+              No hay propiedades que coincidan con esos filtros.
+            </p>
           ) : (
-            visibleListings.map((listing) => {
+            paginatedInventory.map((listing) => {
               const tokkoSku = getTokkoSku(listing);
               const pinnedHome = isPinnedHome(listing.attributes);
               return (
@@ -945,13 +1101,15 @@ export default function AdminPropertiesPage() {
                   ) : null}
                 </div>
                 <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest">
-                  <button
-                    type="button"
-                    onClick={() => handleTogglePinnedHome(listing)}
-                    className={pinnedHome ? "text-primary" : "text-on-surface-variant"}
-                  >
-                    {pinnedHome ? "Quitar inicio" : "Fijar inicio"}
-                  </button>
+                  {isOwner ? (
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePinnedHome(listing)}
+                      className={pinnedHome ? "text-primary" : "text-on-surface-variant"}
+                    >
+                      {pinnedHome ? "Quitar inicio" : "Fijar inicio"}
+                    </button>
+                  ) : null}
                   <Link
                     href={`/propiedades/${listing.id}`}
                     target="_blank"
@@ -980,6 +1138,49 @@ export default function AdminPropertiesPage() {
             })
           )}
         </div>
+
+        {filteredInventory.length > PAGE_SIZE ? (
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-surface-container-low p-3">
+            <p className="text-xs font-semibold text-on-surface-variant">
+              Página {safeInventoryPage} de {totalInventoryPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setInventoryPage(1)}
+                disabled={safeInventoryPage === 1}
+                className="rounded-full border border-outline-variant/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-primary disabled:opacity-40"
+              >
+                Primero
+              </button>
+              <button
+                type="button"
+                onClick={() => setInventoryPage((page) => Math.max(1, page - 1))}
+                disabled={safeInventoryPage === 1}
+                className="rounded-full border border-outline-variant/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-primary disabled:opacity-40"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                onClick={() => setInventoryPage((page) => Math.min(totalInventoryPages, page + 1))}
+                disabled={safeInventoryPage === totalInventoryPages}
+                className="rounded-full bg-primary px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-on-primary disabled:opacity-40"
+                style={{ color: "var(--color-on-primary)" }}
+              >
+                Siguiente
+              </button>
+              <button
+                type="button"
+                onClick={() => setInventoryPage(totalInventoryPages)}
+                disabled={safeInventoryPage === totalInventoryPages}
+                className="rounded-full border border-outline-variant/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-primary disabled:opacity-40"
+              >
+                Último
+              </button>
+            </div>
+          </div>
+        ) : null}
       </section>
     </AdminShell>
   );

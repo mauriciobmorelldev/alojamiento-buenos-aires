@@ -115,6 +115,26 @@ const drawLimitedWrappedText = (
   };
 };
 
+const getOperationLabel = (priceUnit: Listing["priceUnit"], mode: "short" | "long" = "long") => {
+  if (priceUnit === "mensual") return mode === "short" ? "Alquiler" : "Alquiler mensual";
+  if (priceUnit === "noche") return mode === "short" ? "Temporario" : "Alquiler temporario";
+  return "Venta";
+};
+
+const fitText = (
+  doc: import("jspdf").jsPDF,
+  value: string,
+  maxWidth: number
+) => {
+  const clean = value.trim();
+  if (doc.getTextWidth(clean) <= maxWidth) return clean;
+  let next = clean;
+  while (next.length > 4 && doc.getTextWidth(`${next}...`) > maxWidth) {
+    next = next.slice(0, -1);
+  }
+  return `${next.trim()}...`;
+};
+
 const drawOverflowTextPages = (
   doc: import("jspdf").jsPDF,
   lines: string[],
@@ -218,7 +238,8 @@ const drawInfoCard = (
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.2);
   doc.setTextColor(primary.r, primary.g, primary.b);
-  doc.text(value, x + 5, y + 16, { maxWidth: width - 10 });
+  const lines = (doc.splitTextToSize(value, width - 10) as string[]).slice(0, 2);
+  doc.text(lines, x + 5, y + 15, { maxWidth: width - 10 });
 };
 
 const drawTextLink = (
@@ -273,6 +294,8 @@ export const generatePropertyPdf = async ({
     : "";
 
   const price = formatPrice(property.price, property.priceUnit, property.currency);
+  const operationLabel = getOperationLabel(property.priceUnit);
+  const operationShortLabel = getOperationLabel(property.priceUnit, "short");
 
   doc.setFillColor(252, 250, 245);
   doc.rect(0, 0, pageWidth, pageHeight, "F");
@@ -291,39 +314,45 @@ export const generatePropertyPdf = async ({
   doc.text(propertyTypeLabels[property.type].toUpperCase(), margin, 38);
   doc.setFontSize(25);
   doc.setTextColor(primary.r, primary.g, primary.b);
-  doc.text(doc.splitTextToSize(property.title, 122), margin, 51);
+  const titleLines = (doc.splitTextToSize(property.title, 112) as string[]).slice(0, 3);
+  doc.text(titleLines, margin, 51);
+  const titleBottomY = 51 + Math.max(titleLines.length - 1, 0) * 10;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(94, 90, 82);
-  doc.text(property.neighborhood, margin, 71);
+  const neighborhoodY = Math.max(72, titleBottomY + 9);
+  doc.text(fitText(doc, property.neighborhood, 105), margin, neighborhoodY);
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
+  doc.setFontSize(price.length > 16 ? 12 : 15);
   doc.setTextColor(primary.r, primary.g, primary.b);
-  doc.text(price, pageWidth - margin, 61, { align: "right" });
+  doc.text(fitText(doc, price, 54), pageWidth - margin, 52, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(94, 90, 82);
+  doc.text(operationLabel.toUpperCase(), pageWidth - margin, 60, { align: "right" });
+
+  const imageY = Math.max(88, neighborhoodY + 13);
+  const imageHeight = Math.max(100, 208 - imageY);
 
   if (coverImage) {
-    doc.addImage(coverImage, "JPEG", margin, 84, pageWidth - margin * 2, 124);
+    doc.addImage(coverImage, "JPEG", margin, imageY, pageWidth - margin * 2, imageHeight);
     doc.setDrawColor(230, 200, 143);
     doc.setLineWidth(0.45);
-    doc.rect(margin, 84, pageWidth - margin * 2, 124, "S");
+    doc.rect(margin, imageY, pageWidth - margin * 2, imageHeight, "S");
   } else {
     doc.setFillColor(243, 239, 230);
-    doc.rect(margin, 84, pageWidth - margin * 2, 124, "F");
+    doc.rect(margin, imageY, pageWidth - margin * 2, imageHeight, "F");
     doc.setTextColor(primary.r, primary.g, primary.b);
     doc.setFontSize(12);
-    doc.text("Imagen no disponible", pageWidth / 2, 148, { align: "center" });
+    doc.text("Imagen no disponible", pageWidth / 2, imageY + imageHeight / 2, { align: "center" });
   }
 
   const specY = 220;
   drawInfoCard(
     doc,
     "Operacion",
-    property.priceUnit === "venta"
-      ? "Venta"
-      : property.priceUnit === "mensual"
-        ? "Alquiler"
-        : "Temporario",
+    operationShortLabel,
     margin,
     specY,
     42,
@@ -398,34 +427,56 @@ export const generatePropertyPdf = async ({
   }
 
   const sideX = 138;
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(sideX, 38, pageWidth - sideX - margin, 86, 4, 4, "F");
-  doc.setDrawColor(230, 200, 143);
-  doc.roundedRect(sideX, 38, pageWidth - sideX - margin, 86, 4, 4, "S");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(primary.r, primary.g, primary.b);
-  doc.text("Ficha tecnica", sideX + 7, 49);
-
   const details = [
     ["Precio", price],
-    ["Operacion", property.priceUnit === "venta" ? "Venta" : property.priceUnit === "mensual" ? "Alquiler mensual" : "Alquiler temporario"],
+    ["Operacion", operationLabel],
     ["Barrio", property.neighborhood],
     ["Tipo", propertyTypeLabels[property.type]],
     ["Ambientes", String(property.rooms)],
     ["Superficie", `${property.area} m2`],
     ["Disponibilidad", availability.label],
   ];
-  details.forEach(([label, value], index) => {
-    const rowY = 61 + index * 9;
+  const sideWidth = pageWidth - sideX - margin;
+  const valueMaxWidth = 38;
+  const detailRows = details.map(([label, value]) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.6);
+    const lines = (doc.splitTextToSize(value, valueMaxWidth) as string[]).slice(0, 2);
+    return {
+      label,
+      lines,
+      height: Math.max(10, 5 + lines.length * 4),
+    };
+  });
+  const detailCardHeight = Math.min(
+    118,
+    20 + detailRows.reduce((total, row) => total + row.height, 0)
+  );
+
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(sideX, 38, sideWidth, detailCardHeight, 4, 4, "F");
+  doc.setDrawColor(230, 200, 143);
+  doc.roundedRect(sideX, 38, sideWidth, detailCardHeight, 4, 4, "S");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(primary.r, primary.g, primary.b);
+  doc.text("Ficha tecnica", sideX + 7, 49);
+
+  let rowY = 62;
+  detailRows.forEach(({ label, lines, height }) => {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(115, 112, 105);
     doc.text(label.toUpperCase(), sideX + 7, rowY);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.6);
     doc.setTextColor(primary.r, primary.g, primary.b);
-    doc.text(value, pageWidth - margin - 7, rowY, { align: "right", maxWidth: 42 });
+    doc.text(lines, pageWidth - margin - 7, rowY, {
+      align: "right",
+      maxWidth: valueMaxWidth,
+      lineHeightFactor: 1.15,
+    });
+    rowY += height;
   });
 
   const attributeValues = attributes.flatMap((group) =>
@@ -543,6 +594,7 @@ export const resolvePropertyAttributes = (
   values: Record<string, string[]>
 ) =>
   groups
+    .filter((group) => !group.id.startsWith("tokko_") && group.id !== "pinned_home")
     .map((group) => ({
       label: group.label,
       values: values[group.id] ?? [],

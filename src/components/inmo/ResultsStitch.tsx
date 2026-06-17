@@ -56,7 +56,7 @@ const toggleAttributeSelection = (
 
 export default function ResultsStitch() {
   const { state } = useInmoStore();
-  const { listings, filterGroups, theme } = state;
+  const { listings, filterGroups, theme, adminUsers } = state;
 
   const [query, setQuery] = useState("");
   const [type, setType] = useState<PropertyTypeFilter>("all");
@@ -70,6 +70,11 @@ export default function ResultsStitch() {
   >({});
 
   const themeStyles = buildThemeStyles(theme);
+  const collaboratorAdminIds = new Set(
+    adminUsers.filter((admin) => admin.role === "colaborador").map((admin) => admin.id)
+  );
+  const isCollaboratorListing = (createdByAdminId?: string) =>
+    Boolean(createdByAdminId && collaboratorAdminIds.has(createdByAdminId));
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -415,6 +420,7 @@ export default function ResultsStitch() {
                   const cover = getCoverImage(item.images, item.coverIndex);
                   const video = item.videos?.[0];
                   const availability = getAvailability(item.status);
+                  const isFromCollaborator = isCollaboratorListing(item.createdByAdminId);
                   return (
                     <Link
                       key={item.id}
@@ -447,6 +453,11 @@ export default function ResultsStitch() {
                             <span className={`h-1.5 w-1.5 rounded-full ${availability.dotClassName}`} />
                             {availability.label}
                           </span>
+                          {isFromCollaborator ? (
+                            <span className="inline-flex items-center rounded-full border border-primary/15 bg-surface-container-lowest/90 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary shadow-sm">
+                              Colaborador
+                            </span>
+                          ) : null}
                         </div>
                         <span className="absolute inset-x-4 bottom-4 rounded-2xl bg-surface-container-lowest/95 py-3 text-center text-sm font-bold text-primary shadow-[0_20px_40px_-30px_rgba(27,54,93,0.45)] sm:inset-x-6 sm:bottom-6 lg:hidden lg:group-hover:block">
                           Ver ficha completa

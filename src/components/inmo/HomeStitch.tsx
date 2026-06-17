@@ -120,7 +120,7 @@ const brandXMotion = {
 
 export default function HomeStitch() {
   const { state } = useInmoStore();
-  const { listings, agents, theme, clientUsers, homeContent } = state;
+  const { listings, agents, theme, clientUsers, homeContent, adminUsers } = state;
   const [clientName, setClientName] = useState("");
   const { scrollYProgress } = useScroll();
   const heroImageY = useTransform(scrollYProgress, [0, 0.45], [0, 90]);
@@ -177,6 +177,11 @@ export default function HomeStitch() {
     () => Object.fromEntries(agents.map((agent) => [agent.id, agent])),
     [agents]
   );
+  const collaboratorAdminIds = new Set(
+    adminUsers.filter((admin) => admin.role === "colaborador").map((admin) => admin.id)
+  );
+  const isCollaboratorListing = (createdByAdminId?: string) =>
+    Boolean(createdByAdminId && collaboratorAdminIds.has(createdByAdminId));
 
   const availableCount = listings.filter((item) => item.status === "disponible").length;
 
@@ -468,6 +473,7 @@ export default function HomeStitch() {
                 const agent = item.agentId ? agentsById[item.agentId] : undefined;
                 const features = getPropertyFeatures(item);
                 const availability = getAvailability(item.status);
+                const isFromCollaborator = isCollaboratorListing(item.createdByAdminId);
                 const narrative = truncate(
                   item.highlight ||
                     item.description ||
@@ -515,6 +521,11 @@ export default function HomeStitch() {
                           <span className={`h-1.5 w-1.5 rounded-full ${availability.dotClassName}`} />
                           {availability.label}
                         </span>
+                        {isFromCollaborator ? (
+                          <span className="inline-flex items-center rounded-full border border-primary/15 bg-surface-container-lowest/90 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary shadow-sm">
+                            Colaborador
+                          </span>
+                        ) : null}
                       </div>
 
                       <div className="absolute left-4 right-4 bottom-4 rounded-xl bg-surface-container-lowest/90 p-3 backdrop-blur">

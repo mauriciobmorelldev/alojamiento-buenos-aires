@@ -106,6 +106,33 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+a,
+button,
+summary,
+select,
+input[type="button"],
+input[type="checkbox"],
+input[type="file"],
+input[type="radio"],
+input[type="reset"],
+input[type="submit"],
+label:has(input[type="checkbox"]),
+label:has(input[type="radio"]),
+[role="button"],
+[role="link"],
+[role="menuitem"],
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+input:disabled,
+textarea:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 .font-headline {
   font-family: var(--font-manrope), "Manrope", sans-serif;
 }
