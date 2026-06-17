@@ -124,8 +124,12 @@ const normalizeStatus = (value: unknown): PropertyStatus => {
 
 const normalizePriceUnit = (operation: string): PriceUnit => {
   const normalized = operation.toLowerCase();
+  if (normalized === "1") return "venta";
+  if (normalized === "2") return "mensual";
+  if (normalized === "3") return "noche";
   if (normalized.includes("alquiler temporario") || normalized.includes("temporary")) return "noche";
   if (normalized.includes("alquiler") || normalized.includes("rent")) return "mensual";
+  if (normalized.includes("venta") || normalized.includes("sale")) return "venta";
   return "venta";
 };
 
@@ -149,9 +153,10 @@ const extractOperation = (item: TokkoRemoteProperty) => {
   return {
     label: firstString(
       operationType.name,
+      operation.name,
       operation.type,
-      item.operation_type,
       item.operation,
+      item.operation_type,
       item.operation_category
     ),
     price: firstNumber(price.price, price.amount, item.web_price, item.operation_amount, item.price),
@@ -225,6 +230,7 @@ const extractNeighborhood = (item: TokkoRemoteProperty) => {
 };
 
 const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
+  const tokkoSku = firstString(item.tokko_id, item.publication_id, item.reference_code, item.id, item.code);
   const id = firstString(item.id, item.reference_code, item.code, item.tokko_id, item.publication_id) || `${Date.now()}`;
   const operation = extractOperation(item);
   const surface = firstNumber(
@@ -241,7 +247,7 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
     id: `tokko-${id}`,
     title:
       firstString(item.publication_title, item.title, item.name, item.address) ||
-      "Propiedad importada desde Tokko",
+      "Propiedad importada",
     type: operation.label.toLowerCase().includes("tempor") ? "temporario" : "tradicional",
     status: normalizeStatus(item.status),
     price: operation.price,
@@ -256,13 +262,21 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
         item.suite_amount,
         extractAttributeValue(item, "room_amount")
       ) || 1,
-    tag: "Tokko",
-    highlight: "Sincronizada desde Tokko",
+    tag: "",
+    highlight: "",
     description,
     images: extractImages(item),
     videos: [],
     coverIndex: 0,
-    attributes: {},
+    attributes: {
+      ...(tokkoSku ? { tokko_sku: [tokkoSku] } : {}),
+      ...(firstString(item.tokko_id) ? { tokko_id: [firstString(item.tokko_id)] } : {}),
+      ...(firstString(item.publication_id) ? { publication_id: [firstString(item.publication_id)] } : {}),
+      ...(firstString(item.reference_code) ? { reference_code: [firstString(item.reference_code)] } : {}),
+      ...(firstString(item.resource_uri) ? { resource_uri: [firstString(item.resource_uri)] } : {}),
+      ...(firstString(item.public_url) ? { public_url: [firstString(item.public_url)] } : {}),
+      ...(firstString(item.last_modification) ? { last_modification: [firstString(item.last_modification)] } : {}),
+    },
   };
 };
 
@@ -566,19 +580,31 @@ export const syncTokkoProperties = async (state: InmoState): Promise<InmoState> 
         ],
       };
     }
-    const importedIds = new Set(imported.map((property) => property.id));
+    const previousById = new Map(state.listings.map((property) => [property.id, property]));
+    const importedWithLocalFlags = imported.map((property) => {
+      const previous = previousById.get(property.id);
+      if (!previous?.attributes.pinned_home?.includes("true")) return property;
+      return {
+        ...property,
+        attributes: {
+          ...property.attributes,
+          pinned_home: ["true"],
+        },
+      };
+    });
+    const importedIds = new Set(importedWithLocalFlags.map((property) => property.id));
     const localWithoutImported = state.listings.filter(
       (property) => !property.id.startsWith("tokko-") && !importedIds.has(property.id)
     );
 
     return {
       ...state,
-      listings: [...localWithoutImported, ...imported],
+      listings: [...localWithoutImported, ...importedWithLocalFlags],
       tokkoSyncLogs: [
         createLog({
           status: "success",
           message: "Sincronización Tokko completada.",
-          importedCount: imported.length,
+          importedCount: importedWithLocalFlags.length,
           startedAt,
         }),
         ...state.tokkoSyncLogs,

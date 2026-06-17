@@ -48,6 +48,24 @@ const toggleAttributeSelection = (
   };
 };
 
+const getTokkoSku = (listing: Listing) =>
+  listing.attributes.tokko_sku?.[0] ||
+  listing.attributes.tokko_id?.[0] ||
+  listing.attributes.publication_id?.[0] ||
+  listing.attributes.reference_code?.[0] ||
+  "";
+
+const isPinnedHome = (attributes: Record<string, string[]>) =>
+  attributes.pinned_home?.includes("true");
+
+const setPinnedHomeAttribute = (
+  attributes: Record<string, string[]>,
+  pinned: boolean
+) => ({
+  ...attributes,
+  pinned_home: pinned ? ["true"] : [],
+});
+
 export default function AdminPropertiesPage() {
   const { state, updateState } = useInmoStore();
   const { listings, agents, filterGroups, adminUsers } = state;
@@ -207,6 +225,48 @@ export default function AdminPropertiesPage() {
       );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleTogglePinnedHome = async (listing: Listing) => {
+    if (!authedAdmin) {
+      setFormError("Iniciá sesión para destacar propiedades.");
+      return;
+    }
+    const isOwnListing =
+      isOwner || listing.createdByAdminId === authedAdmin.id;
+    if (!isOwnListing) {
+      setFormError("Tu rol colaborador solo puede destacar propiedades creadas por vos.");
+      return;
+    }
+
+    const nextListing = {
+      ...listing,
+      attributes: setPinnedHomeAttribute(
+        listing.attributes,
+        !isPinnedHome(listing.attributes)
+      ),
+    };
+
+    try {
+      await syncListingToServer(nextListing);
+      updateState((prev) => ({
+        ...prev,
+        listings: prev.listings.map((item) =>
+          item.id === listing.id ? nextListing : item
+        ),
+      }));
+      setSuccessNotice(
+        isPinnedHome(nextListing.attributes)
+          ? "Propiedad fijada en el inicio."
+          : "Propiedad quitada del inicio."
+      );
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo actualizar la propiedad destacada."
+      );
     }
   };
 
@@ -587,6 +647,29 @@ export default function AdminPropertiesPage() {
             ) : null}
           </div>
 
+          <label className="flex items-center justify-between gap-4 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4 text-sm font-semibold text-primary">
+            <span>
+              Fijar en el inicio
+              <span className="mt-1 block text-xs font-normal text-on-surface-variant">
+                La propiedad aparece primero en la sección destacada de la home.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              checked={isPinnedHome(listingForm.attributes)}
+              onChange={(event) =>
+                setListingForm((prev) => ({
+                  ...prev,
+                  attributes: setPinnedHomeAttribute(
+                    prev.attributes,
+                    event.target.checked
+                  ),
+                }))
+              }
+              className="h-5 w-5"
+            />
+          </label>
+
           <textarea
             className="min-h-[120px] rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
             placeholder="Descripción"
@@ -834,7 +917,10 @@ export default function AdminPropertiesPage() {
           {visibleListings.length === 0 ? (
             <p className="text-sm text-on-surface-variant">Todavía no hay propiedades cargadas.</p>
           ) : (
-            visibleListings.map((listing) => (
+            visibleListings.map((listing) => {
+              const tokkoSku = getTokkoSku(listing);
+              const pinnedHome = isPinnedHome(listing.attributes);
+              return (
               <article
                 key={listing.id}
                 className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4"
@@ -847,8 +933,25 @@ export default function AdminPropertiesPage() {
                   <p className="mt-1 text-[10px] uppercase tracking-widest text-on-surface-variant">
                     {statusLabels[listing.status]}
                   </p>
+                  {tokkoSku ? (
+                    <p className="mt-2 inline-flex rounded-full bg-surface-container-lowest px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                      SKU Tokko: {tokkoSku}
+                    </p>
+                  ) : null}
+                  {pinnedHome ? (
+                    <p className="ml-2 mt-2 inline-flex rounded-full bg-primary-fixed px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                      Inicio
+                    </p>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest">
+                  <button
+                    type="button"
+                    onClick={() => handleTogglePinnedHome(listing)}
+                    className={pinnedHome ? "text-primary" : "text-on-surface-variant"}
+                  >
+                    {pinnedHome ? "Quitar inicio" : "Fijar inicio"}
+                  </button>
                   <Link
                     href={`/propiedades/${listing.id}`}
                     target="_blank"
@@ -873,7 +976,8 @@ export default function AdminPropertiesPage() {
                   </button>
                 </div>
               </article>
-            ))
+            );
+            })
           )}
         </div>
       </section>

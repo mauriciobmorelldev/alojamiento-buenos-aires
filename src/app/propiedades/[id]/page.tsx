@@ -604,11 +604,6 @@ export default function DetallePropiedadPage() {
                       <span className={`h-1.5 w-1.5 rounded-full ${availability.dotClassName}`} />
                       {availability.label}
                     </span>
-                    {property.tag ? (
-                      <span className="rounded-full bg-surface-container-high px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-                        {property.tag}
-                      </span>
-                    ) : null}
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3">

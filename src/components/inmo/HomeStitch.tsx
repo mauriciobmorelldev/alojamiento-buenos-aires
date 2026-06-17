@@ -33,6 +33,9 @@ const hasFeature = (attributes: Record<string, string[]>, keywords: string[]) =>
   return keywords.some((keyword) => value.includes(keyword));
 };
 
+const isPinnedHome = (attributes: Record<string, string[]>) =>
+  attributes.pinned_home?.includes("true");
+
 const getPropertyFeatures = (item: {
   rooms: number;
   area: number;
@@ -152,7 +155,11 @@ export default function HomeStitch() {
   }, [clientUsers]);
 
   const featuredListings = useMemo(
-    () => listings.filter((item) => item.status === "disponible").slice(0, 6),
+    () =>
+      [...listings]
+        .filter((item) => item.status === "disponible")
+        .sort((a, b) => Number(isPinnedHome(b.attributes)) - Number(isPinnedHome(a.attributes)))
+        .slice(0, 6),
     [listings]
   );
 
@@ -504,11 +511,6 @@ export default function HomeStitch() {
                       <div className="absolute inset-0 bg-gradient-to-t from-primary/75 via-primary/15 to-transparent" />
 
                       <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                        {item.tag ? (
-                          <span className="rounded-full bg-surface-container-lowest/90 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-                            {item.tag}
-                          </span>
-                        ) : null}
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm ${availability.badgeClassName}`}
                         >
