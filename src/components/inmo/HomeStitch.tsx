@@ -154,14 +154,12 @@ export default function HomeStitch() {
     }
   }, [clientUsers]);
 
-  const featuredListings = useMemo(
-    () =>
-      [...listings]
-        .filter((item) => item.status === "disponible")
-        .sort((a, b) => Number(isPinnedHome(b.attributes)) - Number(isPinnedHome(a.attributes)))
-        .slice(0, 6),
-    [listings]
-  );
+  const pinnedHomeListings = listings.filter((item) => isPinnedHome(item.attributes));
+  const featuredListings = (
+    pinnedHomeListings.length
+      ? pinnedHomeListings
+      : listings.filter((item) => item.status === "disponible")
+  ).slice(0, 6);
 
   const heroImage = useMemo(() => {
     const activeBanner = homeContent.banners.find((banner) => banner.active && banner.image);
