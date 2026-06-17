@@ -37,7 +37,7 @@ type TokkoAuditResult = {
 };
 
 const defaultSettings: PublicTokkoSettings = {
-  baseUrl: "https://www.tokkobroker.com/portals/simple_portal/api/v1/freeportals/",
+  baseUrl: "https://www.tokkobroker.com/api/v1",
   syncSecret: "",
   autoSyncEnabled: false,
   hasApiKey: false,

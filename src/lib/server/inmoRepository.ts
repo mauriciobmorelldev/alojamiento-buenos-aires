@@ -441,6 +441,9 @@ export const deleteObsoleteTokkoListings = async (keepIds: string[]) => {
   if (!supabase || !isSupabaseWriteConfigured()) {
     return { source: "fallback" as const };
   }
+  if (!keepIds.length) {
+    return { source: "supabase" as const, deletedCount: 0 };
+  }
 
   const keepSet = new Set(keepIds);
   const existing = await supabase

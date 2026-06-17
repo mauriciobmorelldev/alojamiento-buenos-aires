@@ -7,8 +7,7 @@ import {
 } from "@/lib/supabase/server";
 
 const SETTINGS_ID = "default";
-const LEGACY_TOKKO_BASE_URL = "https://www.tokkobroker.com/api/v1";
-const DEFAULT_TOKKO_BASE_URL = "https://www.tokkobroker.com/portals/simple_portal/api/v1/freeportals/";
+const DEFAULT_TOKKO_BASE_URL = "https://www.tokkobroker.com/api/v1";
 
 export type TokkoSettings = {
   baseUrl: string;
@@ -289,10 +288,11 @@ const createLog = ({
 const normalizeSettings = (value: unknown): TokkoSettings => {
   const config = asRecord(value);
   const baseUrl = firstString(config.baseUrl, config.base_url, process.env.TOKKO_API_BASE_URL);
+  const normalizedBaseUrl = baseUrl.includes("/freeportals")
+    ? DEFAULT_TOKKO_BASE_URL
+    : baseUrl || DEFAULT_TOKKO_BASE_URL;
   return {
-    baseUrl: !baseUrl || baseUrl.replace(/\/$/, "") === LEGACY_TOKKO_BASE_URL
-      ? DEFAULT_TOKKO_BASE_URL
-      : baseUrl,
+    baseUrl: normalizedBaseUrl,
     apiKey: firstString(config.apiKey, config.api_key, process.env.TOKKO_API_KEY) || undefined,
     syncSecret:
       firstString(config.syncSecret, config.sync_secret, process.env.TOKKO_SYNC_SECRET) ||
@@ -348,33 +348,33 @@ export const writeTokkoSettings = async (incoming: Partial<TokkoSettings> & { cl
   return next;
 };
 
-const TOKKO_PAGE_SIZE = 100;
+const TOKKO_PAGE_SIZE = 500;
 const TOKKO_MAX_PAGES = 50;
 
 const buildTokkoPropertyUrl = (settings: TokkoSettings, limit = 50, offset = 0) => {
   const cleanBase = (settings.baseUrl || DEFAULT_TOKKO_BASE_URL).replace(/\/$/, "");
-  const isFreePortal = cleanBase.includes("/freeportals");
-  const endpoint = isFreePortal || cleanBase.endsWith("/property") || cleanBase.endsWith("/property/")
+  const endpoint = cleanBase.endsWith("/property") || cleanBase.endsWith("/property/")
     ? cleanBase
     : `${cleanBase}/property/`;
   const url = new URL(endpoint);
   if (settings.apiKey) {
-    url.searchParams.set(isFreePortal ? "api_key" : "key", settings.apiKey);
+    url.searchParams.set("key", settings.apiKey);
   }
+  url.searchParams.set("lang", "es_ar");
   url.searchParams.set("format", "json");
-  if (isFreePortal) url.searchParams.set("lang", "es-AR");
+  url.searchParams.set("filtered_attributes", "true");
   url.searchParams.set("limit", String(limit));
   url.searchParams.set("offset", String(offset));
   return url.toString();
 };
 
 const addTokkoAuthParams = (url: URL, settings: TokkoSettings) => {
-  const isFreePortal = url.pathname.includes("/freeportals");
   if (settings.apiKey) {
-    url.searchParams.set(isFreePortal ? "api_key" : "key", settings.apiKey);
+    url.searchParams.set("key", settings.apiKey);
   }
+  url.searchParams.set("lang", "es_ar");
   url.searchParams.set("format", "json");
-  if (isFreePortal) url.searchParams.set("lang", "es-AR");
+  url.searchParams.set("filtered_attributes", "true");
 };
 
 const buildTokkoPropertyDetailUrl = (settings: TokkoSettings, item: TokkoRemoteProperty) => {
@@ -387,7 +387,7 @@ const buildTokkoPropertyDetailUrl = (settings: TokkoSettings, item: TokkoRemoteP
     url = resourceUri.startsWith("http")
       ? new URL(resourceUri)
       : new URL(resourceUri, cleanBase.includes("/api/") ? "https://www.tokkobroker.com" : `${cleanBase}/`);
-  } else if (id && !cleanBase.includes("/freeportals")) {
+  } else if (id) {
     const endpoint = cleanBase.endsWith("/property")
       ? `${cleanBase}/${id}/`
       : cleanBase.endsWith("/property/")
@@ -552,6 +552,20 @@ export const syncTokkoProperties = async (state: InmoState): Promise<InmoState> 
 
   try {
     const imported = (await fetchAllTokkoProperties(settings)).map(normalizeTokkoProperty);
+    if (!imported.length) {
+      return {
+        ...state,
+        tokkoSyncLogs: [
+          createLog({
+            status: "failed",
+            message: "Tokko respondió 0 propiedades. No se modificó el inventario para evitar borrar publicaciones existentes.",
+            importedCount: 0,
+            startedAt,
+          }),
+          ...state.tokkoSyncLogs,
+        ],
+      };
+    }
     const importedIds = new Set(imported.map((property) => property.id));
     const localWithoutImported = state.listings.filter(
       (property) => !property.id.startsWith("tokko-") && !importedIds.has(property.id)
