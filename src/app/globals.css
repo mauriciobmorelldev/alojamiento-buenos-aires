@@ -234,6 +234,26 @@ textarea:disabled,
   box-shadow: 0 34px 70px -34px rgba(27, 54, 93, 0.32);
 }
 
+.admin-kpi-card:hover {
+  background: var(--color-primary) !important;
+}
+
+.admin-kpi-card:hover,
+.admin-kpi-card:hover h3,
+.admin-kpi-card:hover p,
+.admin-kpi-card:hover .material-symbols-outlined {
+  color: #ffffff !important;
+}
+
+.admin-kpi-card:hover p {
+  opacity: 0.82;
+}
+
+.admin-kpi-card:hover span:not(.material-symbols-outlined) {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
 .reveal-in {
   animation: revealIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }

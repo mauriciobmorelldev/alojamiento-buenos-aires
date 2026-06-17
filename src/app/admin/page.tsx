@@ -202,7 +202,7 @@ export default function AdminDashboardPage() {
       primaryAction={{ href: "/admin/propiedades#form-propiedad", label: "Nueva propiedad" }}
     >
       <section className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
-        <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 group hover:bg-primary transition-colors duration-300">
+        <div className="admin-kpi-card bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 transition-colors duration-300">
           <div className="flex justify-between items-start">
             <span
               className="material-symbols-outlined text-primary group-hover:text-white"
@@ -224,7 +224,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 group hover:bg-primary transition-colors duration-300">
+        <div className="admin-kpi-card bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 transition-colors duration-300">
           <div className="flex justify-between items-start">
             <span
               className="material-symbols-outlined text-primary group-hover:text-white"
@@ -246,7 +246,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 group hover:bg-primary transition-colors duration-300">
+        <div className="admin-kpi-card bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 transition-colors duration-300">
           <div className="flex justify-between items-start">
             <span
               className="material-symbols-outlined text-primary group-hover:text-white"
@@ -268,7 +268,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 group hover:bg-primary transition-colors duration-300">
+        <div className="admin-kpi-card bg-surface-container-lowest p-6 rounded-2xl shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)] flex flex-col justify-between h-40 transition-colors duration-300">
           <div className="flex justify-between items-start">
             <span
               className="material-symbols-outlined text-primary group-hover:text-white"
