@@ -109,13 +109,17 @@ export const resetState = () => {
 
 export const useInmoStore = () => {
   const [state, setState] = useState<InmoState>(defaultState);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const hydrate = async () => {
       const local = loadState();
       setState(local);
       const remote = await fetchRemoteState();
-      if (!remote) return;
+      if (!remote || remote.source === "fallback") {
+        setIsReady(true);
+        return;
+      }
       const merged =
         remote.source === "supabase"
           ? mergeState(defaultState, remote.data)
@@ -123,6 +127,7 @@ export const useInmoStore = () => {
       inMemoryState = merged;
       writeStorage(JSON.stringify(merged));
       setState(merged);
+      setIsReady(true);
     };
     if (typeof queueMicrotask === "function") {
       queueMicrotask(() => void hydrate());
@@ -162,5 +167,5 @@ export const useInmoStore = () => {
     setState(defaultState);
   }, []);
 
-  return { state, updateState, reset };
+  return { state, updateState, reset, isReady };
 };

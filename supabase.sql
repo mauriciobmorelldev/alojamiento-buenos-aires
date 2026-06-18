@@ -47,6 +47,9 @@ create table if not exists profiles (
   updated_at timestamptz not null default now()
 );
 
+alter table profiles
+  add column if not exists phone text not null default '';
+
 create table if not exists admin_otp_challenges (
   id text primary key,
   admin_id text not null references profiles(id) on delete cascade,

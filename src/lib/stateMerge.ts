@@ -54,6 +54,7 @@ export const mergeState = (
           base.adminUsers.find((item) => item.id === admin.id)?.password ||
           "",
         role: admin.role === "owner" ? "owner" : "colaborador",
+        phone: admin.phone ?? "",
       }))
     : base.adminUsers,
   clientUsers: Array.isArray(incoming.clientUsers)

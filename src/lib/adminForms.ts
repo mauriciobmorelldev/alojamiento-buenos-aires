@@ -48,6 +48,7 @@ export type AdminUserFormState = {
   email: string;
   password: string;
   role: AdminRole;
+  phone: string;
   active: boolean;
 };
 
@@ -262,6 +263,7 @@ export const getEmptyAdminForm = (): AdminUserFormState => ({
   email: "",
   password: "",
   role: "colaborador",
+  phone: "",
   active: true,
 });
 
@@ -396,6 +398,9 @@ export const validateAdminUserForm = (
   }
   if (opts?.passwordOptional && form.password.trim() && form.password.trim().length < 6) {
     errors.push("Si cambiás la contraseña, debe tener al menos 6 caracteres.");
+  }
+  if (form.phone.trim() && !normalizePhone(form.phone)) {
+    errors.push("Ingresá un WhatsApp público válido o dejalo vacío.");
   }
   return errors;
 };

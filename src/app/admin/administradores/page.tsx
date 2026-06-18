@@ -64,6 +64,7 @@ export default function AdminAdministradoresPage() {
               name: adminForm.name.trim(),
               email,
               role: adminForm.role,
+              phone: adminForm.phone.trim(),
               active: adminForm.active,
               password: adminForm.password.trim() || admin.password,
             };
@@ -81,6 +82,7 @@ export default function AdminAdministradoresPage() {
             email,
             password: adminForm.password.trim(),
             role: adminForm.role,
+            phone: adminForm.phone.trim(),
             active: adminForm.active,
           },
         ],
@@ -103,6 +105,7 @@ export default function AdminAdministradoresPage() {
       email: target.email,
       password: "",
       role: target.role,
+      phone: target.phone ?? "",
       active: target.active,
     });
     setHighlightForm(true);
@@ -199,6 +202,18 @@ export default function AdminAdministradoresPage() {
                 }
                 className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
                 placeholder="nombre@empresa.com"
+              />
+            </label>
+            <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+              WhatsApp público
+              <input
+                type="tel"
+                value={adminForm.phone}
+                onChange={(event) =>
+                  setAdminForm((prev) => ({ ...prev, phone: event.target.value }))
+                }
+                className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+                placeholder="5491123456789"
               />
             </label>
           </div>
@@ -300,6 +315,16 @@ export default function AdminAdministradoresPage() {
                     <p className="mt-1 text-[10px] uppercase tracking-widest text-on-surface-variant">
                       {admin.role} · {admin.active ? "Activo" : "Inactivo"}
                     </p>
+                    {admin.role === "colaborador" ? (
+                      <p className="mt-2 text-xs font-semibold text-primary">
+                        Link público: /colaborador/{admin.id}
+                      </p>
+                    ) : null}
+                    {admin.phone ? (
+                      <p className="mt-1 text-xs text-on-surface-variant">
+                        WhatsApp: {admin.phone}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest">

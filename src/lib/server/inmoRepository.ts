@@ -66,6 +66,15 @@ const toPropertyImageRows = (property: Listing) =>
     sort_order: index,
   }));
 
+const omitProfilePhone = (row: {
+  phone?: string;
+  [key: string]: unknown;
+}) => {
+  const clone = { ...row };
+  delete clone.phone;
+  return clone;
+};
+
 export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseConfigured()) {
@@ -104,7 +113,6 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
     : primaryTokkoLogs;
 
   const readErrors = [
-    ["platform_settings", settings.error?.message],
     ["profiles", profiles.error?.message],
     ["agents", agents.error?.message],
     ["clients", clients.error?.message],
@@ -116,6 +124,10 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
     ["property_metrics", metrics.error?.message],
     ["tokko_sync_logs", tokkoLogs.error?.message],
   ].filter(([, error]) => error);
+
+  if (settings.error) {
+    console.warn("Supabase settings read failed", settings.error.message);
+  }
 
   if (readErrors.length) {
     console.warn(
@@ -134,9 +146,12 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
 
   const incoming: Partial<InmoState> = {
     version: STATE_VERSION,
-    theme: settings.data?.theme ?? defaultState.theme,
-    homeContent: settings.data?.home_content ?? defaultState.homeContent,
-    filterGroups: settings.data?.filter_groups ?? defaultState.filterGroups,
+    theme: settings.error ? defaultState.theme : settings.data?.theme ?? defaultState.theme,
+    homeContent: settings.error ? defaultState.homeContent : settings.data?.home_content ?? defaultState.homeContent,
+    customPages: settings.error
+      ? defaultState.customPages
+      : settings.data?.home_content?.customPages ?? defaultState.customPages,
+    filterGroups: settings.error ? defaultState.filterGroups : settings.data?.filter_groups ?? defaultState.filterGroups,
     adminUsers: ensureArray(profiles.data)
       .filter((profile) => profile.kind === "admin")
       .map((profile) => ({
@@ -145,6 +160,7 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
         email: profile.email,
         password: profile.password ?? "",
         role: (profile.role === "owner" ? "owner" : "colaborador") as AdminRole,
+        phone: profile.phone ?? "",
         active: Boolean(profile.active),
       })),
     agents: ensureArray(agents.data).map((agent) => ({
@@ -236,6 +252,7 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
   return {
     data: {
       ...merged,
+      customPages: incoming.customPages ?? merged.customPages,
       listings: incoming.listings ?? [],
       agents: incoming.agents ?? [],
       clientUsers: incoming.clientUsers ?? [],
@@ -255,20 +272,28 @@ export const writeInmoState = async (state: InmoState) => {
     return { source: "fallback" as const };
   }
 
+  const persistedHomeContent = {
+    ...state.homeContent,
+    customPages: state.customPages,
+  };
+
   const settingsWithFilters = await supabase.from("platform_settings").upsert({
     id: SETTINGS_ID,
     theme: state.theme,
-    home_content: state.homeContent,
+    home_content: persistedHomeContent,
     filter_groups: state.filterGroups,
     updated_at: new Date().toISOString(),
   });
   if (settingsWithFilters.error?.message.includes("filter_groups")) {
-    assertSupabaseOk(await supabase.from("platform_settings").upsert({
-      id: SETTINGS_ID,
-      theme: state.theme,
-      home_content: state.homeContent,
-      updated_at: new Date().toISOString(),
-    }), "upsert platform_settings");
+    assertSupabaseOk(
+      await supabase.from("platform_settings").upsert({
+        id: SETTINGS_ID,
+        theme: state.theme,
+        home_content: persistedHomeContent,
+        updated_at: new Date().toISOString(),
+      }),
+      "upsert platform_settings"
+    );
   } else {
     assertSupabaseOk(settingsWithFilters, "upsert platform_settings");
   }
@@ -280,11 +305,20 @@ export const writeInmoState = async (state: InmoState) => {
     email: admin.email,
     password: admin.password,
     role: admin.role,
+    phone: admin.phone ?? "",
     active: admin.active,
     updated_at: new Date().toISOString(),
   }));
   if (adminRows.length) {
-    assertSupabaseOk(await supabase.from("profiles").upsert(adminRows), "upsert profiles");
+    const profilesWithPhone = await supabase.from("profiles").upsert(adminRows);
+    if (profilesWithPhone.error?.message.includes("phone")) {
+      assertSupabaseOk(
+        await supabase.from("profiles").upsert(adminRows.map(omitProfilePhone)),
+        "upsert profiles"
+      );
+    } else {
+      assertSupabaseOk(profilesWithPhone, "upsert profiles");
+    }
   }
 
   if (state.agents.length) {

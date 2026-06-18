@@ -144,6 +144,7 @@ export type AdminUser = {
   email: string;
   password: string;
   role: AdminRole;
+  phone?: string;
   active: boolean;
 };
 
@@ -392,6 +393,7 @@ export const defaultState: InmoState = {
       email: "admin@connexa.com",
       password: "connexa-admin",
       role: "owner",
+      phone: "",
       active: true,
     },
   ],
@@ -411,35 +413,7 @@ export const defaultState: InmoState = {
       options: ["Baño completo", "Lavadero", "Cochera", "Balcón"],
     },
   ],
-  listings: [
-    {
-      id: "connexa-palermo-luminoso",
-      title: "Departamento luminoso con balcón en Palermo",
-      type: "tradicional",
-      status: "disponible",
-      price: 185000,
-      priceUnit: "venta",
-      currency: "USD",
-      neighborhood: "Palermo",
-      area: 82,
-      rooms: 3,
-      tag: "Destacada",
-      highlight: "Unidad lista para visitar, con balcón corrido, cochera y lavadero independiente.",
-      description:
-        "Departamento de tres ambientes con excelente luz natural, living comedor integrado, cocina funcional, dormitorio principal amplio y balcón con vista abierta. Ideal para ver cómo se muestra una ficha completa en Connexa.",
-      images: [
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80",
-        "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1400&q=80",
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=80",
-        "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1400&q=80",
-      ],
-      videos: [],
-      coverIndex: 0,
-      attributes: {
-        comodidades: ["Baño completo", "Lavadero", "Cochera", "Balcón"],
-      },
-    },
-  ],
+  listings: [],
   customPages: [
     {
       id: "page-equipo",
