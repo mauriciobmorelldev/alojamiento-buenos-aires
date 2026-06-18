@@ -49,6 +49,11 @@ const normalizeMenuHref = (href: string) => {
   return `/${value}`;
 };
 
+const opensPropertyModule = (href: string) => href.startsWith("/propiedades");
+
+const propertyModuleLinkProps = (href: string) =>
+  opensPropertyModule(href) ? { target: "_blank", rel: "noreferrer" } : {};
+
 export default function FrontHeader({
   active = "home",
   showSearch = false,
@@ -150,6 +155,7 @@ export default function FrontHeader({
                     : "text-primary/60 hover:text-primary"
                 } rounded-full px-3 py-1 transition-all hover:-translate-y-0.5`}
                 href={item.href}
+                {...propertyModuleLinkProps(item.href)}
               >
                 {item.label}
               </Link>
@@ -174,6 +180,8 @@ export default function FrontHeader({
           {mounted ? (
             <Link
               href="/propiedades"
+              target="_blank"
+              rel="noreferrer"
               className="hidden rounded-lg bg-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-on-primary sm:inline-flex"
               style={{ color: "var(--color-on-primary)" }}
               suppressHydrationWarning
@@ -227,6 +235,7 @@ export default function FrontHeader({
               <Link
                 key={item.id}
                 href={item.href}
+                {...propertyModuleLinkProps(item.href)}
                 onClick={() => setShowMobileMenu(false)}
                 className="rounded-2xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
               >
@@ -235,6 +244,8 @@ export default function FrontHeader({
             ))}
             <Link
               href="/propiedades"
+              target="_blank"
+              rel="noreferrer"
               onClick={() => setShowMobileMenu(false)}
               className="rounded-2xl bg-primary px-4 py-3 text-on-primary transition-all hover:-translate-y-0.5"
             >
