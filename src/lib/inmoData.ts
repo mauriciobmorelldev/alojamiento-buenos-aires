@@ -84,6 +84,34 @@ export type VisitFormContent = {
   successMessage: string;
 };
 
+export type CustomPageBlockType = "hero" | "text" | "image" | "cta" | "cards";
+
+export type CustomPageBlock = {
+  id: string;
+  type: CustomPageBlockType;
+  title: string;
+  subtitle?: string;
+  body?: string;
+  image?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  items?: {
+    id: string;
+    title: string;
+    text: string;
+    icon?: string;
+  }[];
+};
+
+export type CustomPage = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  active: boolean;
+  blocks: CustomPageBlock[];
+};
+
 export type HomeContent = {
   eyebrow: string;
   title: string;
@@ -244,6 +272,7 @@ export type InmoState = {
   agents: Agent[];
   filterGroups: FilterGroup[];
   listings: Listing[];
+  customPages: CustomPage[];
 };
 
 export const propertyTypeLabels: Record<PropertyType, string> = {
@@ -409,6 +438,38 @@ export const defaultState: InmoState = {
       attributes: {
         comodidades: ["Baño completo", "Lavadero", "Cochera", "Balcón"],
       },
+    },
+  ],
+  customPages: [
+    {
+      id: "page-equipo",
+      title: "Equipo",
+      slug: "equipo",
+      excerpt: "Conocé el equipo comercial y cómo acompañamos cada operación.",
+      active: false,
+      blocks: [
+        {
+          id: "page-equipo-hero",
+          type: "hero",
+          title: "Asesores y especialistas",
+          subtitle: "Equipo comercial disponible para ayudarte a encontrar la propiedad ideal.",
+        },
+      ],
+    },
+    {
+      id: "page-barrios",
+      title: "Barrios",
+      slug: "barrios",
+      excerpt: "Zonas y barrios con mayor presencia en el inventario activo.",
+      active: false,
+      blocks: [
+        {
+          id: "page-barrios-hero",
+          type: "hero",
+          title: "Zonas más consultadas",
+          subtitle: "Barrios con mayor presencia en el inventario activo.",
+        },
+      ],
     },
   ],
 };

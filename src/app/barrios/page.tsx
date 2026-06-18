@@ -1,6 +1,7 @@
 "use client";
 
 import FrontHeader from "@/components/inmo/FrontHeader";
+import CustomPageRenderer from "@/components/inmo/CustomPageRenderer";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
 
@@ -20,7 +21,7 @@ export default function BarriosPage() {
       .map(([name, count]) => ({ name, count }));
   })();
 
-  return (
+  const fallback = (
     <div style={themeStyles} className="min-h-screen bg-background text-on-background">
       <FrontHeader active="detail" />
       <main className="mx-auto max-w-screen-2xl px-6 pt-24 lg:px-8">
@@ -58,4 +59,6 @@ export default function BarriosPage() {
       </main>
     </div>
   );
+
+  return <CustomPageRenderer slug="barrios" fallback={fallback} />;
 }

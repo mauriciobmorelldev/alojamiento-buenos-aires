@@ -99,4 +99,12 @@ export const mergeState = (
         createdByAdminId: listing.createdByAdminId,
       }))
     : base.listings,
+  customPages: Array.isArray(incoming.customPages)
+    ? appendLocalOnly(incoming.customPages, base.customPages).map((page) => ({
+        ...page,
+        slug: page.slug?.replace(/^\/+/, "") ?? "",
+        active: page.active ?? true,
+        blocks: Array.isArray(page.blocks) ? page.blocks : [],
+      }))
+    : base.customPages,
 });

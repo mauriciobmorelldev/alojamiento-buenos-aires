@@ -4,18 +4,25 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import AdminShell from "@/components/inmo/admin/AdminShell";
 import { createId, readFileAsDataUrl, validateBrandingForm } from "@/lib/adminForms";
-import type { HomeContent, ThemeSettings } from "@/lib/inmoData";
+import type {
+  CustomPage,
+  CustomPageBlock,
+  CustomPageBlockType,
+  HomeContent,
+  ThemeSettings,
+} from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
 
 export default function AdminBrandingPage() {
   const { state, updateState } = useInmoStore();
-  const { theme, homeContent, listings } = state;
+  const { theme, homeContent, listings, customPages } = state;
 
   const [themeForm, setThemeForm] = useState<ThemeSettings>(theme);
   const [homeForm, setHomeForm] = useState<HomeContent>(homeContent);
+  const [pageForms, setPageForms] = useState<CustomPage[]>(customPages);
   const [activeTab, setActiveTab] = useState<
-    "identity" | "hero" | "menu" | "form" | "sections" | "banners" | "logos"
+    "identity" | "hero" | "menu" | "pages" | "form" | "sections" | "banners" | "logos"
   >(
     "identity"
   );
@@ -29,6 +36,10 @@ export default function AdminBrandingPage() {
   useEffect(() => {
     setHomeForm(homeContent);
   }, [homeContent]);
+
+  useEffect(() => {
+    setPageForms(customPages);
+  }, [customPages]);
 
   const previewStyles = useMemo(() => buildThemeStyles(themeForm), [themeForm]);
 
@@ -97,6 +108,14 @@ export default function AdminBrandingPage() {
     return `/${value}`;
   };
 
+  const normalizeSlug = (value: string) =>
+    value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+
   const handleHomeSubmit = (event: FormEvent) => {
     event.preventDefault();
     setFormError("");
@@ -139,11 +158,36 @@ export default function AdminBrandingPage() {
           ])
         ) as HomeContent["visitForm"],
       },
+      customPages: pageForms
+        .map((page) => ({
+          ...page,
+          title: page.title.trim(),
+          slug: normalizeSlug(page.slug || page.title),
+          excerpt: page.excerpt.trim(),
+          active: Boolean(page.active),
+          blocks: page.blocks.map((block) => ({
+            ...block,
+            title: block.title.trim(),
+            subtitle: block.subtitle?.trim(),
+            body: block.body?.trim(),
+            ctaLabel: block.ctaLabel?.trim(),
+            ctaHref: block.ctaHref?.trim(),
+            items: block.items?.map((item) => ({
+              ...item,
+              title: item.title.trim(),
+              text: item.text.trim(),
+              icon: item.icon?.trim(),
+            })),
+          })),
+        }))
+        .filter((page) => page.title && page.slug),
     }));
     setHomeForm((prev) => ({ ...prev, menuItems: normalizedMenuItems }));
     setFormNotice(
       activeTab === "menu"
         ? "Menú actualizado. Ya se refleja en el header público."
+        : activeTab === "pages"
+          ? "Páginas actualizadas."
         : activeTab === "form"
           ? "Formulario actualizado."
           : activeTab === "logos"
@@ -245,6 +289,159 @@ export default function AdminBrandingPage() {
     }));
   };
 
+  const addPage = () => {
+    const id = createId();
+    setPageForms((prev) => [
+      ...prev,
+      {
+        id,
+        title: "Nueva página",
+        slug: `pagina-${prev.length + 1}`,
+        excerpt: "Texto breve para presentar esta página.",
+        active: true,
+        blocks: [
+          {
+            id: createId(),
+            type: "hero",
+            title: "Nueva página",
+            subtitle: "Editá este contenido desde el administrador.",
+          },
+          {
+            id: createId(),
+            type: "text",
+            title: "Contenido",
+            body: "Escribí acá el contenido principal de la página.",
+          },
+        ],
+      },
+    ]);
+  };
+
+  const updatePage = (
+    pageId: string,
+    key: keyof CustomPage,
+    value: string | boolean | CustomPageBlock[]
+  ) => {
+    setPageForms((prev) =>
+      prev.map((page) => (page.id === pageId ? { ...page, [key]: value } : page))
+    );
+  };
+
+  const removePage = (pageId: string) => {
+    setPageForms((prev) => prev.filter((page) => page.id !== pageId));
+  };
+
+  const addPageBlock = (pageId: string, type: CustomPageBlockType) => {
+    const block: CustomPageBlock = {
+      id: createId(),
+      type,
+      title:
+        type === "hero"
+          ? "Título principal"
+          : type === "cta"
+            ? "Llamado a la acción"
+            : type === "cards"
+              ? "Bloque de beneficios"
+              : type === "image"
+                ? "Bloque con imagen"
+                : "Bloque de texto",
+      subtitle: type === "hero" || type === "cta" || type === "image" ? "Texto de apoyo." : "",
+      body: type === "text" ? "Escribí uno o más párrafos. Cada salto de línea se muestra como un párrafo." : "",
+      image: "",
+      ctaLabel: type === "cta" ? "Ver propiedades" : "",
+      ctaHref: type === "cta" ? "/propiedades" : "",
+      items:
+        type === "cards"
+          ? [
+              {
+                id: createId(),
+                title: "Card editable",
+                text: "Detalle de esta card.",
+                icon: "stars",
+              },
+            ]
+          : [],
+    };
+    setPageForms((prev) =>
+      prev.map((page) =>
+        page.id === pageId ? { ...page, blocks: [...page.blocks, block] } : page
+      )
+    );
+  };
+
+  const updatePageBlock = (
+    pageId: string,
+    blockId: string,
+    key: keyof CustomPageBlock,
+    value: string | CustomPageBlock["items"]
+  ) => {
+    setPageForms((prev) =>
+      prev.map((page) =>
+        page.id === pageId
+          ? {
+              ...page,
+              blocks: page.blocks.map((block) =>
+                block.id === blockId ? { ...block, [key]: value } : block
+              ),
+            }
+          : page
+      )
+    );
+  };
+
+  const removePageBlock = (pageId: string, blockId: string) => {
+    setPageForms((prev) =>
+      prev.map((page) =>
+        page.id === pageId
+          ? { ...page, blocks: page.blocks.filter((block) => block.id !== blockId) }
+          : page
+      )
+    );
+  };
+
+  const handlePageBlockImageUpload = async (
+    pageId: string,
+    blockId: string,
+    files: FileList | null
+  ) => {
+    if (!files?.length) return;
+    const url = await readFileAsDataUrl(files[0]);
+    updatePageBlock(pageId, blockId, "image", url);
+  };
+
+  const addCardItem = (pageId: string, block: CustomPageBlock) => {
+    updatePageBlock(pageId, block.id, "items", [
+      ...(block.items ?? []),
+      { id: createId(), title: "Nueva card", text: "Texto de la card.", icon: "stars" },
+    ]);
+  };
+
+  const updateCardItem = (
+    pageId: string,
+    block: CustomPageBlock,
+    itemId: string,
+    key: "title" | "text" | "icon",
+    value: string
+  ) => {
+    updatePageBlock(
+      pageId,
+      block.id,
+      "items",
+      (block.items ?? []).map((item) =>
+        item.id === itemId ? { ...item, [key]: value } : item
+      )
+    );
+  };
+
+  const removeCardItem = (pageId: string, block: CustomPageBlock, itemId: string) => {
+    updatePageBlock(
+      pageId,
+      block.id,
+      "items",
+      (block.items ?? []).filter((item) => item.id !== itemId)
+    );
+  };
+
   const addBanner = () => {
     setHomeForm((prev) => ({
       ...prev,
@@ -304,6 +501,7 @@ export default function AdminBrandingPage() {
           ["identity", "Identidad", "palette"],
           ["hero", "Hero", "view_carousel"],
           ["menu", "Menú", "segment"],
+          ["pages", "Páginas", "article"],
           ["form", "Formulario", "dynamic_form"],
           ["sections", "Secciones", "dashboard_customize"],
           ["banners", "Carrusel", "panorama"],
@@ -597,6 +795,8 @@ export default function AdminBrandingPage() {
                 ? "Hero de la home"
                 : activeTab === "menu"
                   ? "Menú público"
+                : activeTab === "pages"
+                  ? "Páginas administrables"
                 : activeTab === "form"
                   ? "Formulario de solicitud"
                 : activeTab === "sections"
@@ -610,6 +810,8 @@ export default function AdminBrandingPage() {
                 ? "Editá el primer impacto: claim, texto principal y botones."
                 : activeTab === "menu"
                   ? "Administrá los links visibles del header público. Podés pausar ítems sin eliminarlos."
+                : activeTab === "pages"
+                  ? "Creá páginas públicas con bloques editables y enlazalas desde el menú."
                 : activeTab === "form"
                   ? "Editá labels, textos legales, requisitos y mensajes del formulario de visita o reserva."
                 : activeTab === "sections"
@@ -626,6 +828,15 @@ export default function AdminBrandingPage() {
               className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
             >
               Agregar ítem
+            </button>
+          ) : null}
+          {activeTab === "pages" ? (
+            <button
+              type="button"
+              onClick={addPage}
+              className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
+            >
+              Agregar página
             </button>
           ) : null}
           {activeTab === "banners" ? (
@@ -878,6 +1089,276 @@ export default function AdminBrandingPage() {
                   </button>
                 </div>
               </motion.div>
+            ))}
+          </div>
+          ) : null}
+
+          {activeTab === "pages" ? (
+          <div className="grid gap-5">
+            {pageForms.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-3xl bg-surface-container-low p-6 text-sm text-on-surface-variant"
+              >
+                Todavía no hay páginas. Creá una y enlazala desde el menú con su slug.
+              </motion.div>
+            ) : null}
+
+            {pageForms.map((page, pageIndex) => (
+              <motion.article
+                key={page.id}
+                layout
+                initial={{ opacity: 0, y: 18, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ type: "spring", stiffness: 170, damping: 22, delay: pageIndex * 0.03 }}
+                className="grid gap-5 rounded-[2rem] bg-surface-container-low p-5"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                      Página pública
+                    </p>
+                    <h4 className="mt-2 text-xl font-headline font-bold text-primary">
+                      {page.title || "Página sin título"}
+                    </h4>
+                    <p className="mt-1 text-xs text-on-surface-variant">
+                      Link público: /{normalizeSlug(page.slug || page.title)}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-3 text-xs font-semibold text-primary">
+                      <input
+                        type="checkbox"
+                        checked={page.active}
+                        onChange={(event) =>
+                          updatePage(page.id, "active", event.target.checked)
+                        }
+                      />
+                      Publicada
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => removePage(page.id)}
+                      className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest text-error transition hover:bg-error-container"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    Título
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={page.title}
+                      onChange={(event) => updatePage(page.id, "title", event.target.value)}
+                    />
+                  </label>
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    Slug
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={page.slug}
+                      onChange={(event) =>
+                        updatePage(page.id, "slug", normalizeSlug(event.target.value))
+                      }
+                      placeholder="servicios"
+                    />
+                  </label>
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-1">
+                    Bajada breve
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={page.excerpt}
+                      onChange={(event) => updatePage(page.id, "excerpt", event.target.value)}
+                    />
+                  </label>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    ["hero", "Hero"],
+                    ["text", "Texto"],
+                    ["image", "Imagen"],
+                    ["cards", "Cards"],
+                    ["cta", "CTA"],
+                  ].map(([type, label]) => (
+                    <button
+                      key={`${page.id}-${type}`}
+                      type="button"
+                      onClick={() => addPageBlock(page.id, type as CustomPageBlockType)}
+                      className="rounded-full bg-surface-container-lowest px-4 py-2 text-xs font-bold text-primary transition hover:-translate-y-0.5 hover:bg-primary-fixed"
+                    >
+                      + {label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="grid gap-4">
+                  {page.blocks.map((block, blockIndex) => (
+                    <motion.div
+                      key={block.id}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: blockIndex * 0.02 }}
+                      className="grid gap-4 rounded-3xl bg-surface-container-lowest p-5"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <span className="rounded-full bg-primary-fixed px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                          {block.type}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removePageBlock(page.id, block.id)}
+                          className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-error hover:bg-error-container"
+                        >
+                          Quitar bloque
+                        </button>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                          Título del bloque
+                          <input
+                            className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                            value={block.title}
+                            onChange={(event) =>
+                              updatePageBlock(page.id, block.id, "title", event.target.value)
+                            }
+                          />
+                        </label>
+                        <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                          Subtítulo
+                          <input
+                            className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                            value={block.subtitle ?? ""}
+                            onChange={(event) =>
+                              updatePageBlock(page.id, block.id, "subtitle", event.target.value)
+                            }
+                          />
+                        </label>
+                      </div>
+
+                      {block.type === "text" ? (
+                        <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                          Texto enriquecido simple
+                          <textarea
+                            className="min-h-40 rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm leading-6 text-on-surface focus:border-primary focus:outline-none"
+                            value={block.body ?? ""}
+                            onChange={(event) =>
+                              updatePageBlock(page.id, block.id, "body", event.target.value)
+                            }
+                            placeholder="Cada salto de línea se muestra como un párrafo."
+                          />
+                        </label>
+                      ) : null}
+
+                      {block.type === "image" ? (
+                        <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+                          <div className="flex h-36 items-center justify-center overflow-hidden rounded-2xl bg-surface-container-low">
+                            {block.image ? (
+                              <img src={block.image} alt={block.title} className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                                Imagen
+                              </span>
+                            )}
+                          </div>
+                          <label className="grid content-start gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                            Cargar imagen
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(event) =>
+                                handlePageBlockImageUpload(page.id, block.id, event.target.files)
+                              }
+                              className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-low px-4 py-3 text-sm"
+                            />
+                          </label>
+                        </div>
+                      ) : null}
+
+                      {block.type === "cta" ? (
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                            Texto botón
+                            <input
+                              className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                              value={block.ctaLabel ?? ""}
+                              onChange={(event) =>
+                                updatePageBlock(page.id, block.id, "ctaLabel", event.target.value)
+                              }
+                            />
+                          </label>
+                          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                            Link botón
+                            <input
+                              className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                              value={block.ctaHref ?? ""}
+                              onChange={(event) =>
+                                updatePageBlock(page.id, block.id, "ctaHref", event.target.value)
+                              }
+                            />
+                          </label>
+                        </div>
+                      ) : null}
+
+                      {block.type === "cards" ? (
+                        <div className="grid gap-3">
+                          <button
+                            type="button"
+                            onClick={() => addCardItem(page.id, block)}
+                            className="justify-self-start rounded-full bg-primary-fixed px-4 py-2 text-xs font-bold text-primary"
+                          >
+                            Agregar card
+                          </button>
+                          {(block.items ?? []).map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid gap-3 rounded-2xl bg-surface-container-low p-4 md:grid-cols-[140px_1fr_1fr_auto]"
+                            >
+                              <input
+                                className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-2 text-sm"
+                                value={item.icon ?? ""}
+                                onChange={(event) =>
+                                  updateCardItem(page.id, block, item.id, "icon", event.target.value)
+                                }
+                                placeholder="icono"
+                              />
+                              <input
+                                className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-2 text-sm"
+                                value={item.title}
+                                onChange={(event) =>
+                                  updateCardItem(page.id, block, item.id, "title", event.target.value)
+                                }
+                                placeholder="Título"
+                              />
+                              <input
+                                className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-2 text-sm"
+                                value={item.text}
+                                onChange={(event) =>
+                                  updateCardItem(page.id, block, item.id, "text", event.target.value)
+                                }
+                                placeholder="Texto"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeCardItem(page.id, block, item.id)}
+                                className="rounded-full px-3 py-2 text-xs font-bold text-error hover:bg-error-container"
+                              >
+                                Quitar
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.article>
             ))}
           </div>
           ) : null}

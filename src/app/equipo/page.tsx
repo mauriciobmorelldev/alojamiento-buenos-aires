@@ -1,6 +1,7 @@
 "use client";
 
 import FrontHeader from "@/components/inmo/FrontHeader";
+import CustomPageRenderer from "@/components/inmo/CustomPageRenderer";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
 
@@ -9,7 +10,7 @@ export default function EquipoPage() {
   const { agents, theme } = state;
   const themeStyles = buildThemeStyles(theme);
 
-  return (
+  const fallback = (
     <div style={themeStyles} className="min-h-screen bg-background text-on-background">
       <FrontHeader active="detail" />
       <main className="mx-auto max-w-screen-2xl px-6 pt-24 lg:px-8">
@@ -65,4 +66,6 @@ export default function EquipoPage() {
       </main>
     </div>
   );
+
+  return <CustomPageRenderer slug="equipo" fallback={fallback} />;
 }
