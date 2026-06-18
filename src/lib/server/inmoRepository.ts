@@ -25,6 +25,10 @@ type RepositoryResult<T> = {
   source: "supabase" | "fallback";
 };
 
+type ReadInmoStateOptions = {
+  scope?: "public" | "admin";
+};
+
 const ensureArray = <T>(value: T[] | null) => value ?? [];
 
 const assertSupabaseOk = (
@@ -75,11 +79,14 @@ const omitProfilePhone = (row: {
   return clone;
 };
 
-export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
+export const readInmoState = async (
+  options: ReadInmoStateOptions = {}
+): Promise<RepositoryResult<InmoState>> => {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseConfigured()) {
     return { data: defaultState, source: "fallback" };
   }
+  const isPublicScope = options.scope === "public";
 
   const [
     settings,
@@ -96,21 +103,40 @@ export const readInmoState = async (): Promise<RepositoryResult<InmoState>> => {
     supabase.from("platform_settings").select("*").eq("id", SETTINGS_ID).maybeSingle(),
     supabase.from("profiles").select("*"),
     supabase.from("agents").select("*"),
-    supabase.from("clients").select("*"),
+    isPublicScope
+      ? Promise.resolve({ data: null, error: null })
+      : supabase.from("clients").select("*"),
     supabase.from("properties").select("*"),
     supabase.from("property_images").select("*").order("sort_order"),
-    supabase.from("property_favorites").select("*"),
-    supabase.from("leads").select("*"),
-    supabase.from("lead_events").select("*"),
-    supabase.from("property_metrics").select("*"),
+    isPublicScope
+      ? Promise.resolve({ data: null, error: null })
+      : supabase.from("property_favorites").select("*"),
+    isPublicScope
+      ? Promise.resolve({ data: null, error: null })
+      : supabase.from("leads").select("*"),
+    isPublicScope
+      ? Promise.resolve({ data: null, error: null })
+      : supabase.from("lead_events").select("*"),
+    isPublicScope
+      ? Promise.resolve({ data: null, error: null })
+      : supabase.from("property_metrics").select("*"),
   ]);
-  const primaryTokkoLogs = await supabase
-    .from("tokko_sync_logs")
-    .select("*")
-    .order("started_at", { ascending: false });
-  const tokkoLogs = primaryTokkoLogs.error?.message.includes("tokko_sync_logs")
-    ? await supabase.from("tocco_sync_logs").select("*").order("started_at", { ascending: false })
-    : primaryTokkoLogs;
+  const tokkoLogs = isPublicScope
+    ? { data: null, error: null }
+    : await (async () => {
+        const primaryTokkoLogs = await supabase
+          .from("tokko_sync_logs")
+          .select("*")
+          .order("started_at", { ascending: false })
+          .limit(20);
+        return primaryTokkoLogs.error?.message.includes("tokko_sync_logs")
+          ? supabase
+              .from("tocco_sync_logs")
+              .select("*")
+              .order("started_at", { ascending: false })
+              .limit(20)
+          : primaryTokkoLogs;
+      })();
 
   const readErrors = [
     ["profiles", profiles.error?.message],

@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import type { InmoState } from "@/lib/inmoData";
 import { readInmoState, writeInmoState } from "@/lib/server/inmoRepository";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const result = await readInmoState();
+    const startedAt = Date.now();
+    const { searchParams } = new URL(request.url);
+    const scope = searchParams.get("scope") === "admin" ? "admin" : "public";
+    const result = await readInmoState({ scope });
     return NextResponse.json({
       ...result.data,
       adminUsers: result.data.adminUsers.map((admin) => ({
@@ -18,6 +21,9 @@ export async function GET() {
     }, {
       headers: {
         "x-inmo-state-source": result.source,
+        "x-inmo-state-scope": scope,
+        "x-inmo-state-duration-ms": String(Date.now() - startedAt),
+        "Cache-Control": "private, max-age=10, stale-while-revalidate=30",
       },
     });
   } catch (error) {

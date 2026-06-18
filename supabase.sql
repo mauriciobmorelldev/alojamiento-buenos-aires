@@ -184,6 +184,12 @@ end $$;
 
 create index if not exists idx_properties_agent on properties(agent_id);
 create index if not exists idx_properties_created_by_admin on properties(created_by_admin_id);
+create index if not exists idx_properties_status_updated on properties(status, updated_at desc);
+create index if not exists idx_profiles_kind_role on profiles(kind, role);
+create index if not exists idx_property_images_property_sort on property_images(property_id, sort_order);
 create index if not exists idx_leads_agent on leads(agent_id);
+create index if not exists idx_leads_property on leads(property_id);
 create index if not exists idx_leads_client on leads(client_id);
 create index if not exists idx_favorites_client on property_favorites(client_id);
+create index if not exists idx_metrics_property on property_metrics(property_id);
+create index if not exists idx_tokko_sync_logs_started on tokko_sync_logs(started_at desc);

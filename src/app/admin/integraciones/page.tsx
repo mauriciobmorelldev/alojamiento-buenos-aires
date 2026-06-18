@@ -187,7 +187,7 @@ export default function AdminIntegracionesPage() {
       if (!response.ok || !payload?.ok) {
         throw new Error(payload?.error || "No se pudo sincronizar Tokko.");
       }
-      const stateResponse = await fetch("/api/inmo-state", { cache: "no-store" });
+      const stateResponse = await fetch("/api/inmo-state?scope=admin", { cache: "no-store" });
       if (stateResponse.ok) updateState(await stateResponse.json(), { silent: true });
       setNotice(payload.log?.message || `Sincronización ejecutada. Importadas: ${payload.log?.importedCount ?? 0}.`);
     } catch (syncError) {

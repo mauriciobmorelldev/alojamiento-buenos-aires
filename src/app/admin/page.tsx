@@ -159,7 +159,7 @@ export default function AdminDashboardPage() {
         setTokkoSyncNotice("Configurá Tokko desde Admin > Integraciones antes de sincronizar.");
         return;
       }
-      const stateResponse = await fetch("/api/inmo-state", { cache: "no-store" });
+      const stateResponse = await fetch("/api/inmo-state?scope=admin", { cache: "no-store" });
       if (!stateResponse.ok) return;
       updateState(await stateResponse.json(), { silent: true });
       setTokkoSyncNotice("Sincronización ejecutada correctamente.");

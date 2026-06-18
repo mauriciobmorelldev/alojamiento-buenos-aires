@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { InmoState } from "./inmoData";
 import { defaultState, STATE_VERSION } from "./inmoData";
@@ -41,9 +42,9 @@ const writeStorage = (value: string) => {
   }
 };
 
-const fetchRemoteState = async () => {
+const fetchRemoteState = async (scope: "public" | "admin" = "public") => {
   try {
-    const response = await fetch("/api/inmo-state", {
+    const response = await fetch(`/api/inmo-state?scope=${scope}`, {
       cache: "no-store",
     });
     if (!response.ok) return null;
@@ -108,14 +109,22 @@ export const resetState = () => {
 };
 
 export const useInmoStore = () => {
+  const pathname = usePathname();
   const [state, setState] = useState<InmoState>(defaultState);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const hydrate = async () => {
+      const scope =
+        pathname?.startsWith("/admin") ||
+        pathname?.startsWith("/mi-cuenta") ||
+        pathname?.startsWith("/confirmar") ||
+        pathname?.startsWith("/registro")
+          ? "admin"
+          : "public";
       const local = loadState();
       setState(local);
-      const remote = await fetchRemoteState();
+      const remote = await fetchRemoteState(scope);
       if (!remote || remote.source === "fallback") {
         setIsReady(true);
         return;
@@ -145,7 +154,7 @@ export const useInmoStore = () => {
       window.removeEventListener(UPDATE_EVENT, handleUpdate);
       window.removeEventListener("storage", handleUpdate);
     };
-  }, []);
+  }, [pathname]);
 
   const updateState = useCallback(
     (
