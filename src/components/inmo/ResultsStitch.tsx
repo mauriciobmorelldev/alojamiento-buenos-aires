@@ -9,7 +9,6 @@ import {
   type PropertyType,
 } from "@/lib/inmoData";
 import { buildThemeStyles } from "@/lib/theme";
-import FrontHeader from "@/components/inmo/FrontHeader";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice, getListingComparablePriceInArs } from "@/lib/pricing";
 
@@ -342,15 +341,7 @@ export default function ResultsStitch() {
       style={themeStyles}
       className="font-body selection:bg-primary-fixed selection:text-primary"
     >
-      <FrontHeader
-        active="catalog"
-        showSearch
-        searchValue={query}
-        onSearchChange={setQuery}
-        hideBrand
-      />
-
-      <main className="mx-auto min-h-screen max-w-screen-2xl px-4 pb-16 pt-24 sm:px-6 lg:px-8 lg:pb-20 lg:pt-28">
+      <main className="mx-auto min-h-screen max-w-screen-2xl px-4 pb-16 pt-6 sm:px-6 lg:px-8 lg:pb-20">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-12">
           <aside className="hidden w-full flex-shrink-0 lg:block lg:w-80">
             <div className="h-full rounded-3xl bg-surface-container-lowest p-5 shadow-[0_30px_60px_-36px_rgba(27,54,93,0.32)]">
@@ -371,7 +362,18 @@ export default function ResultsStitch() {
                   Mostrando {filteredListings.length} propiedades en catálogo
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center sm:space-x-4">
+              <div className="grid gap-3 sm:flex sm:items-center sm:space-x-4">
+                <div className="hidden min-w-72 items-center rounded-2xl bg-surface-container-lowest px-4 py-3 ghost-border lg:flex">
+                  <span className="material-symbols-outlined mr-2 text-on-surface-variant">
+                    search
+                  </span>
+                  <input
+                    className="min-w-0 flex-1 border-none bg-transparent text-sm font-label focus:outline-none"
+                    placeholder="Barrio o propiedad"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowFilters(true)}

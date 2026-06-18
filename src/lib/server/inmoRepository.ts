@@ -27,6 +27,7 @@ type RepositoryResult<T> = {
 
 type ReadInmoStateOptions = {
   scope?: "public" | "admin";
+  collaboratorId?: string;
 };
 
 const ensureArray = <T>(value: T[] | null) => value ?? [];
@@ -87,6 +88,10 @@ export const readInmoState = async (
     return { data: defaultState, source: "fallback" };
   }
   const isPublicScope = options.scope === "public";
+  const collaboratorId = options.collaboratorId?.trim();
+  const propertiesQuery = collaboratorId
+    ? supabase.from("properties").select("*").eq("created_by_admin_id", collaboratorId)
+    : supabase.from("properties").select("*");
 
   const [
     settings,
@@ -94,7 +99,6 @@ export const readInmoState = async (
     agents,
     clients,
     properties,
-    propertyImages,
     favorites,
     leads,
     leadEvents,
@@ -106,8 +110,7 @@ export const readInmoState = async (
     isPublicScope
       ? Promise.resolve({ data: null, error: null })
       : supabase.from("clients").select("*"),
-    supabase.from("properties").select("*"),
-    supabase.from("property_images").select("*").order("sort_order"),
+    propertiesQuery,
     isPublicScope
       ? Promise.resolve({ data: null, error: null })
       : supabase.from("property_favorites").select("*"),
@@ -137,6 +140,14 @@ export const readInmoState = async (
               .limit(20)
           : primaryTokkoLogs;
       })();
+  const propertyIds = ensureArray(properties.data).map((property) => property.id);
+  const propertyImages = propertyIds.length
+    ? await supabase
+        .from("property_images")
+        .select("*")
+        .in("property_id", propertyIds)
+        .order("sort_order")
+    : { data: [], error: null };
 
   const readErrors = [
     ["profiles", profiles.error?.message],
@@ -164,7 +175,11 @@ export const readInmoState = async (
   }
 
   const imagesByProperty = new Map<string, string[]>();
-  ensureArray(propertyImages.data).forEach((image) => {
+  const propertyImageRows = (propertyImages.data ?? []) as Array<{
+    property_id: string;
+    url: string;
+  }>;
+  propertyImageRows.forEach((image) => {
     const list = imagesByProperty.get(image.property_id) ?? [];
     list.push(image.url);
     imagesByProperty.set(image.property_id, list);

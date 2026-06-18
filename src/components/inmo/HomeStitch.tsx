@@ -41,6 +41,11 @@ const sanitizePublicHref = (href?: string) =>
     ? "/propiedades"
     : href || "/propiedades";
 
+const propertyModuleLinkProps = (href: string) =>
+  href.startsWith("/propiedades")
+    ? { target: "_blank", rel: "noreferrer" }
+    : {};
+
 const getPropertyFeatures = (item: {
   rooms: number;
   area: number;
@@ -262,6 +267,7 @@ export default function HomeStitch() {
                 <motion.div whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Link
                     href={primaryHref}
+                    {...propertyModuleLinkProps(primaryHref)}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary-fixed px-6 py-3 text-sm font-bold text-primary shadow-[0_24px_45px_-28px_rgba(255,243,194,0.85)] sm:w-auto"
                   >
                     {homeContent.primaryCtaLabel}
@@ -271,6 +277,7 @@ export default function HomeStitch() {
                 <motion.div whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Link
                     href={secondaryHref}
+                    {...propertyModuleLinkProps(secondaryHref)}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/12 px-6 py-3 text-sm font-bold text-on-primary ghost-border backdrop-blur sm:w-auto"
                   >
                     {secondaryLabel}
@@ -305,6 +312,7 @@ export default function HomeStitch() {
                 <motion.div whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }}>
                   <Link
                     href={primaryHref}
+                    {...propertyModuleLinkProps(primaryHref)}
                     className="brand-gradient flex h-full items-center justify-center gap-2 rounded-3xl px-8 py-4 text-sm font-bold tracking-tight text-on-primary"
                   >
                     Ver propiedades
@@ -333,6 +341,7 @@ export default function HomeStitch() {
                   <Link
                     key={banner.id}
                     href={banner.ctaHref || "/propiedades"}
+                    {...propertyModuleLinkProps(banner.ctaHref || "/propiedades")}
                     className="group relative block min-w-full overflow-hidden"
                   >
                     <div className="relative min-h-[22rem] sm:min-h-[26rem]">
@@ -544,6 +553,8 @@ export default function HomeStitch() {
             <Link
               className="flex items-center gap-2 border-b-2 border-primary pb-1 text-sm font-bold uppercase tracking-widest"
               href="/propiedades"
+              target="_blank"
+              rel="noreferrer"
             >
               Ver todas las propiedades
             </Link>
@@ -559,6 +570,8 @@ export default function HomeStitch() {
               </h3>
               <Link
                 href="/propiedades"
+                target="_blank"
+                rel="noreferrer"
                 className="mt-6 inline-flex rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary"
               >
                 Ver propiedades
@@ -583,6 +596,8 @@ export default function HomeStitch() {
                   <MotionLink
                     key={item.id}
                     href={`/propiedades/${item.id}`}
+                    target="_blank"
+                    rel="noreferrer"
                     initial={{ opacity: 0, y: 36, scale: 0.97 }}
                     whileInView={{ opacity: 1, y: 0, scale: 1 }}
                     viewport={{ once: true, amount: 0.22 }}
@@ -703,7 +718,7 @@ export default function HomeStitch() {
                   {homeContent.teamSubtitle}
                 </p>
               </div>
-              <Link href="/propiedades" className="text-sm font-semibold text-primary">
+              <Link href="/propiedades" target="_blank" rel="noreferrer" className="text-sm font-semibold text-primary">
                 Ver propiedades
               </Link>
             </div>
@@ -711,6 +726,8 @@ export default function HomeStitch() {
               <motion.div whileHover={{ y: -6, scale: 1.01 }}>
                 <Link
                   href="/propiedades"
+                  target="_blank"
+                  rel="noreferrer"
                   className="block rounded-3xl bg-surface-container-low p-6"
                 >
                   <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">
@@ -727,6 +744,8 @@ export default function HomeStitch() {
               <motion.div whileHover={{ y: -6, scale: 1.01 }}>
                 <Link
                   href="/propiedades"
+                  target="_blank"
+                  rel="noreferrer"
                   className="block rounded-3xl bg-surface-container-low p-6"
                 >
                   <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">
@@ -761,7 +780,7 @@ export default function HomeStitch() {
                   {homeContent.recentSubtitle}
                 </p>
               </div>
-              <Link href="/propiedades" className="text-sm font-semibold text-primary">
+              <Link href="/propiedades" target="_blank" rel="noreferrer" className="text-sm font-semibold text-primary">
                 Ver propiedades
               </Link>
             </div>
@@ -783,6 +802,8 @@ export default function HomeStitch() {
                     >
                       <Link
                         href={`/propiedades/${item.id}`}
+                        target="_blank"
+                        rel="noreferrer"
                         className="block rounded-3xl bg-surface-container-low p-4"
                       >
                         <span

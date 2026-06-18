@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { getAvailability } from "@/lib/availability";
 import {
@@ -54,6 +54,7 @@ const toggleAttributeSelection = (
 };
 
 export default function CollaboratorPublicPage() {
+  const router = useRouter();
   const params = useParams<{ id: string | string[] }>();
   const collaboratorId = Array.isArray(params?.id) ? params.id[0] : params?.id || "";
   const { state, isReady } = useInmoStore();
@@ -307,7 +308,18 @@ export default function CollaboratorPublicPage() {
                 return (
                   <article
                     key={property.id}
-                    className="overflow-hidden rounded-3xl bg-surface-container-lowest shadow-[0_34px_70px_-42px_rgba(27,54,93,0.45)]"
+                    role="link"
+                    tabIndex={0}
+                    onClick={() =>
+                      router.push(`/colaborador/${collaboratorId}/propiedad/${property.id}`)
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        router.push(`/colaborador/${collaboratorId}/propiedad/${property.id}`);
+                      }
+                    }}
+                    className="cursor-pointer overflow-hidden rounded-3xl bg-surface-container-lowest shadow-[0_34px_70px_-42px_rgba(27,54,93,0.45)] transition hover:-translate-y-1 hover:shadow-[0_42px_80px_-46px_rgba(27,54,93,0.6)]"
                   >
                     <div className="relative h-64 bg-surface-container-low">
                       {cover ? (
@@ -350,6 +362,7 @@ export default function CollaboratorPublicPage() {
                           href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`}
                           target="_blank"
                           rel="noreferrer"
+                          onClick={(event) => event.stopPropagation()}
                           className="mt-5 inline-flex w-full justify-center rounded-full bg-primary px-5 py-3 text-sm font-bold text-on-primary"
                           style={{ color: "var(--color-on-primary)" }}
                         >

@@ -7,8 +7,10 @@ import { defaultState, STATE_VERSION } from "./inmoData";
 import { readAdminSession } from "./session";
 import { mergeState } from "./stateMerge";
 
-const STORAGE_KEY = "connexa-state/v4";
+const STORAGE_KEY = "connexa-state/v5";
+const LEGACY_STORAGE_KEYS = ["connexa-state/v4"];
 const UPDATE_EVENT = "inmo:updated";
+const MAX_STORAGE_BYTES = 1_500_000;
 
 const isBrowser = typeof window !== "undefined";
 let inMemoryState: InmoState | null = null;
@@ -26,6 +28,7 @@ const safeParse = (value: string | null) => {
 const readStorage = () => {
   if (!isBrowser) return null;
   try {
+    LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
     return window.localStorage.getItem(STORAGE_KEY);
   } catch (error) {
     console.warn("Storage no disponible, usando memoria", error);
@@ -35,16 +38,36 @@ const readStorage = () => {
 
 const writeStorage = (value: string) => {
   if (!isBrowser) return;
+  if (value.length > MAX_STORAGE_BYTES) {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+      LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
+    } catch {
+      // Storage may be unavailable; in-memory state is enough.
+    }
+    return;
+  }
   try {
     window.localStorage.setItem(STORAGE_KEY, value);
   } catch (error) {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+      LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
+    } catch {
+      // Ignore cleanup failures.
+    }
     console.warn("No se pudo guardar en storage, usando memoria", error);
   }
 };
 
-const fetchRemoteState = async (scope: "public" | "admin" = "public") => {
+const fetchRemoteState = async (
+  scope: "public" | "admin" = "public",
+  collaboratorId?: string
+) => {
   try {
-    const response = await fetch(`/api/inmo-state?scope=${scope}`, {
+    const params = new URLSearchParams({ scope });
+    if (collaboratorId) params.set("collaboratorId", collaboratorId);
+    const response = await fetch(`/api/inmo-state?${params.toString()}`, {
       cache: "no-store",
     });
     if (!response.ok) return null;
@@ -122,9 +145,12 @@ export const useInmoStore = () => {
         pathname?.startsWith("/registro")
           ? "admin"
           : "public";
+      const collaboratorId = pathname?.startsWith("/colaborador/")
+        ? pathname.split("/")[2]
+        : undefined;
       const local = loadState();
       setState(local);
-      const remote = await fetchRemoteState(scope);
+      const remote = await fetchRemoteState(scope, collaboratorId);
       if (!remote || remote.source === "fallback") {
         setIsReady(true);
         return;
@@ -134,7 +160,6 @@ export const useInmoStore = () => {
           ? mergeState(defaultState, remote.data)
           : mergeState(local, remote.data);
       inMemoryState = merged;
-      writeStorage(JSON.stringify(merged));
       setState(merged);
       setIsReady(true);
     };

@@ -14,7 +14,6 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
 import { propertyTypeLabels, type FilterGroup } from "@/lib/inmoData";
-import FrontHeader from "@/components/inmo/FrontHeader";
 import { createId } from "@/lib/adminForms";
 import { generatePropertyPdf } from "@/lib/propertyPdf";
 import { getAvailability } from "@/lib/availability";
@@ -400,10 +399,17 @@ export default function DetallePropiedadPage() {
 
   return (
     <div style={themeStyles} className="bg-background text-on-background font-body">
-      <FrontHeader active="detail" hideBrand />
-
-      <main className="pt-20">
-        <section className="mx-auto max-w-screen-2xl px-6 lg:px-8 pt-8">
+      <main className="pt-5">
+        <div className="mx-auto max-w-screen-2xl px-6 lg:px-8">
+          <Link
+            href="/propiedades"
+            className="mb-5 inline-flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 text-sm font-bold text-primary"
+          >
+            <span className="material-symbols-outlined text-base">arrow_back</span>
+            Propiedades
+          </Link>
+        </div>
+        <section className="mx-auto max-w-screen-2xl px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-12 lg:items-start">
             <div className="lg:sticky lg:top-24 lg:col-span-7">
               <div className="relative overflow-hidden rounded-2xl bg-surface-container-lowest">
