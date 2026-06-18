@@ -23,6 +23,22 @@ export const mergeState = (
   homeContent: {
     ...base.homeContent,
     ...(incoming.homeContent ?? {}),
+    menuItems: Array.isArray(incoming.homeContent?.menuItems)
+      ? incoming.homeContent.menuItems.map((item) => ({
+          ...item,
+          active: item.active ?? true,
+        }))
+      : base.homeContent.menuItems,
+    visitForm: {
+      ...base.homeContent.visitForm,
+      ...(incoming.homeContent?.visitForm ?? {}),
+    },
+    partnerLogos: Array.isArray(incoming.homeContent?.partnerLogos)
+      ? incoming.homeContent.partnerLogos.map((logo) => ({
+          ...logo,
+          active: logo.active ?? true,
+        }))
+      : base.homeContent.partnerLogos,
     banners: Array.isArray(incoming.homeContent?.banners)
       ? incoming.homeContent.banners.map((banner) => ({
           ...banner,

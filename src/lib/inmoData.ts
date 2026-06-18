@@ -45,6 +45,45 @@ export type HomeBanner = {
   active: boolean;
 };
 
+export type HomeMenuItem = {
+  id: string;
+  label: string;
+  href: string;
+  active: boolean;
+};
+
+export type PartnerLogo = {
+  id: string;
+  name: string;
+  image: string;
+  href: string;
+  active: boolean;
+};
+
+export type VisitFormContent = {
+  title: string;
+  subtitle: string;
+  nameLabel: string;
+  emailLabel: string;
+  phoneLabel: string;
+  idNumberLabel: string;
+  nationalityLabel: string;
+  ageLabel: string;
+  moveInDateLabel: string;
+  durationLabel: string;
+  occupationLabel: string;
+  peopleCountLabel: string;
+  petsLabel: string;
+  petsCountLabel: string;
+  visitAvailabilityLabel: string;
+  messageLabel: string;
+  requirementsText: string;
+  requirementsHighlight: string;
+  acknowledgementLabel: string;
+  submitLabel: string;
+  successMessage: string;
+};
+
 export type HomeContent = {
   eyebrow: string;
   title: string;
@@ -61,6 +100,11 @@ export type HomeContent = {
   teamSubtitle: string;
   recentTitle: string;
   recentSubtitle: string;
+  menuItems: HomeMenuItem[];
+  visitForm: VisitFormContent;
+  partnersTitle: string;
+  partnersSubtitle: string;
+  partnerLogos: PartnerLogo[];
   banners: HomeBanner[];
 };
 
@@ -242,19 +286,64 @@ export const defaultState: InmoState = {
     title: "Connexa",
     italicTitle: "tu lugar empieza acá.",
     subtitle:
-      "Encontrá propiedades, guardá favoritas y consultá con un equipo que te acompaña en cada paso de la decisión.",
+      "Encontrá propiedades y consultá con un equipo que te acompaña en cada paso de la decisión.",
     primaryCtaLabel: "Explorar catálogo",
     primaryCtaHref: "/propiedades",
-    secondaryCtaLabel: "Acceso clientes",
-    secondaryCtaHref: "/acceso",
+    secondaryCtaLabel: "Consultar ahora",
+    secondaryCtaHref: "/propiedades",
     statsTitle: "Propiedades",
     featuredTitle: "Propiedades destacadas",
     featuredSubtitle:
       "Cada ficha reúne ubicación, características, imágenes y consulta directa para decidir mejor.",
     teamTitle: "Elegí cómo avanzar",
-    teamSubtitle: "Accesos simples para comprar, alquilar, guardar favoritas y enviar consultas sin vueltas.",
+    teamSubtitle: "Accesos simples para explorar propiedades y enviar consultas sin vueltas.",
     recentTitle: "Últimas propiedades publicadas",
     recentSubtitle: "Nuevas opciones para comprar o alquilar en Connexa.",
+    partnersTitle: "Trabajamos con aliados estratégicos",
+    partnersSubtitle:
+      "Marcas, estudios y proveedores que acompañan la operación inmobiliaria.",
+    menuItems: [
+      {
+        id: "menu-inicio",
+        label: "Inicio",
+        href: "/",
+        active: true,
+      },
+      {
+        id: "menu-propiedades",
+        label: "Propiedades",
+        href: "/propiedades",
+        active: true,
+      },
+    ],
+    visitForm: {
+      title: "Solicitud de visita o reserva",
+      subtitle:
+        "Para coordinar una visita necesitamos algunos datos básicos. La documentación se solicita recién si avanzás con la reserva.",
+      nameLabel: "Nombre y apellido",
+      emailLabel: "Email",
+      phoneLabel: "Teléfono",
+      idNumberLabel: "DNI / CUIL / CUIT",
+      nationalityLabel: "Nacionalidad",
+      ageLabel: "Edad",
+      moveInDateLabel: "Fecha de ingreso",
+      durationLabel: "Duración",
+      occupationLabel: "Ocupación o estudios",
+      peopleCountLabel: "Cantidad de personas",
+      petsLabel: "Mascotas",
+      petsCountLabel: "Cantidad de mascotas",
+      visitAvailabilityLabel: "Disponibilidad para visitar",
+      messageLabel: "Mensaje adicional opcional",
+      requirementsText:
+        "Ingresos o certificado de estudios se toman solo de modo informativo y no se deben enviar ahora. La documentación se solicita únicamente si se avanza con la reserva.",
+      requirementsHighlight:
+        "Requisitos: 1 mes adelantado + 1 mes de depósito + honorarios inmobiliarios.",
+      acknowledgementLabel:
+        "Entiendo que la documentación se solicita solo al avanzar con la reserva y que la inmobiliaria opera con Martilleros Públicos y asesoramiento legal.",
+      submitLabel: "Enviar solicitud",
+      successMessage: "Consulta enviada. Un asesor va a contactarte.",
+    },
+    partnerLogos: [],
     banners: [
       {
         id: "home-banner-1",

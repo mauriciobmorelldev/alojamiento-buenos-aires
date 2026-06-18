@@ -56,7 +56,6 @@ const navItems: Array<{
     icon: "domain",
   },
   { id: "agentes", label: "Corredores", href: "/admin/agentes", icon: "group" },
-  { id: "clientes", label: "Clientes", href: "/admin/clientes", icon: "person_search" },
   { id: "leads", label: "Leads", href: "/admin/leads", icon: "insights" },
   {
     id: "administradores",
@@ -113,18 +112,6 @@ export default function AdminShell({
           unread: !readNotificationIds.includes(`lead-${lead.id}`),
         };
       });
-    const favoriteItems = [...state.propertyFavorites]
-      .slice(-3)
-      .reverse()
-      .map((favorite) => {
-        const property = state.listings.find((listing) => listing.id === favorite.propertyId);
-        return {
-          id: `fav-${favorite.id}`,
-          title: "Favorito agregado",
-          subtitle: property?.title ?? "Propiedad guardada por cliente",
-          unread: !readNotificationIds.includes(`fav-${favorite.id}`),
-        };
-      });
     const tokkoLog = state.tokkoSyncLogs[0]
       ? [{
           id: `tokko-${state.tokkoSyncLogs[0].id}`,
@@ -133,8 +120,8 @@ export default function AdminShell({
           unread: !readNotificationIds.includes(`tokko-${state.tokkoSyncLogs[0].id}`),
         }]
       : [];
-    return [...leadItems, ...favoriteItems, ...tokkoLog].slice(0, 8);
-  }, [readNotificationIds, state.leads, state.listings, state.propertyFavorites, state.tokkoSyncLogs]);
+    return [...leadItems, ...tokkoLog].slice(0, 8);
+  }, [readNotificationIds, state.leads, state.listings, state.tokkoSyncLogs]);
 
   useEffect(() => {
     const hydrate = () => {

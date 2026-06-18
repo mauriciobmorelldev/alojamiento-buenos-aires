@@ -36,6 +36,11 @@ const hasFeature = (attributes: Record<string, string[]>, keywords: string[]) =>
 const isPinnedHome = (attributes: Record<string, string[]>) =>
   attributes.pinned_home?.includes("true");
 
+const sanitizePublicHref = (href?: string) =>
+  href === "/acceso" || href === "/registro" || href === "/mi-cuenta"
+    ? "/propiedades"
+    : href || "/propiedades";
+
 const getPropertyFeatures = (item: {
   rooms: number;
   area: number;
@@ -120,39 +125,10 @@ const brandXMotion = {
 
 export default function HomeStitch() {
   const { state } = useInmoStore();
-  const { listings, agents, theme, clientUsers, homeContent, adminUsers } = state;
-  const [clientName, setClientName] = useState("");
+  const { listings, agents, theme, homeContent, adminUsers } = state;
   const { scrollYProgress } = useScroll();
   const heroImageY = useTransform(scrollYProgress, [0, 0.45], [0, 90]);
   const heroImageScale = useTransform(scrollYProgress, [0, 0.45], [1.05, 1.15]);
-
-  useEffect(() => {
-    const hydrate = () => {
-      try {
-        const raw = window.localStorage.getItem("inmo-client-session/v1");
-        if (!raw) {
-          setClientName("");
-          return;
-        }
-        const session = JSON.parse(raw) as { email?: string };
-        if (!session.email) {
-          setClientName("");
-          return;
-        }
-        const match = clientUsers.find(
-          (user) => user.email.toLowerCase() === session.email?.toLowerCase()
-        );
-        setClientName(match?.name ?? "");
-      } catch {
-        setClientName("");
-      }
-    };
-    if (typeof queueMicrotask === "function") {
-      queueMicrotask(hydrate);
-    } else {
-      window.setTimeout(hydrate, 0);
-    }
-  }, [clientUsers]);
 
   const pinnedHomeListings = listings.filter((item) => isPinnedHome(item.attributes));
   const featuredListings = (
@@ -172,6 +148,26 @@ export default function HomeStitch() {
     () => homeContent.banners.filter((banner) => banner.active),
     [homeContent.banners]
   );
+  const activePartnerLogos = useMemo(
+    () =>
+      homeContent.partnerLogos.filter(
+        (logo) => logo.active && logo.image && logo.name.trim()
+      ),
+    [homeContent.partnerLogos]
+  );
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+
+  useEffect(() => {
+    if (activeBanners.length <= 1) return;
+    const interval = window.setInterval(() => {
+      setActiveBannerIndex((current) => (current + 1) % activeBanners.length);
+    }, 5200);
+    return () => window.clearInterval(interval);
+  }, [activeBanners.length]);
+
+  const safeActiveBannerIndex = activeBanners.length
+    ? activeBannerIndex % activeBanners.length
+    : 0;
 
   const agentsById = useMemo(
     () => Object.fromEntries(agents.map((agent) => [agent.id, agent])),
@@ -186,6 +182,11 @@ export default function HomeStitch() {
   const availableCount = listings.filter((item) => item.status === "disponible").length;
 
   const recentListings = useMemo(() => [...listings].slice(-3).reverse(), [listings]);
+  const primaryHref = sanitizePublicHref(homeContent.primaryCtaHref);
+  const secondaryHref = sanitizePublicHref(homeContent.secondaryCtaHref);
+  const secondaryLabel = /cliente|cuenta|acceso/i.test(homeContent.secondaryCtaLabel)
+    ? "Consultar ahora"
+    : homeContent.secondaryCtaLabel;
 
   const themeStyles = buildThemeStyles(theme);
 
@@ -255,14 +256,12 @@ export default function HomeStitch() {
                 variants={sectionReveal}
                 className="max-w-2xl text-sm leading-7 text-on-primary/90 sm:text-base md:text-lg"
               >
-                {clientName
-                  ? `Bienvenido, ${clientName}. Accedé a tus favoritos y consultas desde tu cuenta privada.`
-                  : homeContent.subtitle}
+                {homeContent.subtitle}
               </motion.p>
               <motion.div variants={sectionReveal} className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
                 <motion.div whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Link
-                  href={homeContent.primaryCtaHref || "/propiedades"}
+                    href={primaryHref}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary-fixed px-6 py-3 text-sm font-bold text-primary shadow-[0_24px_45px_-28px_rgba(255,243,194,0.85)] sm:w-auto"
                   >
                     {homeContent.primaryCtaLabel}
@@ -271,10 +270,10 @@ export default function HomeStitch() {
                 </motion.div>
                 <motion.div whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Link
-                  href={homeContent.secondaryCtaHref || "/acceso"}
+                    href={secondaryHref}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/12 px-6 py-3 text-sm font-bold text-on-primary ghost-border backdrop-blur sm:w-auto"
                   >
-                    {homeContent.secondaryCtaLabel}
+                    {secondaryLabel}
                   </Link>
                 </motion.div>
               </motion.div>
@@ -299,15 +298,13 @@ export default function HomeStitch() {
                 </div>
                 <div className="rounded-xl bg-surface-container-low p-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">
-                    Favoritos
+                    Consulta
                   </p>
-                  <p className="mt-2 text-sm font-bold leading-6 text-primary">
-                    Guardá y compará
-                  </p>
+                  <p className="mt-2 text-sm font-bold leading-6 text-primary">Consultá fácil</p>
                 </div>
                 <motion.div whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }}>
                   <Link
-                    href={homeContent.primaryCtaHref || "/propiedades"}
+                    href={primaryHref}
                     className="brand-gradient flex h-full items-center justify-center gap-2 rounded-3xl px-8 py-4 text-sm font-bold tracking-tight text-on-primary"
                   >
                     Ver propiedades
@@ -321,50 +318,98 @@ export default function HomeStitch() {
 
         {activeBanners.length ? (
           <section className="mx-auto max-w-screen-2xl px-4 pb-8 pt-5 sm:-mt-12 sm:px-6 sm:pt-0 lg:px-8">
-            <div className="grid gap-4 md:grid-cols-2">
-              {activeBanners.slice(0, 2).map((banner, index) => (
-                <motion.div
-                  key={banner.id}
-                  initial={{ opacity: 0, y: 28, scale: 0.97, filter: "blur(10px)" }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                  viewport={{ once: true, amount: 0.35 }}
-                  transition={{ ...smoothSpring, delay: index * 0.08 }}
-                  whileHover={{ y: -8, scale: 1.01 }}
-                  className="will-change-transform"
-                >
+            <motion.div
+              initial={{ opacity: 0, y: 28, scale: 0.98, filter: "blur(10px)" }}
+              whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+              viewport={{ once: true, amount: 0.28 }}
+              transition={smoothSpring}
+              className="relative overflow-hidden rounded-[2rem] bg-primary text-on-primary pro-card"
+            >
+              <div
+                className="flex transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                style={{ transform: `translateX(-${safeActiveBannerIndex * 100}%)` }}
+              >
+                {activeBanners.map((banner) => (
                   <Link
+                    key={banner.id}
                     href={banner.ctaHref || "/propiedades"}
-                    className="group relative block min-h-56 overflow-hidden rounded-3xl bg-primary text-on-primary pro-card"
+                    className="group relative block min-w-full overflow-hidden"
                   >
-                    {banner.image ? (
-                      <motion.img
-                        src={banner.image}
-                        alt={banner.title}
-                        className="absolute inset-0 h-full w-full object-cover"
-                        whileHover={{ scale: 1.08 }}
-                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                      />
-                    ) : null}
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-primary/30" />
-                    <div className="relative flex min-h-56 flex-col justify-end p-7">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-primary-fixed">
-                        Oportunidad destacada
-                      </p>
-                      <h2 className="mt-3 max-w-xl text-2xl font-headline font-bold text-on-primary">
-                        {banner.title}
-                      </h2>
-                      <p className="mt-2 max-w-xl text-sm leading-6 text-on-primary/82">
-                        {banner.subtitle}
-                      </p>
-                      <span className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-primary-fixed px-4 py-2 text-xs font-bold uppercase tracking-widest text-primary">
-                        {banner.ctaLabel || "Ver más"}
-                        <span className="material-symbols-outlined text-base">arrow_forward</span>
-                      </span>
+                    <div className="relative min-h-[22rem] sm:min-h-[26rem]">
+                      {banner.image ? (
+                        <motion.img
+                          src={banner.image}
+                          alt={banner.title}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          whileHover={{ scale: 1.06 }}
+                          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 brand-gradient" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/78 to-primary/10" />
+                      <div className="relative flex min-h-[22rem] max-w-4xl flex-col justify-end p-7 sm:min-h-[26rem] sm:p-10">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-primary-fixed">
+                          Destacado
+                        </p>
+                        <h2 className="mt-4 max-w-3xl text-3xl font-headline font-bold text-on-primary sm:text-5xl">
+                          {banner.title}
+                        </h2>
+                        <p className="mt-3 max-w-2xl text-sm leading-7 text-on-primary/84 sm:text-base">
+                          {banner.subtitle}
+                        </p>
+                        <span className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary">
+                          {banner.ctaLabel || "Ver más"}
+                          <span className="material-symbols-outlined text-base">arrow_forward</span>
+                        </span>
+                      </div>
                     </div>
                   </Link>
-                </motion.div>
-              ))}
-            </div>
+                ))}
+              </div>
+
+              {activeBanners.length > 1 ? (
+                <>
+                  <div className="absolute bottom-5 right-5 flex items-center gap-2 rounded-full bg-surface-container-lowest/12 p-2 backdrop-blur">
+                    {activeBanners.map((banner, index) => (
+                      <button
+                        key={`dot-${banner.id}`}
+                        type="button"
+                        onClick={() => setActiveBannerIndex(index)}
+                        className={`h-2.5 rounded-full transition-all ${
+                          safeActiveBannerIndex === index
+                            ? "w-8 bg-primary-fixed"
+                            : "w-2.5 bg-on-primary/45 hover:bg-on-primary/75"
+                        }`}
+                        aria-label={`Ver banner ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveBannerIndex(
+                        (current) => (current - 1 + activeBanners.length) % activeBanners.length
+                      )
+                    }
+                    className="absolute left-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-surface-container-lowest/16 text-on-primary backdrop-blur transition hover:bg-surface-container-lowest/24 sm:flex"
+                    aria-label="Banner anterior"
+                  >
+                    <span className="material-symbols-outlined">chevron_left</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveBannerIndex((current) => (current + 1) % activeBanners.length)
+                    }
+                    className="absolute right-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-surface-container-lowest/16 text-on-primary backdrop-blur transition hover:bg-surface-container-lowest/24 sm:flex"
+                    aria-label="Banner siguiente"
+                  >
+                    <span className="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </>
+              ) : null}
+            </motion.div>
           </section>
         ) : null}
 
@@ -408,10 +453,10 @@ export default function HomeStitch() {
               whileHover={{ y: -6 }}
               className="rounded-3xl bg-surface-container-lowest p-6 pro-card"
             >
-              <span className="material-symbols-outlined text-3xl text-primary">favorite</span>
-              <p className="mt-4 text-sm font-bold text-primary">Guardar favoritas</p>
+              <span className="material-symbols-outlined text-3xl text-primary">support_agent</span>
+              <p className="mt-4 text-sm font-bold text-primary">Consulta directa</p>
               <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                Creá una cuenta y armá tu selección para decidir con más calma.
+                Enviá tus datos desde la ficha y recibí seguimiento comercial sin pasos extra.
               </p>
             </motion.div>
             <motion.div
@@ -431,6 +476,60 @@ export default function HomeStitch() {
             </motion.div>
           </div>
         </section>
+
+        {activePartnerLogos.length ? (
+          <section className="mx-auto max-w-screen-2xl px-4 pb-16 sm:px-6 sm:pb-24 lg:px-8">
+            <motion.div
+              variants={sectionReveal}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.22 }}
+              className="overflow-hidden rounded-3xl bg-surface-container-lowest p-5 pro-card sm:p-8"
+            >
+              <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-headline font-bold tracking-tight text-primary">
+                    {homeContent.partnersTitle}
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm text-on-surface-variant">
+                    {homeContent.partnersSubtitle}
+                  </p>
+                </div>
+              </div>
+              <div className="logo-marquee">
+                <div className="logo-marquee__track">
+                  {[...activePartnerLogos, ...activePartnerLogos].map((logo, index) => {
+                    const content = (
+                      <div className="flex h-24 w-44 shrink-0 items-center justify-center rounded-2xl border border-outline-variant/20 bg-surface-container-low px-5">
+                        <img
+                          src={logo.image}
+                          alt={logo.name}
+                          className="max-h-14 max-w-full object-contain"
+                        />
+                      </div>
+                    );
+                    return logo.href ? (
+                      <Link
+                        key={`${logo.id}-${index}`}
+                        href={logo.href}
+                        target={logo.href.startsWith("http") ? "_blank" : undefined}
+                        rel={logo.href.startsWith("http") ? "noreferrer" : undefined}
+                        className="shrink-0"
+                        aria-label={logo.name}
+                      >
+                        {content}
+                      </Link>
+                    ) : (
+                      <div key={`${logo.id}-${index}`} className="shrink-0">
+                        {content}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </section>
+        ) : null}
 
         <section className="mx-auto max-w-screen-2xl px-4 pb-16 sm:px-6 sm:pb-24 lg:px-8">
           <div className="mb-8 flex flex-col items-start justify-between gap-5 sm:mb-14 md:flex-row md:items-end">
@@ -459,10 +558,10 @@ export default function HomeStitch() {
                 Todavía no hay propiedades destacadas
               </h3>
               <Link
-                href="/acceso"
+                href="/propiedades"
                 className="mt-6 inline-flex rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary"
               >
-                Acceso clientes
+                Ver propiedades
               </Link>
             </div>
           ) : (
@@ -627,17 +726,17 @@ export default function HomeStitch() {
               </motion.div>
               <motion.div whileHover={{ y: -6, scale: 1.01 }}>
                 <Link
-                  href="/registro"
+                  href="/propiedades"
                   className="block rounded-3xl bg-surface-container-low p-6"
                 >
                   <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">
-                    Cuenta
+                    Consulta
                   </p>
                   <h3 className="mt-2 text-xl font-bold text-primary">
-                    Guardar y consultar
+                    Hacer una consulta
                   </h3>
                   <p className="mt-2 text-sm text-on-surface-variant">
-                    Guardá favoritas y seguí tus consultas desde tu cuenta.
+                    Entrá a una ficha y enviá tu consulta con tus datos de contacto.
                   </p>
                 </Link>
               </motion.div>

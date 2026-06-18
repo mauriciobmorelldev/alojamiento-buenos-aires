@@ -14,7 +14,9 @@ export default function AdminBrandingPage() {
 
   const [themeForm, setThemeForm] = useState<ThemeSettings>(theme);
   const [homeForm, setHomeForm] = useState<HomeContent>(homeContent);
-  const [activeTab, setActiveTab] = useState<"identity" | "hero" | "sections" | "banners">(
+  const [activeTab, setActiveTab] = useState<
+    "identity" | "hero" | "menu" | "form" | "sections" | "banners" | "logos"
+  >(
     "identity"
   );
   const [formError, setFormError] = useState("");
@@ -79,10 +81,38 @@ export default function AdminBrandingPage() {
     setThemeForm((prev) => ({ ...prev, heroImage: url }));
   };
 
+  const normalizeMenuHref = (href: string) => {
+    const value = href.trim();
+    if (!value) return "/";
+    if (
+      value.startsWith("/") ||
+      value.startsWith("#") ||
+      value.startsWith("http://") ||
+      value.startsWith("https://") ||
+      value.startsWith("mailto:") ||
+      value.startsWith("tel:")
+    ) {
+      return value;
+    }
+    return `/${value}`;
+  };
+
   const handleHomeSubmit = (event: FormEvent) => {
     event.preventDefault();
     setFormError("");
     setFormNotice("");
+    const normalizedMenuItems = homeForm.menuItems
+      .map((item) => ({
+        ...item,
+        label: item.label.trim(),
+        href: normalizeMenuHref(item.href),
+        active: Boolean(item.active),
+      }))
+      .filter((item) => item.label);
+    if (activeTab === "menu" && !normalizedMenuItems.length) {
+      setFormError("Agregá al menos un ítem visible para el menú.");
+      return;
+    }
     updateState((prev) => ({
       ...prev,
       homeContent: {
@@ -94,9 +124,32 @@ export default function AdminBrandingPage() {
           ctaLabel: banner.ctaLabel.trim(),
           ctaHref: banner.ctaHref.trim() || "/propiedades",
         })),
+        partnerLogos: homeForm.partnerLogos
+          .map((logo) => ({
+            ...logo,
+            name: logo.name.trim(),
+            href: logo.href.trim(),
+          }))
+          .filter((logo) => logo.name || logo.image),
+        menuItems: normalizedMenuItems,
+        visitForm: Object.fromEntries(
+          Object.entries(homeForm.visitForm).map(([key, value]) => [
+            key,
+            typeof value === "string" ? value.trim() : value,
+          ])
+        ) as HomeContent["visitForm"],
       },
     }));
-    setFormNotice("Home editable actualizada.");
+    setHomeForm((prev) => ({ ...prev, menuItems: normalizedMenuItems }));
+    setFormNotice(
+      activeTab === "menu"
+        ? "Menú actualizado. Ya se refleja en el header público."
+        : activeTab === "form"
+          ? "Formulario actualizado."
+          : activeTab === "logos"
+            ? "Logos actualizados."
+          : "Home editable actualizada."
+    );
   };
 
   const updateHomeField = <K extends keyof HomeContent>(
@@ -119,10 +172,77 @@ export default function AdminBrandingPage() {
     }));
   };
 
+  const updateVisitFormField = (
+    key: keyof HomeContent["visitForm"],
+    value: string
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      visitForm: {
+        ...prev.visitForm,
+        [key]: value,
+      },
+    }));
+  };
+
   const handleBannerUpload = async (bannerId: string, files: FileList | null) => {
     if (!files?.length) return;
     const url = await readFileAsDataUrl(files[0]);
     updateBanner(bannerId, "image", url);
+  };
+
+  const updatePartnerLogo = (
+    logoId: string,
+    key: keyof HomeContent["partnerLogos"][number],
+    value: string | boolean
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      partnerLogos: prev.partnerLogos.map((logo) =>
+        logo.id === logoId ? { ...logo, [key]: value } : logo
+      ),
+    }));
+  };
+
+  const handlePartnerLogoUpload = async (logoId: string, files: FileList | null) => {
+    if (!files?.length) return;
+    const url = await readFileAsDataUrl(files[0]);
+    updatePartnerLogo(logoId, "image", url);
+  };
+
+  const updateMenuItem = (
+    itemId: string,
+    key: keyof HomeContent["menuItems"][number],
+    value: string | boolean
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      menuItems: prev.menuItems.map((item) =>
+        item.id === itemId ? { ...item, [key]: value } : item
+      ),
+    }));
+  };
+
+  const addMenuItem = () => {
+    setHomeForm((prev) => ({
+      ...prev,
+      menuItems: [
+        ...prev.menuItems,
+        {
+          id: createId(),
+          label: "Nuevo ítem",
+          href: "/propiedades",
+          active: true,
+        },
+      ],
+    }));
+  };
+
+  const removeMenuItem = (itemId: string) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      menuItems: prev.menuItems.filter((item) => item.id !== itemId),
+    }));
   };
 
   const addBanner = () => {
@@ -150,6 +270,29 @@ export default function AdminBrandingPage() {
     }));
   };
 
+  const addPartnerLogo = () => {
+    setHomeForm((prev) => ({
+      ...prev,
+      partnerLogos: [
+        ...prev.partnerLogos,
+        {
+          id: createId(),
+          name: "Nuevo aliado",
+          image: "",
+          href: "",
+          active: true,
+        },
+      ],
+    }));
+  };
+
+  const removePartnerLogo = (logoId: string) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      partnerLogos: prev.partnerLogos.filter((logo) => logo.id !== logoId),
+    }));
+  };
+
   return (
     <AdminShell activeSection="branding" title="Branding y Home">
       <LayoutGroup>
@@ -160,8 +303,11 @@ export default function AdminBrandingPage() {
         {[
           ["identity", "Identidad", "palette"],
           ["hero", "Hero", "view_carousel"],
+          ["menu", "Menú", "segment"],
+          ["form", "Formulario", "dynamic_form"],
           ["sections", "Secciones", "dashboard_customize"],
-          ["banners", "Banners", "panorama"],
+          ["banners", "Carrusel", "panorama"],
+          ["logos", "Logos", "handshake"],
         ].map(([id, label, icon]) => (
           <motion.button
             key={id}
@@ -287,11 +433,21 @@ export default function AdminBrandingPage() {
             </label>
 
             {themeForm.logo ? (
-              <img
-                src={themeForm.logo}
-                alt="Logo"
-                className="h-16 w-auto rounded-xl border border-outline-variant/40 object-contain"
-              />
+              <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-surface-container-low p-4">
+                <img
+                  src={themeForm.logo}
+                  alt="Logo"
+                  className="h-16 w-auto rounded-xl border border-outline-variant/40 bg-surface-container-lowest object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={() => setThemeForm((prev) => ({ ...prev, logo: "" }))}
+                  className="inline-flex items-center gap-2 rounded-full border border-error/25 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-error transition hover:bg-error-container"
+                >
+                  <span className="material-symbols-outlined text-base">delete</span>
+                  Quitar logo
+                </button>
+              </div>
             ) : null}
 
             <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
@@ -439,18 +595,39 @@ export default function AdminBrandingPage() {
             <h3 className="text-xl font-headline font-bold text-primary">
               {activeTab === "hero"
                 ? "Hero de la home"
+                : activeTab === "menu"
+                  ? "Menú público"
+                : activeTab === "form"
+                  ? "Formulario de solicitud"
                 : activeTab === "sections"
                   ? "Textos de secciones"
-                  : "Banners de la home"}
+                : activeTab === "banners"
+                  ? "Carrusel de banners"
+                  : "Logos de aliados"}
             </h3>
             <p className="mt-2 max-w-2xl text-xs text-on-surface-variant">
               {activeTab === "hero"
                 ? "Editá el primer impacto: claim, texto principal y botones."
+                : activeTab === "menu"
+                  ? "Administrá los links visibles del header público. Podés pausar ítems sin eliminarlos."
+                : activeTab === "form"
+                  ? "Editá labels, textos legales, requisitos y mensajes del formulario de visita o reserva."
                 : activeTab === "sections"
                   ? "Ajustá los títulos y bajadas de los bloques principales de la home."
-                  : "Creá campañas visuales con imagen, CTA y estado activo/inactivo."}
+                : activeTab === "banners"
+                  ? "Creá banners que se muestran como carrusel en la home."
+                  : "Cargá logos de marcas, estudios o aliados para mostrarlos en un carrusel infinito."}
             </p>
           </div>
+          {activeTab === "menu" ? (
+            <button
+              type="button"
+              onClick={addMenuItem}
+              className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
+            >
+              Agregar ítem
+            </button>
+          ) : null}
           {activeTab === "banners" ? (
             <button
               type="button"
@@ -458,6 +635,15 @@ export default function AdminBrandingPage() {
               className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
             >
               Agregar banner
+            </button>
+          ) : null}
+          {activeTab === "logos" ? (
+            <button
+              type="button"
+              onClick={addPartnerLogo}
+              className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
+            >
+              Agregar logo
             </button>
           ) : null}
         </div>
@@ -533,6 +719,8 @@ export default function AdminBrandingPage() {
             {[
               ["featuredTitle", "Título propiedades"],
               ["featuredSubtitle", "Texto propiedades"],
+              ["partnersTitle", "Título logos aliados"],
+              ["partnersSubtitle", "Texto logos aliados"],
               ["teamTitle", "Título bloque de acciones"],
               ["teamSubtitle", "Texto bloque de acciones"],
               ["recentTitle", "Título recientes"],
@@ -554,6 +742,142 @@ export default function AdminBrandingPage() {
                   }
                 />
               </label>
+            ))}
+          </div>
+          ) : null}
+
+          {activeTab === "form" ? (
+          <div className="grid gap-5">
+            <div className="grid gap-4 md:grid-cols-2">
+              {[
+                ["title", "Título del formulario"],
+                ["subtitle", "Texto introductorio"],
+                ["nameLabel", "Label nombre"],
+                ["emailLabel", "Label email"],
+                ["phoneLabel", "Label teléfono"],
+                ["idNumberLabel", "Label DNI / CUIL / CUIT"],
+                ["nationalityLabel", "Label nacionalidad"],
+                ["ageLabel", "Label edad"],
+                ["moveInDateLabel", "Label fecha ingreso"],
+                ["durationLabel", "Label duración"],
+                ["occupationLabel", "Label ocupación/estudios"],
+                ["peopleCountLabel", "Label cantidad personas"],
+                ["petsLabel", "Label mascotas"],
+                ["petsCountLabel", "Label cantidad mascotas"],
+                ["visitAvailabilityLabel", "Label disponibilidad"],
+                ["messageLabel", "Label mensaje opcional"],
+                ["submitLabel", "Texto botón"],
+                ["successMessage", "Mensaje éxito"],
+              ].map(([key, label]) => (
+                <label
+                  key={key}
+                  className={`grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant ${
+                    key === "subtitle" || key === "successMessage" ? "md:col-span-2" : ""
+                  }`}
+                >
+                  {label}
+                  <input
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                    value={String(homeForm.visitForm[key as keyof HomeContent["visitForm"]] ?? "")}
+                    onChange={(event) =>
+                      updateVisitFormField(
+                        key as keyof HomeContent["visitForm"],
+                        event.target.value
+                      )
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {[
+                ["requirementsText", "Texto documentación/ingresos"],
+                ["requirementsHighlight", "Texto requisitos"],
+                ["acknowledgementLabel", "Texto confirmación legal"],
+              ].map(([key, label]) => (
+                <label
+                  key={key}
+                  className={`grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant ${
+                    key === "acknowledgementLabel" ? "md:col-span-2" : ""
+                  }`}
+                >
+                  {label}
+                  <textarea
+                    className="min-h-28 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                    value={String(homeForm.visitForm[key as keyof HomeContent["visitForm"]] ?? "")}
+                    onChange={(event) =>
+                      updateVisitFormField(
+                        key as keyof HomeContent["visitForm"],
+                        event.target.value
+                      )
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+          ) : null}
+
+          {activeTab === "menu" ? (
+          <div className="grid gap-4">
+            {homeForm.menuItems.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-3xl bg-surface-container-low p-6 text-sm text-on-surface-variant"
+              >
+                No hay ítems en el menú. Agregá al menos “Inicio” o “Propiedades”.
+              </motion.div>
+            ) : null}
+            {homeForm.menuItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -12, scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 180, damping: 22, delay: index * 0.025 }}
+                whileHover={{ y: -3 }}
+                className="grid gap-4 rounded-3xl bg-surface-container-low p-5 lg:grid-cols-[1fr_1fr_auto]"
+              >
+                <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                  Texto del menú
+                  <input
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                    value={item.label}
+                    onChange={(event) => updateMenuItem(item.id, "label", event.target.value)}
+                  />
+                </label>
+                <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                  Link
+                  <input
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                    value={item.href}
+                    onChange={(event) => updateMenuItem(item.id, "href", event.target.value)}
+                    placeholder="/propiedades"
+                  />
+                </label>
+                <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+                  <label className="flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-3 text-xs font-semibold text-primary">
+                    <input
+                      type="checkbox"
+                      checked={item.active}
+                      onChange={(event) =>
+                        updateMenuItem(item.id, "active", event.target.checked)
+                      }
+                    />
+                    Visible
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeMenuItem(item.id)}
+                    className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest text-error transition hover:bg-error-container"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </motion.div>
             ))}
           </div>
           ) : null}
@@ -646,12 +970,102 @@ export default function AdminBrandingPage() {
           </div>
           ) : null}
 
+          {activeTab === "logos" ? (
+          <div className="grid gap-4">
+            {homeForm.partnerLogos.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-3xl bg-surface-container-low p-6 text-sm text-on-surface-variant"
+              >
+                Todavía no hay logos cargados.
+              </motion.div>
+            ) : null}
+            {homeForm.partnerLogos.map((logo, index) => (
+              <motion.div
+                key={logo.id}
+                layout
+                initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -12, scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 170, damping: 22, delay: index * 0.03 }}
+                className="grid gap-4 rounded-3xl bg-surface-container-low p-5 lg:grid-cols-[180px_1fr_auto]"
+              >
+                <div className="flex h-36 items-center justify-center overflow-hidden rounded-2xl bg-surface-container-lowest p-5">
+                  {logo.image ? (
+                    <img src={logo.image} alt={logo.name} className="max-h-20 max-w-full object-contain" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center rounded-xl border border-dashed border-outline-variant/50 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                      Logo
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    Nombre
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={logo.name}
+                      onChange={(event) => updatePartnerLogo(logo.id, "name", event.target.value)}
+                    />
+                  </label>
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    Link opcional
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={logo.href}
+                      onChange={(event) => updatePartnerLogo(logo.id, "href", event.target.value)}
+                      placeholder="https://..."
+                    />
+                  </label>
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                    Imagen logo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => handlePartnerLogoUpload(logo.id, event.target.files)}
+                      className="text-sm"
+                    />
+                  </label>
+                </div>
+
+                <div className="flex flex-row items-center gap-3 lg:flex-col lg:items-end">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-primary">
+                    <input
+                      type="checkbox"
+                      checked={logo.active}
+                      onChange={(event) => updatePartnerLogo(logo.id, "active", event.target.checked)}
+                    />
+                    Activo
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removePartnerLogo(logo.id)}
+                    className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest text-error"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          ) : null}
+
           <button
             type="submit"
             className="w-fit rounded-full bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-widest text-on-primary"
           >
-            Guardar home
+            {activeTab === "menu"
+              ? "Guardar menú"
+              : activeTab === "form"
+                ? "Guardar formulario"
+              : activeTab === "logos"
+                ? "Guardar logos"
+                : "Guardar home"}
           </button>
+          {formError ? <p className="text-sm text-error">{formError}</p> : null}
+          {formNotice ? <p className="text-sm text-primary">{formNotice}</p> : null}
         </form>
       </motion.section>
       ) : null}

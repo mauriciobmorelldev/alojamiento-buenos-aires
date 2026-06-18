@@ -349,8 +349,13 @@ export default function AdminLeadsPage() {
                       Eliminar
                     </button>
                   </div>
-                </div>
-              </article>
+	                </div>
+                    {lead.notes ? (
+                      <pre className="mt-4 max-h-56 overflow-auto whitespace-pre-wrap rounded-2xl bg-surface-container-lowest p-4 text-xs leading-5 text-on-surface-variant">
+                        {lead.notes}
+                      </pre>
+                    ) : null}
+	              </article>
             ))
           )}
         </div>

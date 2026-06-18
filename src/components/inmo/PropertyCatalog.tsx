@@ -142,9 +142,9 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
                 </Link>
                 <Link
                   className="rounded-lg border border-outline-variant/40 px-6 py-3 text-sm font-semibold text-primary hover:border-primary"
-                  href="/acceso"
+                  href="/"
                 >
-                  Acceso clientes
+                  Volver al inicio
                 </Link>
               </div>
             </div>
@@ -308,9 +308,9 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
             </p>
             <Link
               className="mt-6 inline-flex rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary"
-              href="/acceso"
+              href="/"
             >
-              Acceso clientes
+              Volver al inicio
             </Link>
           </div>
         ) : filteredListings.length === 0 ? (

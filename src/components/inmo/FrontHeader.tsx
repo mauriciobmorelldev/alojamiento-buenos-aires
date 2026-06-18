@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useInmoStore } from "@/lib/inmoStore";
-import { clearClientSession, readClientSession } from "@/lib/session";
 import { buildThemeStyles } from "@/lib/theme";
 
 type FrontHeaderProps = {
@@ -33,6 +32,22 @@ const normalizeWhatsAppPhone = (value?: string) =>
 
 const fallbackWhatsAppPhone = "5491123456789";
 
+const normalizeMenuHref = (href: string) => {
+  const value = href.trim();
+  if (!value) return "/";
+  if (
+    value.startsWith("/") ||
+    value.startsWith("#") ||
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("mailto:") ||
+    value.startsWith("tel:")
+  ) {
+    return value;
+  }
+  return `/${value}`;
+};
+
 export default function FrontHeader({
   active = "home",
   showSearch = false,
@@ -41,13 +56,28 @@ export default function FrontHeader({
   hideBrand = false,
 }: FrontHeaderProps) {
   const { state } = useInmoStore();
-  const { theme } = state;
+  const { theme, homeContent } = state;
   const themeStyles = useMemo(() => buildThemeStyles(theme), [theme]);
   const [mounted, setMounted] = useState(false);
-  const [clientEmail, setClientEmail] = useState<string | null>(null);
-  const [clientName, setClientName] = useState<string | null>(null);
-  const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const menuItems = useMemo(
+    () =>
+      (homeContent.menuItems?.length
+        ? homeContent.menuItems
+        : [
+            { id: "menu-inicio", label: "Inicio", href: "/", active: true },
+            {
+              id: "menu-propiedades",
+              label: "Propiedades",
+              href: "/propiedades",
+              active: true,
+            },
+          ]
+      )
+        .filter((item) => item.active && item.label.trim() && item.href.trim())
+        .map((item) => ({ ...item, href: normalizeMenuHref(item.href) })),
+    [homeContent.menuItems]
+  );
   const whatsappPhone =
     normalizeWhatsAppPhone(theme.whatsappPhone) || fallbackWhatsAppPhone;
   const whatsappUrl = whatsappPhone
@@ -58,30 +88,13 @@ export default function FrontHeader({
     : "";
 
   useEffect(() => {
-    const hydrate = () => {
-      const session = readClientSession();
-      setClientEmail(session?.email ?? null);
-      if (session?.email) {
-        const match = state.clientUsers.find(
-          (user) => user.email.toLowerCase() === session.email.toLowerCase()
-        );
-        setClientName(match?.name ?? "Cliente");
-      } else {
-        setClientName(null);
-      }
-      setMounted(true);
-    };
+    const hydrate = () => setMounted(true);
     if (typeof queueMicrotask === "function") {
       queueMicrotask(hydrate);
     } else {
       window.setTimeout(hydrate, 0);
     }
-  }, [state.clientUsers]);
-
-  const handleLogout = () => {
-    clearClientSession();
-    window.location.href = "/acceso";
-  };
+  }, []);
 
   return (
     <>
@@ -120,26 +133,25 @@ export default function FrontHeader({
         </div>
 
         <div className="hidden items-center rounded-full border border-outline-variant/25 bg-surface-container-lowest/90 px-6 py-2 shadow-[0_25px_50px_-35px_rgba(27,27,28,0.35)] backdrop-blur md:flex">
-          <Link
-            className={`${
-              active === "home"
-                ? "text-primary"
-                : "text-primary/60 hover:text-primary"
-            } rounded-full px-3 py-1 transition-all hover:-translate-y-0.5`}
-            href="/"
-          >
-            Inicio
-          </Link>
-          <Link
-            className={`${
-              active === "catalog"
-                ? "text-primary"
-                : "text-primary/60 hover:text-primary"
-            } rounded-full px-3 py-1 transition-all hover:-translate-y-0.5`}
-            href="/propiedades"
-          >
-            Propiedades
-          </Link>
+          {menuItems.map((item) => {
+            const isActive =
+              (active === "home" && item.href === "/") ||
+              (active === "catalog" && item.href.startsWith("/propiedades")) ||
+              (active === "detail" && item.href.startsWith("/propiedades"));
+            return (
+              <Link
+                key={item.id}
+                className={`${
+                  isActive
+                    ? "text-primary"
+                    : "text-primary/60 hover:text-primary"
+                } rounded-full px-3 py-1 transition-all hover:-translate-y-0.5`}
+                href={item.href}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </div>
 
         <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
@@ -156,57 +168,16 @@ export default function FrontHeader({
               />
             </div>
           ) : null}
-          {mounted && clientEmail ? (
-            <>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowAccountMenu((prev) => !prev)}
-                  className="flex items-center gap-2 rounded-full border border-outline-variant/30 px-3 py-2 text-[10px] uppercase tracking-widest text-on-surface-variant"
-                >
-                  <span className="h-6 w-6 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-semibold">
-                    {clientName?.charAt(0).toUpperCase()}
-                  </span>
-                  {clientName}
-                </button>
-                {showAccountMenu ? (
-                  <div className="absolute right-0 top-12 z-50 w-44 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-2 shadow-[0_30px_50px_-30px_rgba(27,27,28,0.4)]">
-                    <Link
-                      href="/mi-cuenta"
-                      className="block rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-widest text-primary"
-                      onClick={() => setShowAccountMenu(false)}
-                    >
-                      Mi cuenta
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="mt-1 w-full rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-widest text-primary"
-                    >
-                      Cerrar sesión
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/registro"
-                className="hidden sm:flex items-center rounded-full border border-outline-variant/30 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-primary"
-              >
-                Crear cuenta
-              </Link>
-              <Link
-                href="/acceso"
-                className="hidden rounded-lg bg-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-on-primary sm:inline-flex"
-                style={{ color: "var(--color-on-primary)" }}
-                suppressHydrationWarning
-              >
-                Acceso clientes
-              </Link>
-            </>
-          )}
+          {mounted ? (
+            <Link
+              href="/propiedades"
+              className="hidden rounded-lg bg-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-on-primary sm:inline-flex"
+              style={{ color: "var(--color-on-primary)" }}
+              suppressHydrationWarning
+            >
+              Ver propiedades
+            </Link>
+          ) : null}
         </div>
       </div>
 
@@ -249,55 +220,23 @@ export default function FrontHeader({
             </button>
           </div>
           <div className="mt-5 grid gap-2 rounded-3xl bg-surface-container-low p-3 text-sm font-semibold text-primary">
-            <Link
-              href="/"
-              onClick={() => setShowMobileMenu(false)}
-              className="rounded-2xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
-            >
-              Inicio
-            </Link>
+            {menuItems.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                onClick={() => setShowMobileMenu(false)}
+                className="rounded-2xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
+              >
+                {item.label}
+              </Link>
+            ))}
             <Link
               href="/propiedades"
               onClick={() => setShowMobileMenu(false)}
-              className="rounded-2xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
+              className="rounded-2xl bg-primary px-4 py-3 text-on-primary transition-all hover:-translate-y-0.5"
             >
-              Propiedades
+              Ver propiedades
             </Link>
-            {mounted && clientEmail ? (
-              <>
-                <Link
-                  href="/mi-cuenta"
-                  onClick={() => setShowMobileMenu(false)}
-                  className="rounded-2xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
-                >
-                  Mi cuenta
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="rounded-2xl px-4 py-3 text-left text-sm font-semibold text-primary transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
-                >
-                  Cerrar sesión
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/registro"
-                  onClick={() => setShowMobileMenu(false)}
-                  className="rounded-2xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
-                >
-                  Crear cuenta
-                </Link>
-                <Link
-                  href="/acceso"
-                  onClick={() => setShowMobileMenu(false)}
-                  className="rounded-2xl bg-primary px-4 py-3 text-on-primary transition-all hover:-translate-y-0.5"
-                >
-                  Acceso clientes
-                </Link>
-              </>
-            )}
           </div>
         </div>
       </div>

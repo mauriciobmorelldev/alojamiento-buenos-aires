@@ -1,18 +1,49 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
 import { propertyTypeLabels, type FilterGroup } from "@/lib/inmoData";
 import FrontHeader from "@/components/inmo/FrontHeader";
-import { createId, isValidEmail, normalizePhone } from "@/lib/adminForms";
-import { readClientSession } from "@/lib/session";
+import { createId } from "@/lib/adminForms";
 import { generatePropertyPdf } from "@/lib/propertyPdf";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice } from "@/lib/pricing";
+
+function PropertyLeadFormFallback() {
+  return (
+    <div className="mt-6 grid gap-4" aria-hidden="true">
+      <div className="rounded-2xl bg-surface-container-low p-4">
+        <div className="h-4 w-1/2 animate-pulse rounded-full bg-outline-variant/20" />
+        <div className="mt-3 h-3 w-full animate-pulse rounded-full bg-outline-variant/15" />
+        <div className="mt-2 h-3 w-3/4 animate-pulse rounded-full bg-outline-variant/15" />
+      </div>
+      <div className="h-14 animate-pulse rounded-xl bg-surface-container-lowest" />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="h-14 animate-pulse rounded-xl bg-surface-container-lowest" />
+        <div className="h-14 animate-pulse rounded-xl bg-surface-container-lowest" />
+      </div>
+    </div>
+  );
+}
+
+const PropertyLeadForm = dynamic(
+  () => import("@/components/inmo/PropertyLeadForm"),
+  {
+    ssr: false,
+    loading: () => <PropertyLeadFormFallback />,
+  }
+);
 
 const resolveAttributes = (
   groups: FilterGroup[],
@@ -179,10 +210,9 @@ export default function DetallePropiedadPage() {
   const {
     listings,
     agents,
-    clientUsers,
-    propertyFavorites,
     filterGroups,
     theme,
+    homeContent,
     adminUsers,
   } = state;
   const property = listings.find((item) => item.id === propertyId);
@@ -190,42 +220,14 @@ export default function DetallePropiedadPage() {
   const [viewerIndex, setViewerIndex] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [viewerZoom, setViewerZoom] = useState(1);
-  const [leadName, setLeadName] = useState("");
-  const [leadEmail, setLeadEmail] = useState("");
-  const [leadPhone, setLeadPhone] = useState("");
-  const [leadMessage, setLeadMessage] = useState("");
-  const [leadNotice, setLeadNotice] = useState("");
-  const [leadError, setLeadError] = useState("");
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfError, setPdfError] = useState("");
-  const [clientSession] = useState(() => readClientSession());
   const [isResolvingProperty, setIsResolvingProperty] = useState(true);
 
   const agent = useMemo(
     () => agents.find((item) => item.id === property?.agentId),
     [agents, property?.agentId]
   );
-  const client = useMemo(() => {
-    if (!clientSession) return null;
-    return clientUsers.find(
-      (item) => item.id === clientSession.clientId && item.active
-    );
-  }, [clientSession, clientUsers]);
-
-  useEffect(() => {
-    if (!client) return;
-    const hydrate = () => {
-      setLeadName((current) => current || client.name);
-      setLeadEmail((current) => current || client.email);
-      setLeadPhone((current) => current || client.phone);
-    };
-    if (typeof queueMicrotask === "function") {
-      queueMicrotask(hydrate);
-    } else {
-      window.setTimeout(hydrate, 0);
-    }
-  }, [client]);
-
   useEffect(() => {
     const resetGallery = () => {
       setActiveImage(0);
@@ -295,6 +297,7 @@ export default function DetallePropiedadPage() {
   const images = property?.images.length ? property.images : fallbackImages;
   const mainImage = images[activeImage] ?? images[0];
   const mainVideo = property?.videos?.[0] ?? "";
+  const visitForm = homeContent.visitForm;
   const themeStyles = buildThemeStyles(theme);
 
   const openViewer = (index: number) => {
@@ -367,13 +370,6 @@ export default function DetallePropiedadPage() {
     );
   }
 
-  const isFavorite = Boolean(
-    client &&
-      propertyFavorites.some(
-        (favorite) =>
-          favorite.clientId === client.id && favorite.propertyId === property.id
-      )
-  );
   const availability = getAvailability(property.status);
   const isFromCollaborator = Boolean(
     property.createdByAdminId &&
@@ -382,112 +378,6 @@ export default function DetallePropiedadPage() {
           admin.id === property.createdByAdminId && admin.role === "colaborador"
       )
   );
-
-  const toggleFavorite = () => {
-    if (!client) {
-      window.location.href = "/acceso";
-      return;
-    }
-    updateState((prev) => {
-      const exists = prev.propertyFavorites.find(
-        (favorite) =>
-          favorite.clientId === client.id && favorite.propertyId === property.id
-      );
-      const nextFavorites = exists
-        ? prev.propertyFavorites.filter((favorite) => favorite.id !== exists.id)
-        : [
-            ...prev.propertyFavorites,
-            {
-              id: createId(),
-              clientId: client.id,
-              propertyId: property.id,
-              createdAt: new Date().toISOString(),
-            },
-          ];
-      const delta = exists ? -1 : 1;
-      return {
-        ...prev,
-        propertyFavorites: nextFavorites,
-        propertyMetrics: prev.propertyMetrics.some(
-          (metric) => metric.propertyId === property.id
-        )
-          ? prev.propertyMetrics.map((metric) =>
-              metric.propertyId === property.id
-                ? { ...metric, favorites: Math.max(0, metric.favorites + delta) }
-                : metric
-            )
-          : [
-              ...prev.propertyMetrics,
-              {
-                id: createId(),
-                propertyId: property.id,
-                views: 0,
-                leads: 0,
-                favorites: exists ? 0 : 1,
-              },
-            ],
-      };
-    });
-  };
-
-  const handleLeadSubmit = (event: FormEvent) => {
-    event.preventDefault();
-    setLeadError("");
-    setLeadNotice("");
-    const phone = normalizePhone(leadPhone);
-    if (!leadName.trim()) {
-      setLeadError("Ingresá tu nombre.");
-      return;
-    }
-    if (!isValidEmail(leadEmail)) {
-      setLeadError("Ingresá un email válido.");
-      return;
-    }
-    if (!phone) {
-      setLeadError("Ingresá un teléfono válido.");
-      return;
-    }
-    const now = new Date().toISOString();
-    updateState((prev) => ({
-      ...prev,
-      leads: [
-        ...prev.leads,
-        {
-          id: createId(),
-          name: leadName.trim(),
-          email: leadEmail.trim().toLowerCase(),
-          phone,
-          propertyId: property.id,
-          agentId: property.agentId,
-          clientId: client?.id,
-          status: "nuevo",
-          createdAt: now,
-          updatedAt: now,
-          notes: leadMessage.trim(),
-        },
-      ],
-      propertyMetrics: prev.propertyMetrics.some(
-        (metric) => metric.propertyId === property.id
-      )
-        ? prev.propertyMetrics.map((metric) =>
-            metric.propertyId === property.id
-              ? { ...metric, leads: metric.leads + 1 }
-              : metric
-          )
-        : [
-            ...prev.propertyMetrics,
-            {
-              id: createId(),
-              propertyId: property.id,
-              views: 0,
-              leads: 1,
-              favorites: 0,
-            },
-          ],
-    }));
-    setLeadNotice("Consulta enviada. Un asesor va a contactarte.");
-    setLeadMessage("");
-  };
 
   const handleDownloadPdf = async () => {
     setPdfError("");
@@ -700,55 +590,11 @@ export default function DetallePropiedadPage() {
                   Un asesor va a responder tu consulta.
                 </p>
               )}
-              <button
-                type="button"
-                onClick={toggleFavorite}
-                className="mt-6 inline-flex w-full items-center justify-center rounded-lg border border-outline-variant/40 px-5 py-3 text-sm font-semibold text-primary"
-              >
-                <span className="material-symbols-outlined mr-2 text-lg">
-                  {isFavorite ? "favorite" : "favorite_border"}
-                </span>
-                {isFavorite ? "Guardada en favoritos" : "Guardar en favoritos"}
-              </button>
-              <form className="mt-6 grid gap-3" onSubmit={handleLeadSubmit}>
-                <input
-                  required
-                  value={leadName}
-                  onChange={(event) => setLeadName(event.target.value)}
-                  placeholder="Nombre"
-                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                />
-                <input
-                  required
-                  type="email"
-                  value={leadEmail}
-                  onChange={(event) => setLeadEmail(event.target.value)}
-                  placeholder="Email"
-                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                />
-                <input
-                  required
-                  value={leadPhone}
-                  onChange={(event) => setLeadPhone(event.target.value)}
-                  placeholder="Teléfono"
-                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                />
-                <textarea
-                  value={leadMessage}
-                  onChange={(event) => setLeadMessage(event.target.value)}
-                  placeholder="Mensaje"
-                  className="min-h-[92px] rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                />
-                {leadError ? <p className="text-sm text-error">{leadError}</p> : null}
-                {leadNotice ? <p className="text-sm text-primary">{leadNotice}</p> : null}
-                <button
-                  type="submit"
-                  className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-on-primary"
-                  style={{ color: "var(--color-on-primary)" }}
-                >
-                  Enviar consulta
-                </button>
-              </form>
+              <PropertyLeadForm
+                property={property}
+                theme={theme}
+                visitForm={visitForm}
+              />
             </div>
 
             <div className="rounded-2xl bg-surface-container-lowest p-6 shadow-[0_40px_60px_-15px_rgba(27,27,28,0.06)]">
