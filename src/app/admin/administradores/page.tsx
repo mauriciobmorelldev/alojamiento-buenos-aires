@@ -64,7 +64,7 @@ export default function AdminAdministradoresPage() {
               name: adminForm.name.trim(),
               email,
               role: adminForm.role,
-              phone: adminForm.phone.trim(),
+              phone: adminForm.role === "owner" ? adminForm.phone.trim() : "",
               active: adminForm.active,
               password: adminForm.password.trim() || admin.password,
             };
@@ -82,7 +82,7 @@ export default function AdminAdministradoresPage() {
             email,
             password: adminForm.password.trim(),
             role: adminForm.role,
-            phone: adminForm.phone.trim(),
+            phone: adminForm.role === "owner" ? adminForm.phone.trim() : "",
             active: adminForm.active,
           },
         ],
@@ -204,18 +204,24 @@ export default function AdminAdministradoresPage() {
                 placeholder="nombre@empresa.com"
               />
             </label>
-            <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-              WhatsApp público
-              <input
-                type="tel"
-                value={adminForm.phone}
-                onChange={(event) =>
-                  setAdminForm((prev) => ({ ...prev, phone: event.target.value }))
-                }
-                className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                placeholder="5491123456789"
-              />
-            </label>
+            {adminForm.role === "owner" ? (
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                WhatsApp público
+                <input
+                  type="tel"
+                  value={adminForm.phone}
+                  onChange={(event) =>
+                    setAdminForm((prev) => ({ ...prev, phone: event.target.value }))
+                  }
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+                  placeholder="5491123456789"
+                />
+              </label>
+            ) : (
+              <div className="rounded-xl border border-outline-variant/30 bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
+                El colaborador no carga WhatsApp público.
+              </div>
+            )}
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
@@ -239,6 +245,7 @@ export default function AdminAdministradoresPage() {
                   setAdminForm((prev) => ({
                     ...prev,
                     role: event.target.value === "owner" ? "owner" : "colaborador",
+                    phone: event.target.value === "owner" ? prev.phone : "",
                   }))
                 }
                 className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"

@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Missing credentials" }, { status: 400 });
   }
 
-  const { data } = await readInmoState();
+  const { data } = await readInmoState({ scope: "admin" });
   const admin = data.adminUsers.find(
     (item) => item.active && item.email.trim().toLowerCase() === email
   );

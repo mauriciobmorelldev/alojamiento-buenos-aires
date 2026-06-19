@@ -17,6 +17,7 @@ import { propertyTypeLabels, type FilterGroup, type Listing } from "@/lib/inmoDa
 import { generatePropertyPdf } from "@/lib/propertyPdf";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice } from "@/lib/pricing";
+import { RealEstateMessage } from "@/components/inmo/RealEstateStatus";
 
 function PropertyLeadFormFallback() {
   return (
@@ -204,7 +205,7 @@ export default function DetallePropiedadPage() {
   const params = useParams<{ id: string | string[] }>();
   const propertyId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
-  const { state } = useInmoStore();
+  const { state, isReady } = useInmoStore();
   const {
     listings,
     agents,
@@ -222,7 +223,7 @@ export default function DetallePropiedadPage() {
   const [viewerZoom, setViewerZoom] = useState(1);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfError, setPdfError] = useState("");
-  const [isResolvingProperty, setIsResolvingProperty] = useState(true);
+  const [isPropertyDetailLoading, setIsPropertyDetailLoading] = useState(false);
 
   const agent = useMemo(
     () => agents.find((item) => item.id === property?.agentId),
@@ -232,11 +233,13 @@ export default function DetallePropiedadPage() {
   useEffect(() => {
     if (!propertyId) {
       setPropertyDetail(null);
+      setIsPropertyDetailLoading(false);
       return;
     }
 
     const controller = new AbortController();
     setPropertyDetail(null);
+    setIsPropertyDetailLoading(true);
 
     const fetchPropertyDetail = async () => {
       try {
@@ -249,6 +252,10 @@ export default function DetallePropiedadPage() {
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
         console.warn("No se pudo cargar la ficha completa", error);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsPropertyDetailLoading(false);
+        }
       }
     };
 
@@ -268,16 +275,6 @@ export default function DetallePropiedadPage() {
     }
     window.setTimeout(resetGallery, 0);
   }, [propertyId]);
-
-  useEffect(() => {
-    if (property) {
-      setIsResolvingProperty(false);
-      return;
-    }
-    setIsResolvingProperty(true);
-    const timeout = window.setTimeout(() => setIsResolvingProperty(false), 1800);
-    return () => window.clearTimeout(timeout);
-  }, [property]);
 
   const attributes = useMemo(
     () => (property ? resolveAttributes(filterGroups, property.attributes) : []),
@@ -335,28 +332,21 @@ export default function DetallePropiedadPage() {
     };
   }, [closeViewer, isViewerOpen, moveViewer]);
 
-  if (!property && isResolvingProperty) {
+  if (!property && (!isReady || isPropertyDetailLoading)) {
     return <BuildingHouseLoader />;
   }
 
   if (!property) {
     return (
-      <div className="min-h-screen bg-background text-on-background">
-        <div className="mx-auto max-w-screen-md px-8 py-24 text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-on-surface-variant">
-            Propiedad no encontrada
-          </p>
-          <h1 className="mt-4 text-3xl font-headline font-bold text-primary">
-            No existe la propiedad solicitada
-          </h1>
-          <Link
-            className="mt-6 inline-flex rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary"
-            href="/propiedades"
-          >
-            Volver al catálogo
-          </Link>
-        </div>
-      </div>
+      <RealEstateMessage
+        eyebrow="Propiedad no encontrada"
+        title="No pudimos abrir esta ficha"
+        message="Puede que la publicacion haya sido pausada, reservada o que el link ya no este disponible."
+        actions={[
+          { href: "/propiedades", label: "Volver al catalogo" },
+          { href: "/", label: "Ir al inicio", variant: "secondary" },
+        ]}
+      />
     );
   }
 

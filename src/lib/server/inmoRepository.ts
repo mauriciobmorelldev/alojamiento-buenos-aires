@@ -714,14 +714,24 @@ export const writeInmoState = async (state: InmoState) => {
     assertSupabaseOk(settingsWithFilters, "upsert platform_settings");
   }
 
+  const existingAdminProfiles = await supabase
+    .from("profiles")
+    .select("id,password")
+    .eq("kind", "admin");
+  const existingPasswords = new Map(
+    ensureArray(existingAdminProfiles.data).map((profile) => [
+      profile.id,
+      profile.password ?? "",
+    ])
+  );
   const adminRows = state.adminUsers.map((admin) => ({
     id: admin.id,
     kind: "admin",
     name: admin.name,
     email: admin.email,
-    password: admin.password,
+    password: admin.password || existingPasswords.get(admin.id) || "",
     role: admin.role,
-    phone: admin.phone ?? "",
+    phone: admin.role === "owner" ? admin.phone ?? "" : "",
     active: admin.active,
     updated_at: new Date().toISOString(),
   }));

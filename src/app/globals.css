@@ -3207,6 +3207,18 @@ html[data-theme="dark"] .turno-slot {
   }
 }
 
+@keyframes statusBar {
+  0% {
+    transform: translateX(-120%);
+  }
+  50% {
+    transform: translateX(55%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
