@@ -1,18 +1,25 @@
 import { NextResponse } from "next/server";
 import { readPublicShell } from "@/lib/server/inmoRepository";
+import { readThroughCache } from "@/lib/server/responseCache";
 
 export async function GET(request: Request) {
   try {
     const startedAt = Date.now();
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
-    const result = await readPublicShell(mode);
+    const cached = await readThroughCache(
+      `public:shell:${mode}:v2`,
+      5 * 60 * 1000,
+      () => readPublicShell(mode)
+    );
+    const result = cached.value;
     return NextResponse.json(result.data, {
       headers: {
         "x-inmo-state-source": result.source,
         "x-inmo-state-scope": `public-shell-${mode}`,
+        "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=30, s-maxage=120, stale-while-revalidate=300",
+        "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
       },
     });
   } catch (error) {

@@ -18,6 +18,7 @@ import { generatePropertyPdf } from "@/lib/propertyPdf";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice } from "@/lib/pricing";
 import { RealEstateMessage } from "@/components/inmo/RealEstateStatus";
+import { parseVideoUrl } from "@/lib/video";
 
 function PropertyLeadFormFallback() {
   return (
@@ -200,6 +201,56 @@ const BuildingHouseLoader = () => (
     </div>
   </div>
 );
+
+const PropertyVideo = ({ url, title }: { url: string; title: string }) => {
+  const video = parseVideoUrl(url);
+
+  if (video?.embedUrl) {
+    return (
+      <iframe
+        className="h-full w-full"
+        src={video.embedUrl}
+        title={`Video de ${title}`}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+        loading="lazy"
+      />
+    );
+  }
+
+  if (video?.fileUrl) {
+    return (
+      <video
+        className="h-full w-full object-cover"
+        src={video.fileUrl}
+        controls
+        playsInline
+        preload="metadata"
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-surface-container-low p-8 text-center">
+      <div>
+        <span className="material-symbols-outlined text-4xl text-primary">
+          smart_display
+        </span>
+        <p className="mt-3 text-sm font-semibold text-primary">
+          No pudimos reproducir este video.
+        </p>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 inline-flex rounded-full bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary"
+        >
+          Abrir video
+        </a>
+      </div>
+    </div>
+  );
+};
 
 export default function DetallePropiedadPage() {
   const params = useParams<{ id: string | string[] }>();
@@ -396,12 +447,7 @@ export default function DetallePropiedadPage() {
               <div className="relative overflow-hidden rounded-2xl bg-surface-container-lowest">
                 <div className="relative aspect-[16/10] overflow-hidden">
                   {mainVideo ? (
-                    <video
-                      className="h-full w-full object-cover"
-                      src={mainVideo}
-                      controls
-                      playsInline
-                    />
+                    <PropertyVideo url={mainVideo} title={property.title} />
                   ) : (
                     <button
                       type="button"

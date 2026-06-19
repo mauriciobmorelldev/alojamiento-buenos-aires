@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readPublicProperty } from "@/lib/server/inmoRepository";
+import { readThroughCache } from "@/lib/server/responseCache";
 
 export async function GET(
   _request: Request,
@@ -8,12 +9,22 @@ export async function GET(
   try {
     const startedAt = Date.now();
     const { id } = await params;
-    const result = await readPublicProperty(id);
+    const cached = await readThroughCache(
+      `public:property:${id}:v2`,
+      5 * 60 * 1000,
+      () => readPublicProperty(id)
+    );
+    const result = cached.value;
 
     if (!result.data.listing) {
       return NextResponse.json(
         { ok: false, error: "Propiedad no encontrada." },
-        { status: 404 }
+        {
+          status: 404,
+          headers: {
+            "Cache-Control": "public, max-age=60, s-maxage=120, stale-while-revalidate=600",
+          },
+        }
       );
     }
 
@@ -21,8 +32,9 @@ export async function GET(
       headers: {
         "x-inmo-state-source": result.source,
         "x-inmo-state-scope": "public-property",
+        "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=30, s-maxage=120, stale-while-revalidate=300",
+        "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
       },
     });
   } catch (error) {

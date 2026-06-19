@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { readPublicListings } from "@/lib/server/inmoRepository";
+import { readThroughCache } from "@/lib/server/responseCache";
 
 export async function GET() {
   try {
     const startedAt = Date.now();
-    const result = await readPublicListings();
+    const cached = await readThroughCache("public:listings:v2", 5 * 60 * 1000, readPublicListings);
+    const result = cached.value;
     return NextResponse.json(result.data, {
       headers: {
         "x-inmo-state-source": result.source,
         "x-inmo-state-scope": "public-listings",
+        "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=30, s-maxage=120, stale-while-revalidate=300",
+        "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
       },
     });
   } catch (error) {

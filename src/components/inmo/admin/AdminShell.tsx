@@ -221,7 +221,16 @@ export default function AdminShell({
     } | null;
 
     if (!response.ok || !result?.ok || !result.requiresOtp || !result.challenge?.challengeId) {
-      setLoginError(result?.error || "Email o contraseña incorrectos.");
+      const messageByError: Record<string, string> = {
+        "Invalid credentials": "Email o contraseña incorrectos.",
+        "Password not configured":
+          "Este usuario existe, pero no tiene contraseña guardada. Editalo desde Administradores y cargá una contraseña nueva.",
+        "Inactive user": "Este usuario está inactivo. Activá la cuenta desde Administradores.",
+        "Missing credentials": "Completá email y contraseña.",
+      };
+      setLoginError(
+        result?.error ? messageByError[result.error] ?? result.error : "Email o contraseña incorrectos."
+      );
       return;
     }
 

@@ -17,6 +17,7 @@ import {
   isSupabaseWriteConfigured,
 } from "@/lib/supabase/server";
 import { mergeState } from "@/lib/stateMerge";
+import { clearResponseCache } from "@/lib/server/responseCache";
 
 const SETTINGS_ID = "default";
 
@@ -32,7 +33,10 @@ type ReadInmoStateOptions = {
 type PublicReadResult = RepositoryResult<Partial<InmoState>>;
 type PublicShellMode = "home" | "catalog";
 
-const publicPropertySelect =
+const publicListingPropertySelect =
+  "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,cover_index,agent_id,created_by_admin_id,attributes";
+
+const publicPropertyDetailSelect =
   "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,description,videos,cover_index,agent_id,created_by_admin_id,attributes";
 
 const ensureArray = <T>(value: T[] | null) => value ?? [];
@@ -305,7 +309,7 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
 
   const propertiesQuery = supabase
     .from("properties")
-    .select(publicPropertySelect)
+    .select(publicListingPropertySelect)
     .order("updated_at", { ascending: false });
 
   const properties = await propertiesQuery;
@@ -332,6 +336,7 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
         .from("property_images")
         .select("property_id,url,sort_order")
         .in("property_id", propertyIds)
+        .lte("sort_order", 3)
         .order("sort_order")
     : { data: [], error: null };
 
@@ -403,7 +408,7 @@ export const readPublicProperty = async (
 
   const property = await supabase
     .from("properties")
-    .select(publicPropertySelect)
+    .select(publicPropertyDetailSelect)
     .eq("id", id)
     .maybeSingle();
 
@@ -866,6 +871,7 @@ export const writeInmoState = async (state: InmoState) => {
     }
   }
 
+  clearResponseCache("public:");
   return { source: "supabase" as const };
 };
 
@@ -893,6 +899,7 @@ export const upsertListing = async (property: Listing) => {
     );
   }
 
+  clearResponseCache("public:");
   return { source: "supabase" as const };
 };
 
@@ -926,6 +933,7 @@ export const deleteObsoleteTokkoListings = async (keepIds: string[]) => {
     }
   }
 
+  if (obsoleteIds.length) clearResponseCache("public:");
   return { source: "supabase" as const, deletedCount: obsoleteIds.length };
 };
 
@@ -940,5 +948,6 @@ export const deleteListing = async (propertyId: string) => {
     "delete property"
   );
 
+  clearResponseCache("public:");
   return { source: "supabase" as const };
 };

@@ -29,6 +29,7 @@ import {
 } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { readAdminSession } from "@/lib/session";
+import { isSupportedVideoUrl } from "@/lib/video";
 
 const toggleAttributeSelection = (
   group: FilterGroup,
@@ -410,10 +411,8 @@ export default function AdminPropertiesPage() {
   const handleListingVideoAdd = () => {
     const value = videoUrlDraft.trim();
     if (!value) return;
-    try {
-      new URL(value);
-    } catch {
-      setFormError("Pegá un link de video válido.");
+    if (!isSupportedVideoUrl(value)) {
+      setFormError("Pegá un link válido de YouTube, Vimeo, embed o archivo MP4/WebM.");
       return;
     }
     setListingForm((prev) => ({ ...prev, videos: [...prev.videos, value] }));
