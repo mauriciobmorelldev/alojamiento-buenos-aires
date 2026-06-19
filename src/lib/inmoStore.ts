@@ -65,6 +65,32 @@ const fetchRemoteState = async (
   collaboratorId?: string
 ) => {
   try {
+    if (scope === "public") {
+      const listingParams = new URLSearchParams();
+      if (collaboratorId) listingParams.set("collaboratorId", collaboratorId);
+      const [shellResponse, listingsResponse] = await Promise.all([
+        fetch("/api/public/shell", { cache: "no-store" }),
+        fetch(`/api/public/listings?${listingParams.toString()}`, {
+          cache: "no-store",
+        }),
+      ]);
+      if (!shellResponse.ok || !listingsResponse.ok) return null;
+      const shellData = (await shellResponse.json()) as Partial<InmoState>;
+      const listingsData = (await listingsResponse.json()) as Partial<InmoState>;
+      const shellSource = shellResponse.headers.get("x-inmo-state-source");
+      const listingsSource = listingsResponse.headers.get("x-inmo-state-source");
+      return {
+        data: {
+          ...shellData,
+          ...listingsData,
+        },
+        source:
+          shellSource === "supabase" || listingsSource === "supabase"
+            ? "supabase"
+            : "fallback",
+      };
+    }
+
     const params = new URLSearchParams({ scope });
     if (collaboratorId) params.set("collaboratorId", collaboratorId);
     const response = await fetch(`/api/inmo-state?${params.toString()}`, {

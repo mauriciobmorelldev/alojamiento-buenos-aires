@@ -30,6 +30,8 @@ type ReadInmoStateOptions = {
   collaboratorId?: string;
 };
 
+type PublicReadResult = RepositoryResult<Partial<InmoState>>;
+
 const ensureArray = <T>(value: T[] | null) => value ?? [];
 
 const assertSupabaseOk = (
@@ -78,6 +80,202 @@ const omitProfilePhone = (row: {
   const clone = { ...row };
   delete clone.phone;
   return clone;
+};
+
+export const readPublicShell = async (): Promise<PublicReadResult> => {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseConfigured()) {
+    return {
+      data: {
+        version: STATE_VERSION,
+        theme: defaultState.theme,
+        homeContent: defaultState.homeContent,
+        customPages: defaultState.customPages,
+        filterGroups: defaultState.filterGroups,
+        adminUsers: defaultState.adminUsers.map((admin) => ({
+          ...admin,
+          password: "",
+        })),
+        agents: defaultState.agents,
+      },
+      source: "fallback",
+    };
+  }
+
+  const [settings, profiles, agents] = await Promise.all([
+    supabase
+      .from("platform_settings")
+      .select("theme,home_content,filter_groups")
+      .eq("id", SETTINGS_ID)
+      .maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("id,kind,name,email,role,phone,active")
+      .eq("kind", "admin"),
+    supabase.from("agents").select("id,name,role,phone,email,photo"),
+  ]);
+
+  const readErrors = [
+    ["profiles", profiles.error?.message],
+    ["agents", agents.error?.message],
+  ].filter(([, error]) => error);
+
+  if (settings.error) {
+    console.warn("Supabase public settings read failed", settings.error.message);
+  }
+
+  if (readErrors.length) {
+    console.warn(
+      "Supabase public shell read failed",
+      readErrors.map(([table, error]) => `${table}: ${error}`).join(" | ")
+    );
+    return {
+      data: {
+        version: STATE_VERSION,
+        theme: defaultState.theme,
+        homeContent: defaultState.homeContent,
+        customPages: defaultState.customPages,
+        filterGroups: defaultState.filterGroups,
+        adminUsers: defaultState.adminUsers.map((admin) => ({
+          ...admin,
+          password: "",
+        })),
+        agents: defaultState.agents,
+      },
+      source: "fallback",
+    };
+  }
+
+  return {
+    data: {
+      version: STATE_VERSION,
+      theme: settings.error ? defaultState.theme : settings.data?.theme ?? defaultState.theme,
+      homeContent: settings.error
+        ? defaultState.homeContent
+        : settings.data?.home_content ?? defaultState.homeContent,
+      customPages: settings.error
+        ? defaultState.customPages
+        : settings.data?.home_content?.customPages ?? defaultState.customPages,
+      filterGroups: settings.error
+        ? defaultState.filterGroups
+        : settings.data?.filter_groups ?? defaultState.filterGroups,
+      adminUsers: ensureArray(profiles.data).map((profile) => ({
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        password: "",
+        role: (profile.role === "owner" ? "owner" : "colaborador") as AdminRole,
+        phone: profile.phone ?? "",
+        active: Boolean(profile.active),
+      })),
+      agents: ensureArray(agents.data).map((agent) => ({
+        id: agent.id,
+        name: agent.name,
+        role: agent.role,
+        phone: agent.phone,
+        email: agent.email,
+        photo: agent.photo ?? undefined,
+      })),
+    },
+    source: "supabase",
+  };
+};
+
+export const readPublicListings = async (
+  collaboratorId?: string
+): Promise<PublicReadResult> => {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseConfigured()) {
+    return {
+      data: {
+        version: STATE_VERSION,
+        listings: defaultState.listings,
+      },
+      source: "fallback",
+    };
+  }
+
+  const cleanCollaboratorId = collaboratorId?.trim();
+  const propertiesQuery = supabase
+    .from("properties")
+    .select(
+      "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,description,videos,cover_index,agent_id,created_by_admin_id,attributes"
+    )
+    .order("updated_at", { ascending: false });
+
+  const properties = cleanCollaboratorId
+    ? await propertiesQuery.eq("created_by_admin_id", cleanCollaboratorId)
+    : await propertiesQuery;
+
+  if (properties.error) {
+    console.warn("Supabase public properties read failed", properties.error.message);
+    return {
+      data: {
+        version: STATE_VERSION,
+        listings: defaultState.listings,
+      },
+      source: "fallback",
+    };
+  }
+
+  const propertyIds = ensureArray(properties.data).map((property) => property.id);
+  const propertyImages = propertyIds.length
+    ? await supabase
+        .from("property_images")
+        .select("property_id,url,sort_order")
+        .in("property_id", propertyIds)
+        .order("sort_order")
+    : { data: [], error: null };
+
+  if (propertyImages.error) {
+    console.warn("Supabase public property_images read failed", propertyImages.error.message);
+    return {
+      data: {
+        version: STATE_VERSION,
+        listings: defaultState.listings,
+      },
+      source: "fallback",
+    };
+  }
+
+  const imagesByProperty = new Map<string, string[]>();
+  const propertyImageRows = (propertyImages.data ?? []) as Array<{
+    property_id: string;
+    url: string;
+  }>;
+  propertyImageRows.forEach((image) => {
+    const list = imagesByProperty.get(image.property_id) ?? [];
+    list.push(image.url);
+    imagesByProperty.set(image.property_id, list);
+  });
+
+  return {
+    data: {
+      version: STATE_VERSION,
+      listings: ensureArray(properties.data).map((property) => ({
+        id: property.id,
+        title: property.title,
+        createdByAdminId: property.created_by_admin_id ?? undefined,
+        type: property.type as PropertyType,
+        status: property.status as PropertyStatus,
+        price: Number(property.price ?? 0),
+        priceUnit: property.price_unit as PriceUnit,
+        currency: (property.currency === "USD" ? "USD" : "ARS") as PriceCurrency,
+        neighborhood: property.neighborhood,
+        area: Number(property.area ?? 0),
+        rooms: Number(property.rooms ?? 0),
+        tag: property.tag ?? "",
+        highlight: property.highlight ?? "",
+        description: property.description ?? "",
+        images: imagesByProperty.get(property.id) ?? [],
+        videos: property.videos ?? [],
+        coverIndex: Number(property.cover_index ?? 0),
+        agentId: property.agent_id ?? undefined,
+        attributes: property.attributes ?? {},
+      })),
+    },
+    source: "supabase",
+  };
 };
 
 export const readInmoState = async (
