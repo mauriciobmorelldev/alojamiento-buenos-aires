@@ -152,10 +152,12 @@ export const resetState = () => {
   saveState(defaultState);
 };
 
-export const useInmoStore = () => {
+export const useInmoStore = (initialState?: Partial<InmoState>) => {
   const pathname = usePathname();
-  const [state, setState] = useState<InmoState>(defaultState);
-  const [isReady, setIsReady] = useState(false);
+  const [state, setState] = useState<InmoState>(() =>
+    initialState ? mergeState(defaultState, initialState) : defaultState
+  );
+  const [isReady, setIsReady] = useState(Boolean(initialState));
 
   useEffect(() => {
     const hydrate = async () => {
@@ -167,6 +169,19 @@ export const useInmoStore = () => {
           ? "admin"
           : "public";
       const mode = pathname?.startsWith("/propiedades") ? "catalog" : "home";
+      if (initialState && scope === "public") {
+        const mergedInitial = mergeState(defaultState, initialState);
+        inMemoryState = mergedInitial;
+        setState(mergedInitial);
+        setIsReady(true);
+        const remote = await fetchRemoteState(scope, mode);
+        if (remote?.source === "supabase") {
+          const mergedRemote = mergeState(defaultState, remote.data);
+          inMemoryState = mergedRemote;
+          setState(mergedRemote);
+        }
+        return;
+      }
       const local = loadState();
       setState(local);
       const remote = await fetchRemoteState(scope, mode);
@@ -198,7 +213,7 @@ export const useInmoStore = () => {
       window.removeEventListener(UPDATE_EVENT, handleUpdate);
       window.removeEventListener("storage", handleUpdate);
     };
-  }, [pathname]);
+  }, [initialState, pathname]);
 
   const updateState = useCallback(
     (

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import { getAvailability } from "@/lib/availability";
-import { propertyTypeLabels } from "@/lib/inmoData";
+import { propertyTypeLabels, type InmoState } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { formatPrice } from "@/lib/pricing";
 import { buildThemeStyles } from "@/lib/theme";
@@ -107,8 +107,12 @@ function PublicImage({
   );
 }
 
-export default function HomeStitchLite() {
-  const { state } = useInmoStore();
+export default function HomeStitchLite({
+  initialState,
+}: {
+  initialState?: Partial<InmoState>;
+}) {
+  const { state } = useInmoStore(initialState);
   const { listings, agents, theme, homeContent, adminUsers } = state;
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
 

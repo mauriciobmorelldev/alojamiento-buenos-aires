@@ -42,6 +42,16 @@ const PropertyLeadForm = dynamic(
   }
 );
 
+const DotLottieReact = dynamic(
+  () => import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full animate-pulse rounded-full bg-primary-fixed/45" />
+    ),
+  }
+);
+
 const resolveAttributes = (
   groups: FilterGroup[],
   values: Record<string, string[]>
@@ -182,13 +192,12 @@ const PropertyDescription = ({
 const BuildingHouseLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background px-8 text-primary">
     <div className="text-center">
-      <div className="relative mx-auto h-32 w-32">
-        <div className="absolute bottom-3 left-1/2 h-16 w-24 -translate-x-1/2 rounded-b-xl border-4 border-primary/25 border-t-0" />
-        <div className="absolute bottom-[4.6rem] left-1/2 h-16 w-16 -translate-x-1/2 rotate-45 border-l-4 border-t-4 border-primary" />
-        <div className="absolute bottom-3 left-[3.2rem] h-10 w-7 rounded-t-lg bg-primary-fixed" />
-        <span className="absolute left-5 top-16 h-3 w-3 animate-ping rounded-full bg-primary-fixed" />
-        <span className="absolute right-6 top-10 h-2.5 w-2.5 animate-ping rounded-full bg-secondary [animation-delay:220ms]" />
-        <span className="absolute left-1/2 top-4 h-2 w-2 animate-ping rounded-full bg-primary [animation-delay:420ms]" />
+      <div className="mx-auto h-56 w-56">
+        <DotLottieReact
+          src="https://lottie.host/fb1730d2-9648-4008-ba55-f8a989c5e15e/E9ZNH6CJo7.lottie"
+          loop
+          autoplay
+        />
       </div>
       <p className="mt-3 text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">
         Construyendo ficha

@@ -16,15 +16,16 @@ export default function MaterialSymbolsLoader() {
       link.id = MATERIAL_SYMBOLS_ID;
       link.rel = "stylesheet";
       link.href = MATERIAL_SYMBOLS_HREF;
+      link.onload = () => document.body.classList.add("material-symbols-ready");
       document.head.appendChild(link);
     };
 
     if ("requestIdleCallback" in window) {
-      const idleId = window.requestIdleCallback(loadFont, { timeout: 1600 });
+      const idleId = window.requestIdleCallback(loadFont, { timeout: 450 });
       return () => window.cancelIdleCallback(idleId);
     }
 
-    const timeoutId = globalThis.setTimeout(loadFont, 900);
+    const timeoutId = globalThis.setTimeout(loadFont, 120);
     return () => globalThis.clearTimeout(timeoutId);
   }, []);
 
