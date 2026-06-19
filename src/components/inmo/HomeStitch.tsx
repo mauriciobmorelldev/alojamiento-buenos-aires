@@ -215,6 +215,11 @@ export default function HomeStitch() {
               className="h-full w-full object-cover will-change-transform"
               alt="Portada"
               src={heroImage}
+              width={1920}
+              height={1200}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/72 to-primary/12" />
             <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
@@ -349,6 +354,10 @@ export default function HomeStitch() {
                         <motion.img
                           src={banner.image}
                           alt={banner.title}
+                          width={1600}
+                          height={900}
+                          loading="lazy"
+                          decoding="async"
                           className="absolute inset-0 h-full w-full object-cover"
                           whileHover={{ scale: 1.06 }}
                           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
@@ -513,6 +522,10 @@ export default function HomeStitch() {
                         <img
                           src={logo.image}
                           alt={logo.name}
+                          width={176}
+                          height={56}
+                          loading="lazy"
+                          decoding="async"
                           className="max-h-14 max-w-full object-contain"
                         />
                       </div>
@@ -619,6 +632,10 @@ export default function HomeStitch() {
                         <motion.img
                           src={cover}
                           alt={item.title}
+                          width={900}
+                          height={720}
+                          loading="lazy"
+                          decoding="async"
                           className="h-full w-full object-cover"
                           whileHover={{ scale: 1.07 }}
                           transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}

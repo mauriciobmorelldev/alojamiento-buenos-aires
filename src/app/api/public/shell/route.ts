@@ -12,7 +12,7 @@ export async function GET(request: Request) {
         "x-inmo-state-source": result.source,
         "x-inmo-state-scope": `public-shell-${mode}`,
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "private, max-age=20, stale-while-revalidate=60",
+        "Cache-Control": "public, max-age=30, s-maxage=120, stale-while-revalidate=300",
       },
     });
   } catch (error) {

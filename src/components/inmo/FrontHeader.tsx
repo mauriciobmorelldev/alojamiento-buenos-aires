@@ -128,6 +128,10 @@ export default function FrontHeader({
                 <img
                   src={theme.logo}
                   alt={theme.name || "Logo"}
+                  width={144}
+                  height={36}
+                  loading="eager"
+                  decoding="async"
                   className="h-9 w-auto object-contain"
                 />
               ) : (
@@ -212,6 +216,10 @@ export default function FrontHeader({
                 <img
                   src={theme.logo}
                   alt={theme.name || "Logo"}
+                  width={128}
+                  height={32}
+                  loading="eager"
+                  decoding="async"
                   className="h-8 w-auto object-contain"
                 />
               ) : (

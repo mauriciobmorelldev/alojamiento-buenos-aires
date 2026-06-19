@@ -1,10 +1,4 @@
-"use client";
-
-import dynamic from "next/dynamic";
-
-const HomeStitch = dynamic(() => import("@/components/inmo/HomeStitch"), {
-  ssr: false,
-});
+import HomeStitch from "@/components/inmo/HomeStitch";
 
 export default function HomePage() {
   return <HomeStitch />;

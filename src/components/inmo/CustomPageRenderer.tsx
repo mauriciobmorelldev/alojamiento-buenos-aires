@@ -47,6 +47,10 @@ const renderBlock = (block: CustomPageBlock, page: CustomPage) => {
           <img
             src={block.image}
             alt={block.title || page.title}
+            width={980}
+            height={640}
+            loading="lazy"
+            decoding="async"
             className="min-h-72 w-full rounded-3xl object-cover"
           />
         ) : (

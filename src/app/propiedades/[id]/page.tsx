@@ -10,11 +10,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
-import { propertyTypeLabels, type FilterGroup } from "@/lib/inmoData";
-import { createId } from "@/lib/adminForms";
+import { propertyTypeLabels, type FilterGroup, type Listing } from "@/lib/inmoData";
 import { generatePropertyPdf } from "@/lib/propertyPdf";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice } from "@/lib/pricing";
@@ -184,12 +182,13 @@ const PropertyDescription = ({
 const BuildingHouseLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background px-8 text-primary">
     <div className="text-center">
-      <div className="mx-auto h-56 w-56">
-        <DotLottieReact
-          src="https://lottie.host/fb1730d2-9648-4008-ba55-f8a989c5e15e/E9ZNH6CJo7.lottie"
-          loop
-          autoplay
-        />
+      <div className="relative mx-auto h-32 w-32">
+        <div className="absolute bottom-3 left-1/2 h-16 w-24 -translate-x-1/2 rounded-b-xl border-4 border-primary/25 border-t-0" />
+        <div className="absolute bottom-[4.6rem] left-1/2 h-16 w-16 -translate-x-1/2 rotate-45 border-l-4 border-t-4 border-primary" />
+        <div className="absolute bottom-3 left-[3.2rem] h-10 w-7 rounded-t-lg bg-primary-fixed" />
+        <span className="absolute left-5 top-16 h-3 w-3 animate-ping rounded-full bg-primary-fixed" />
+        <span className="absolute right-6 top-10 h-2.5 w-2.5 animate-ping rounded-full bg-secondary [animation-delay:220ms]" />
+        <span className="absolute left-1/2 top-4 h-2 w-2 animate-ping rounded-full bg-primary [animation-delay:420ms]" />
       </div>
       <p className="mt-3 text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">
         Construyendo ficha
@@ -205,7 +204,7 @@ export default function DetallePropiedadPage() {
   const params = useParams<{ id: string | string[] }>();
   const propertyId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
-  const { state, updateState } = useInmoStore();
+  const { state } = useInmoStore();
   const {
     listings,
     agents,
@@ -214,7 +213,9 @@ export default function DetallePropiedadPage() {
     homeContent,
     adminUsers,
   } = state;
-  const property = listings.find((item) => item.id === propertyId);
+  const propertySummary = listings.find((item) => item.id === propertyId);
+  const [propertyDetail, setPropertyDetail] = useState<Listing | null>(null);
+  const property = propertyDetail?.id === propertyId ? propertyDetail : propertySummary;
   const [activeImage, setActiveImage] = useState(0);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -227,6 +228,33 @@ export default function DetallePropiedadPage() {
     () => agents.find((item) => item.id === property?.agentId),
     [agents, property?.agentId]
   );
+
+  useEffect(() => {
+    if (!propertyId) {
+      setPropertyDetail(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setPropertyDetail(null);
+
+    const fetchPropertyDetail = async () => {
+      try {
+        const response = await fetch(`/api/public/property/${encodeURIComponent(propertyId)}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const data = (await response.json()) as { listing?: Listing };
+        if (data.listing) setPropertyDetail(data.listing);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        console.warn("No se pudo cargar la ficha completa", error);
+      }
+    };
+
+    void fetchPropertyDetail();
+    return () => controller.abort();
+  }, [propertyId]);
   useEffect(() => {
     const resetGallery = () => {
       setActiveImage(0);
@@ -255,43 +283,6 @@ export default function DetallePropiedadPage() {
     () => (property ? resolveAttributes(filterGroups, property.attributes) : []),
     [filterGroups, property]
   );
-
-  useEffect(() => {
-    if (!propertyId) return;
-    updateState((prev) => {
-      const existing = prev.propertyMetrics.find(
-        (metric) => metric.propertyId === propertyId
-      );
-      if (existing) {
-        return {
-          ...prev,
-          propertyMetrics: prev.propertyMetrics.map((metric) =>
-            metric.propertyId === propertyId
-              ? {
-                  ...metric,
-                  views: metric.views + 1,
-                  lastViewedAt: new Date().toISOString(),
-                }
-              : metric
-          ),
-        };
-      }
-      return {
-        ...prev,
-        propertyMetrics: [
-          ...prev.propertyMetrics,
-          {
-            id: createId(),
-            propertyId,
-            views: 1,
-            leads: 0,
-            favorites: 0,
-            lastViewedAt: new Date().toISOString(),
-          },
-        ],
-      };
-    });
-  }, [propertyId, updateState]);
 
   const images = property?.images.length ? property.images : fallbackImages;
   const mainImage = images[activeImage] ?? images[0];
@@ -432,6 +423,11 @@ export default function DetallePropiedadPage() {
                         alt={property.title}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                         src={mainImage}
+                        width={1280}
+                        height={800}
+                        loading="eager"
+                        fetchPriority="high"
+                        decoding="async"
                       />
                       <span className="absolute bottom-6 right-6 inline-flex items-center gap-2 rounded-full bg-surface-container-lowest/92 px-4 py-2 text-xs font-bold text-primary shadow-[0_20px_45px_-28px_rgba(27,54,93,0.55)] backdrop-blur">
                         <span className="material-symbols-outlined text-base">zoom_in</span>
@@ -476,6 +472,10 @@ export default function DetallePropiedadPage() {
                       <img
                         src={image}
                         alt={`Miniatura ${index + 1}`}
+                        width={160}
+                        height={112}
+                        loading="lazy"
+                        decoding="async"
                         className="h-20 w-28 object-cover"
                       />
                       {activeImage === index ? (
@@ -580,7 +580,15 @@ export default function DetallePropiedadPage() {
               {agent ? (
                 <div className="mt-4 flex items-center gap-4">
                   {agent.photo ? (
-                    <img src={agent.photo} alt={agent.name} className="h-12 w-12 rounded-full object-cover" />
+                    <img
+                      src={agent.photo}
+                      alt={agent.name}
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-container-high text-primary">
                       {agent.name.charAt(0)}
@@ -726,6 +734,10 @@ export default function DetallePropiedadPage() {
                   <img
                     src={images[viewerIndex]}
                     alt={`${property.title} - imagen ${viewerIndex + 1}`}
+                    width={1400}
+                    height={1000}
+                    loading="eager"
+                    decoding="async"
                     className="select-none rounded-2xl object-contain shadow-[0_40px_90px_-35px_rgba(0,0,0,0.55)]"
                     draggable={false}
                     onClick={toggleImageZoom}
@@ -761,6 +773,10 @@ export default function DetallePropiedadPage() {
                     <img
                       src={image}
                       alt={`Miniatura ${index + 1}`}
+                      width={160}
+                      height={100}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover"
                     />
                   </button>

@@ -418,7 +418,7 @@ export default function ResultsStitch() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-10">
-                {filteredListings.map((item) => {
+                {filteredListings.map((item, index) => {
                   const cover = getCoverImage(item.images, item.coverIndex);
                   const video = item.videos?.[0];
                   const availability = getAvailability(item.status);
@@ -443,6 +443,11 @@ export default function ResultsStitch() {
                           <img
                             src={cover}
                             alt={item.title}
+                            width={900}
+                            height={720}
+                            loading={index === 0 ? "eager" : "lazy"}
+                            fetchPriority={index === 0 ? "high" : "auto"}
+                            decoding="async"
                             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                           />
                         ) : (

@@ -32,6 +32,9 @@ type ReadInmoStateOptions = {
 type PublicReadResult = RepositoryResult<Partial<InmoState>>;
 type PublicShellMode = "home" | "catalog";
 
+const publicPropertySelect =
+  "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,description,videos,cover_index,agent_id,created_by_admin_id,attributes";
+
 const ensureArray = <T>(value: T[] | null) => value ?? [];
 
 const assertSupabaseOk = (
@@ -235,7 +238,12 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
     return {
       data: {
         version: STATE_VERSION,
-        listings: defaultState.listings,
+        listings: defaultState.listings.map((listing) => ({
+          ...listing,
+          description: "",
+          images: listing.images.slice(0, 4),
+          videos: [],
+        })),
       },
       source: "fallback",
     };
@@ -243,9 +251,7 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
 
   const propertiesQuery = supabase
     .from("properties")
-    .select(
-      "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,description,videos,cover_index,agent_id,created_by_admin_id,attributes"
-    )
+    .select(publicPropertySelect)
     .order("updated_at", { ascending: false });
 
   const properties = await propertiesQuery;
@@ -288,6 +294,7 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
   }>;
   propertyImageRows.forEach((image) => {
     const list = imagesByProperty.get(image.property_id) ?? [];
+    if (list.length >= 4) return;
     list.push(image.url);
     imagesByProperty.set(image.property_id, list);
   });
@@ -309,13 +316,76 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
         rooms: Number(property.rooms ?? 0),
         tag: property.tag ?? "",
         highlight: property.highlight ?? "",
-        description: property.description ?? "",
+        description: "",
         images: imagesByProperty.get(property.id) ?? [],
-        videos: property.videos ?? [],
+        videos: [],
         coverIndex: Number(property.cover_index ?? 0),
         agentId: property.agent_id ?? undefined,
         attributes: property.attributes ?? {},
       })),
+    },
+    source: "supabase",
+  };
+};
+
+export const readPublicProperty = async (
+  id: string
+): Promise<RepositoryResult<{ listing: Listing | null }>> => {
+  const fallbackListing = defaultState.listings.find((listing) => listing.id === id) ?? null;
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseConfigured()) {
+    return { data: { listing: fallbackListing }, source: "fallback" };
+  }
+
+  const property = await supabase
+    .from("properties")
+    .select(publicPropertySelect)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (property.error || !property.data) {
+    if (property.error) {
+      console.warn("Supabase public property read failed", property.error.message);
+    }
+    return { data: { listing: fallbackListing }, source: property.error ? "fallback" : "supabase" };
+  }
+
+  const propertyImages = await supabase
+    .from("property_images")
+    .select("url,sort_order")
+    .eq("property_id", id)
+    .order("sort_order");
+
+  if (propertyImages.error) {
+    console.warn("Supabase public property images read failed", propertyImages.error.message);
+  }
+
+  const row = property.data;
+  return {
+    data: {
+      listing: {
+        id: row.id,
+        title: row.title,
+        createdByAdminId: row.created_by_admin_id ?? undefined,
+        type: row.type as PropertyType,
+        status: row.status as PropertyStatus,
+        price: Number(row.price ?? 0),
+        priceUnit: row.price_unit as PriceUnit,
+        currency: (row.currency === "USD" ? "USD" : "ARS") as PriceCurrency,
+        neighborhood: row.neighborhood,
+        area: Number(row.area ?? 0),
+        rooms: Number(row.rooms ?? 0),
+        tag: row.tag ?? "",
+        highlight: row.highlight ?? "",
+        description: row.description ?? "",
+        images: propertyImages.error
+          ? fallbackListing?.images ?? []
+          : ensureArray(propertyImages.data).map((image) => image.url),
+        videos: row.videos ?? [],
+        coverIndex: Number(row.cover_index ?? 0),
+        agentId: row.agent_id ?? undefined,
+        attributes: row.attributes ?? {},
+      },
     },
     source: "supabase",
   };
