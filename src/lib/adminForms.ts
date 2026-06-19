@@ -125,7 +125,7 @@ export const readFileAsDataUrl = (file: File) =>
 
 export const optimizeImageDataUrl = (
   source: string,
-  opts: { maxSize?: number; quality?: number } = {}
+  opts: { maxSize?: number; quality?: number; mimeType?: "image/webp" | "image/jpeg" } = {}
 ) =>
   new Promise<string>((resolve, reject) => {
     if (typeof document === "undefined" || !source.startsWith("data:image/")) {
@@ -153,7 +153,9 @@ export const optimizeImageDataUrl = (
         return;
       }
       context.drawImage(image, 0, 0, width, height);
-      resolve(canvas.toDataURL("image/jpeg", quality));
+      const mimeType = opts.mimeType ?? "image/webp";
+      const optimized = canvas.toDataURL(mimeType, quality);
+      resolve(optimized.startsWith(`data:${mimeType}`) ? optimized : canvas.toDataURL("image/jpeg", quality));
     };
     image.onerror = () => reject(new Error("No se pudo procesar la imagen."));
     image.src = source;
@@ -161,7 +163,7 @@ export const optimizeImageDataUrl = (
 
 export const readImageFileAsOptimizedDataUrl = (
   file: File,
-  opts: { maxSize?: number; quality?: number } = {}
+  opts: { maxSize?: number; quality?: number; mimeType?: "image/webp" | "image/jpeg" } = {}
 ) =>
   new Promise<string>((resolve, reject) => {
     if (typeof URL === "undefined" || !file.type.startsWith("image/")) {

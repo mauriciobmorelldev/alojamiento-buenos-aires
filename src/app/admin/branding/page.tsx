@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import AdminShell from "@/components/inmo/admin/AdminShell";
-import { createId, readFileAsDataUrl, validateBrandingForm } from "@/lib/adminForms";
+import {
+  createId,
+  readImageFileAsOptimizedDataUrl,
+  validateBrandingForm,
+} from "@/lib/adminForms";
 import type {
   CustomPage,
   CustomPageBlock,
@@ -82,13 +86,21 @@ export default function AdminBrandingPage() {
 
   const handleLogoUpload = async (files: FileList | null) => {
     if (!files?.length) return;
-    const url = await readFileAsDataUrl(files[0]);
+    const url = await readImageFileAsOptimizedDataUrl(files[0], {
+      maxSize: 520,
+      quality: 0.82,
+      mimeType: "image/webp",
+    });
     setThemeForm((prev) => ({ ...prev, logo: url }));
   };
 
   const handleHeroUpload = async (files: FileList | null) => {
     if (!files?.length) return;
-    const url = await readFileAsDataUrl(files[0]);
+    const url = await readImageFileAsOptimizedDataUrl(files[0], {
+      maxSize: 1800,
+      quality: 0.76,
+      mimeType: "image/webp",
+    });
     setThemeForm((prev) => ({ ...prev, heroImage: url }));
   };
 
@@ -231,7 +243,11 @@ export default function AdminBrandingPage() {
 
   const handleBannerUpload = async (bannerId: string, files: FileList | null) => {
     if (!files?.length) return;
-    const url = await readFileAsDataUrl(files[0]);
+    const url = await readImageFileAsOptimizedDataUrl(files[0], {
+      maxSize: 1600,
+      quality: 0.76,
+      mimeType: "image/webp",
+    });
     updateBanner(bannerId, "image", url);
   };
 
@@ -250,7 +266,11 @@ export default function AdminBrandingPage() {
 
   const handlePartnerLogoUpload = async (logoId: string, files: FileList | null) => {
     if (!files?.length) return;
-    const url = await readFileAsDataUrl(files[0]);
+    const url = await readImageFileAsOptimizedDataUrl(files[0], {
+      maxSize: 520,
+      quality: 0.84,
+      mimeType: "image/webp",
+    });
     updatePartnerLogo(logoId, "image", url);
   };
 
@@ -405,7 +425,11 @@ export default function AdminBrandingPage() {
     files: FileList | null
   ) => {
     if (!files?.length) return;
-    const url = await readFileAsDataUrl(files[0]);
+    const url = await readImageFileAsOptimizedDataUrl(files[0], {
+      maxSize: 1400,
+      quality: 0.78,
+      mimeType: "image/webp",
+    });
     updatePageBlock(pageId, blockId, "image", url);
   };
 

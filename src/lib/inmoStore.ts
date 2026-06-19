@@ -7,8 +7,8 @@ import { defaultState, STATE_VERSION } from "./inmoData";
 import { readAdminSession } from "./session";
 import { mergeState } from "./stateMerge";
 
-const STORAGE_KEY = "connexa-state/v5";
-const LEGACY_STORAGE_KEYS = ["connexa-state/v4"];
+const STORAGE_KEY = "connexa-state/v6";
+const LEGACY_STORAGE_KEYS = ["connexa-state/v5", "connexa-state/v4"];
 const UPDATE_EVENT = "inmo:updated";
 const MAX_STORAGE_BYTES = 1_500_000;
 

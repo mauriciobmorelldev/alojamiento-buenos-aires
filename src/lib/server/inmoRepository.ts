@@ -37,6 +37,25 @@ const publicPropertySelect =
 
 const ensureArray = <T>(value: T[] | null) => value ?? [];
 
+const isOversizedDataImage = (value: unknown, maxBytes: number) =>
+  typeof value === "string" &&
+  value.startsWith("data:image/") &&
+  value.length > maxBytes;
+
+const sanitizePublicImage = (value: unknown, maxBytes: number) =>
+  typeof value === "string" && !isOversizedDataImage(value, maxBytes) ? value : "";
+
+const sanitizePublicImages = (images: unknown, maxBytes = 900_000) =>
+  Array.isArray(images)
+    ? images.map((image) => sanitizePublicImage(image, maxBytes)).filter(Boolean)
+    : [];
+
+const sanitizePublicTheme = (theme: InmoState["theme"]) => ({
+  ...theme,
+  logo: sanitizePublicImage(theme.logo, 260_000),
+  heroImage: sanitizePublicImage(theme.heroImage, 1_100_000),
+});
+
 const assertSupabaseOk = (
   result: { error?: { message?: string } | null },
   action: string
@@ -89,8 +108,37 @@ const sanitizeHomeContent = (value: unknown) => {
   if (!value || typeof value !== "object") return defaultState.homeContent;
   const homeContent = { ...(value as Record<string, unknown>) };
   delete homeContent.customPages;
+  if (Array.isArray(homeContent.banners)) {
+    homeContent.banners = homeContent.banners.map((banner) =>
+      banner && typeof banner === "object"
+        ? {
+            ...banner,
+            image: sanitizePublicImage((banner as { image?: unknown }).image, 1_100_000),
+          }
+        : banner
+    );
+  }
+  if (Array.isArray(homeContent.partnerLogos)) {
+    homeContent.partnerLogos = homeContent.partnerLogos.map((logo) =>
+      logo && typeof logo === "object"
+        ? {
+            ...logo,
+            image: sanitizePublicImage((logo as { image?: unknown }).image, 260_000),
+          }
+        : logo
+    );
+  }
   return homeContent as InmoState["homeContent"];
 };
+
+const sanitizeCustomPages = (pages: InmoState["customPages"]) =>
+  pages.map((page) => ({
+    ...page,
+    blocks: page.blocks.map((block) => ({
+      ...block,
+      image: sanitizePublicImage(block.image, 900_000),
+    })),
+  }));
 
 const getCatalogTheme = (theme: InmoState["theme"]) => ({
   ...theme,
@@ -107,12 +155,14 @@ export const readPublicShell = async (
     return {
       data: {
         version: STATE_VERSION,
-        theme: isCatalogMode ? getCatalogTheme(defaultState.theme) : defaultState.theme,
+        theme: isCatalogMode
+          ? getCatalogTheme(defaultState.theme)
+          : sanitizePublicTheme(defaultState.theme),
         ...(isCatalogMode
           ? {}
           : {
-              homeContent: defaultState.homeContent,
-              customPages: defaultState.customPages,
+              homeContent: sanitizeHomeContent(defaultState.homeContent),
+              customPages: sanitizeCustomPages(defaultState.customPages),
             }),
         filterGroups: defaultState.filterGroups,
         adminUsers: defaultState.adminUsers.map((admin) => ({
@@ -163,12 +213,14 @@ export const readPublicShell = async (
     return {
       data: {
         version: STATE_VERSION,
-        theme: isCatalogMode ? getCatalogTheme(defaultState.theme) : defaultState.theme,
+        theme: isCatalogMode
+          ? getCatalogTheme(defaultState.theme)
+          : sanitizePublicTheme(defaultState.theme),
         ...(isCatalogMode
           ? {}
           : {
-              homeContent: defaultState.homeContent,
-              customPages: defaultState.customPages,
+              homeContent: sanitizeHomeContent(defaultState.homeContent),
+              customPages: sanitizeCustomPages(defaultState.customPages),
             }),
         filterGroups: defaultState.filterGroups,
         adminUsers: defaultState.adminUsers.map((admin) => ({
@@ -199,13 +251,15 @@ export const readPublicShell = async (
       ...(isCatalogMode
         ? {}
         : {
-            theme: settings.error ? defaultState.theme : settingsData?.theme ?? defaultState.theme,
+            theme: sanitizePublicTheme(
+              settings.error ? defaultState.theme : settingsData?.theme ?? defaultState.theme
+            ),
             homeContent: settings.error
-              ? defaultState.homeContent
+              ? sanitizeHomeContent(defaultState.homeContent)
               : sanitizeHomeContent(settingsData?.home_content),
             customPages: settings.error
-              ? defaultState.customPages
-              : customPages,
+              ? sanitizeCustomPages(defaultState.customPages)
+              : sanitizeCustomPages(customPages),
           }),
       filterGroups: settings.error
         ? defaultState.filterGroups
@@ -241,7 +295,7 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
         listings: defaultState.listings.map((listing) => ({
           ...listing,
           description: "",
-          images: listing.images.slice(0, 4),
+          images: sanitizePublicImages(listing.images.slice(0, 4)),
           videos: [],
         })),
       },
@@ -261,7 +315,12 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
     return {
       data: {
         version: STATE_VERSION,
-        listings: defaultState.listings,
+        listings: defaultState.listings.map((listing) => ({
+          ...listing,
+          description: "",
+          images: sanitizePublicImages(listing.images.slice(0, 4)),
+          videos: [],
+        })),
       },
       source: "fallback",
     };
@@ -281,7 +340,12 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
     return {
       data: {
         version: STATE_VERSION,
-        listings: defaultState.listings,
+        listings: defaultState.listings.map((listing) => ({
+          ...listing,
+          description: "",
+          images: sanitizePublicImages(listing.images.slice(0, 4)),
+          videos: [],
+        })),
       },
       source: "fallback",
     };
@@ -317,7 +381,7 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
         tag: property.tag ?? "",
         highlight: property.highlight ?? "",
         description: "",
-        images: imagesByProperty.get(property.id) ?? [],
+        images: sanitizePublicImages(imagesByProperty.get(property.id) ?? []),
         videos: [],
         coverIndex: Number(property.cover_index ?? 0),
         agentId: property.agent_id ?? undefined,
@@ -379,8 +443,11 @@ export const readPublicProperty = async (
         highlight: row.highlight ?? "",
         description: row.description ?? "",
         images: propertyImages.error
-          ? fallbackListing?.images ?? []
-          : ensureArray(propertyImages.data).map((image) => image.url),
+          ? sanitizePublicImages(fallbackListing?.images ?? [], 1_500_000)
+          : sanitizePublicImages(
+              ensureArray(propertyImages.data).map((image) => image.url),
+              1_500_000
+            ),
         videos: row.videos ?? [],
         coverIndex: Number(row.cover_index ?? 0),
         agentId: row.agent_id ?? undefined,
