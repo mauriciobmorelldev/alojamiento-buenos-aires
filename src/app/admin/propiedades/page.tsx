@@ -94,6 +94,7 @@ export default function AdminPropertiesPage() {
   const [highlightForm, setHighlightForm] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isVideoUploading, setIsVideoUploading] = useState(false);
   const [successNotice, setSuccessNotice] = useState("");
   const [mediaNotice, setMediaNotice] = useState("");
   const [inventoryQuery, setInventoryQuery] = useState("");
@@ -103,6 +104,7 @@ export default function AdminPropertiesPage() {
   const [inventorySource, setInventorySource] = useState<"all" | "tokko" | "manual">("all");
   const [inventoryPage, setInventoryPage] = useState(1);
   const imageFileInputRef = useRef<HTMLInputElement | null>(null);
+  const videoFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!highlightForm) return;
@@ -425,6 +427,48 @@ export default function AdminPropertiesPage() {
     setVideoUrlDraft("");
     setFormError("");
     setMediaNotice("Video agregado.");
+  };
+
+  const handleListingVideoUpload = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    if (!authedAdmin) {
+      setFormError("Iniciá sesión para subir videos.");
+      return;
+    }
+
+    setIsVideoUploading(true);
+    setFormError("");
+    try {
+      const formData = new FormData();
+      formData.append("kind", "video");
+      formData.append("file", file);
+
+      const response = await fetch("/api/media/upload", {
+        method: "POST",
+        headers: {
+          "x-admin-id": authedAdmin.id,
+        },
+        body: formData,
+      });
+      const result = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        url?: string;
+        error?: string;
+      } | null;
+
+      if (!response.ok || !result?.ok || !result.url) {
+        throw new Error(result?.error ?? "No se pudo subir el video.");
+      }
+
+      setListingForm((prev) => ({ ...prev, videos: [...prev.videos, result.url ?? ""] }));
+      setMediaNotice("Video subido correctamente.");
+      if (videoFileInputRef.current) videoFileInputRef.current.value = "";
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo subir el video.");
+    } finally {
+      setIsVideoUploading(false);
+    }
   };
 
   const handleListingImageRemove = (index: number) => {
@@ -886,7 +930,25 @@ export default function AdminPropertiesPage() {
               >
                 Agregar video
               </button>
+              <input
+                ref={videoFileInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogg,.mov"
+                onChange={(event) => handleListingVideoUpload(event.target.files)}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => videoFileInputRef.current?.click()}
+                disabled={isVideoUploading}
+                className="rounded-full bg-surface-container-high px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary disabled:cursor-wait disabled:opacity-60"
+              >
+                {isVideoUploading ? "Subiendo..." : "Subir video"}
+              </button>
             </div>
+            <p className="text-xs leading-5 text-on-surface-variant">
+              Para archivos locales usá Subir video. Se guarda en Supabase Storage y en la ficha queda una URL pública.
+            </p>
           </div>
 
           {isOwner ? (
