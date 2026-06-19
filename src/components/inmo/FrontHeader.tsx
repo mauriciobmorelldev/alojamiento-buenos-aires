@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
@@ -62,7 +61,6 @@ export default function FrontHeader({
   hideBrand = false,
 }: FrontHeaderProps) {
   const { state } = useInmoStore();
-  const pathname = usePathname();
   const { theme, homeContent } = state;
   const themeStyles = useMemo(() => buildThemeStyles(theme), [theme]);
   const [mounted, setMounted] = useState(false);
@@ -93,7 +91,6 @@ export default function FrontHeader({
           "Hola, quiero consultar por una propiedad."
       )}`
     : "";
-  const hideWhatsappBubble = pathname?.startsWith("/colaborador");
 
   useEffect(() => {
     const hydrate = () => setMounted(true);
@@ -255,7 +252,7 @@ export default function FrontHeader({
         </div>
       </div>
     </nav>
-    {mounted && whatsappUrl && !hideWhatsappBubble ? (
+    {mounted && whatsappUrl ? (
       <a
         href={whatsappUrl}
         target="_blank"

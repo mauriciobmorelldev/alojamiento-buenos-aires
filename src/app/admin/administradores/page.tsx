@@ -315,11 +315,6 @@ export default function AdminAdministradoresPage() {
                     <p className="mt-1 text-[10px] uppercase tracking-widest text-on-surface-variant">
                       {admin.role} · {admin.active ? "Activo" : "Inactivo"}
                     </p>
-                    {admin.role === "colaborador" ? (
-                      <p className="mt-2 text-xs font-semibold text-primary">
-                        Link público: /colaborador/{admin.id}
-                      </p>
-                    ) : null}
                     {admin.phone ? (
                       <p className="mt-1 text-xs text-on-surface-variant">
                         WhatsApp: {admin.phone}

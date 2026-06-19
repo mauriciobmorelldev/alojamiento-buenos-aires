@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 import { readPublicShell } from "@/lib/server/inmoRepository";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const startedAt = Date.now();
-    const result = await readPublicShell();
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
+    const result = await readPublicShell(mode);
     return NextResponse.json(result.data, {
       headers: {
         "x-inmo-state-source": result.source,
-        "x-inmo-state-scope": "public-shell",
+        "x-inmo-state-scope": `public-shell-${mode}`,
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
         "Cache-Control": "private, max-age=20, stale-while-revalidate=60",
       },

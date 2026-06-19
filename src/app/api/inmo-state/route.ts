@@ -7,8 +7,7 @@ export async function GET(request: Request) {
     const startedAt = Date.now();
     const { searchParams } = new URL(request.url);
     const scope = searchParams.get("scope") === "admin" ? "admin" : "public";
-    const collaboratorId = searchParams.get("collaboratorId")?.trim() || undefined;
-    const result = await readInmoState({ scope, collaboratorId });
+    const result = await readInmoState({ scope });
     return NextResponse.json({
       ...result.data,
       adminUsers: result.data.adminUsers.map((admin) => ({
@@ -23,7 +22,6 @@ export async function GET(request: Request) {
       headers: {
         "x-inmo-state-source": result.source,
         "x-inmo-state-scope": scope,
-        ...(collaboratorId ? { "x-inmo-state-collaborator": collaboratorId } : {}),
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
         "Cache-Control": "private, max-age=10, stale-while-revalidate=30",
       },

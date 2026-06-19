@@ -27,10 +27,10 @@ type RepositoryResult<T> = {
 
 type ReadInmoStateOptions = {
   scope?: "public" | "admin";
-  collaboratorId?: string;
 };
 
 type PublicReadResult = RepositoryResult<Partial<InmoState>>;
+type PublicShellMode = "home" | "catalog";
 
 const ensureArray = <T>(value: T[] | null) => value ?? [];
 
@@ -82,15 +82,35 @@ const omitProfilePhone = (row: {
   return clone;
 };
 
-export const readPublicShell = async (): Promise<PublicReadResult> => {
+const sanitizeHomeContent = (value: unknown) => {
+  if (!value || typeof value !== "object") return defaultState.homeContent;
+  const homeContent = { ...(value as Record<string, unknown>) };
+  delete homeContent.customPages;
+  return homeContent as InmoState["homeContent"];
+};
+
+const getCatalogTheme = (theme: InmoState["theme"]) => ({
+  ...theme,
+  logo: "",
+  heroImage: "",
+});
+
+export const readPublicShell = async (
+  mode: PublicShellMode = "home"
+): Promise<PublicReadResult> => {
+  const isCatalogMode = mode === "catalog";
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseConfigured()) {
     return {
       data: {
         version: STATE_VERSION,
-        theme: defaultState.theme,
-        homeContent: defaultState.homeContent,
-        customPages: defaultState.customPages,
+        theme: isCatalogMode ? getCatalogTheme(defaultState.theme) : defaultState.theme,
+        ...(isCatalogMode
+          ? {}
+          : {
+              homeContent: defaultState.homeContent,
+              customPages: defaultState.customPages,
+            }),
         filterGroups: defaultState.filterGroups,
         adminUsers: defaultState.adminUsers.map((admin) => ({
           ...admin,
@@ -102,12 +122,20 @@ export const readPublicShell = async (): Promise<PublicReadResult> => {
     };
   }
 
+  const settingsQuery = isCatalogMode
+    ? supabase
+        .from("platform_settings")
+        .select("theme,filter_groups")
+        .eq("id", SETTINGS_ID)
+        .maybeSingle()
+    : supabase
+        .from("platform_settings")
+        .select("theme,home_content,filter_groups")
+        .eq("id", SETTINGS_ID)
+        .maybeSingle();
+
   const [settings, profiles, agents] = await Promise.all([
-    supabase
-      .from("platform_settings")
-      .select("theme,home_content,filter_groups")
-      .eq("id", SETTINGS_ID)
-      .maybeSingle(),
+    settingsQuery,
     supabase
       .from("profiles")
       .select("id,kind,name,email,role,phone,active")
@@ -132,9 +160,13 @@ export const readPublicShell = async (): Promise<PublicReadResult> => {
     return {
       data: {
         version: STATE_VERSION,
-        theme: defaultState.theme,
-        homeContent: defaultState.homeContent,
-        customPages: defaultState.customPages,
+        theme: isCatalogMode ? getCatalogTheme(defaultState.theme) : defaultState.theme,
+        ...(isCatalogMode
+          ? {}
+          : {
+              homeContent: defaultState.homeContent,
+              customPages: defaultState.customPages,
+            }),
         filterGroups: defaultState.filterGroups,
         adminUsers: defaultState.adminUsers.map((admin) => ({
           ...admin,
@@ -146,19 +178,35 @@ export const readPublicShell = async (): Promise<PublicReadResult> => {
     };
   }
 
+  const settingsData = settings.data as {
+    theme?: InmoState["theme"];
+    home_content?: Record<string, unknown>;
+    filter_groups?: InmoState["filterGroups"];
+  } | null;
+  const customPages = Array.isArray(settingsData?.home_content?.customPages)
+    ? settingsData.home_content.customPages
+    : defaultState.customPages;
+
   return {
     data: {
       version: STATE_VERSION,
-      theme: settings.error ? defaultState.theme : settings.data?.theme ?? defaultState.theme,
-      homeContent: settings.error
-        ? defaultState.homeContent
-        : settings.data?.home_content ?? defaultState.homeContent,
-      customPages: settings.error
-        ? defaultState.customPages
-        : settings.data?.home_content?.customPages ?? defaultState.customPages,
+      theme: getCatalogTheme(
+        settings.error ? defaultState.theme : settingsData?.theme ?? defaultState.theme
+      ),
+      ...(isCatalogMode
+        ? {}
+        : {
+            theme: settings.error ? defaultState.theme : settingsData?.theme ?? defaultState.theme,
+            homeContent: settings.error
+              ? defaultState.homeContent
+              : sanitizeHomeContent(settingsData?.home_content),
+            customPages: settings.error
+              ? defaultState.customPages
+              : customPages,
+          }),
       filterGroups: settings.error
         ? defaultState.filterGroups
-        : settings.data?.filter_groups ?? defaultState.filterGroups,
+        : settingsData?.filter_groups ?? defaultState.filterGroups,
       adminUsers: ensureArray(profiles.data).map((profile) => ({
         id: profile.id,
         name: profile.name,
@@ -181,9 +229,7 @@ export const readPublicShell = async (): Promise<PublicReadResult> => {
   };
 };
 
-export const readPublicListings = async (
-  collaboratorId?: string
-): Promise<PublicReadResult> => {
+export const readPublicListings = async (): Promise<PublicReadResult> => {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseConfigured()) {
     return {
@@ -195,7 +241,6 @@ export const readPublicListings = async (
     };
   }
 
-  const cleanCollaboratorId = collaboratorId?.trim();
   const propertiesQuery = supabase
     .from("properties")
     .select(
@@ -203,9 +248,7 @@ export const readPublicListings = async (
     )
     .order("updated_at", { ascending: false });
 
-  const properties = cleanCollaboratorId
-    ? await propertiesQuery.eq("created_by_admin_id", cleanCollaboratorId)
-    : await propertiesQuery;
+  const properties = await propertiesQuery;
 
   if (properties.error) {
     console.warn("Supabase public properties read failed", properties.error.message);
@@ -286,10 +329,7 @@ export const readInmoState = async (
     return { data: defaultState, source: "fallback" };
   }
   const isPublicScope = options.scope === "public";
-  const collaboratorId = options.collaboratorId?.trim();
-  const propertiesQuery = collaboratorId
-    ? supabase.from("properties").select("*").eq("created_by_admin_id", collaboratorId)
-    : supabase.from("properties").select("*");
+  const propertiesQuery = supabase.from("properties").select("*");
 
   const [
     settings,

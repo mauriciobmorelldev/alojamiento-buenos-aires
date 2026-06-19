@@ -62,17 +62,13 @@ const writeStorage = (value: string) => {
 
 const fetchRemoteState = async (
   scope: "public" | "admin" = "public",
-  collaboratorId?: string
+  mode: "home" | "catalog" = "home"
 ) => {
   try {
     if (scope === "public") {
-      const listingParams = new URLSearchParams();
-      if (collaboratorId) listingParams.set("collaboratorId", collaboratorId);
       const [shellResponse, listingsResponse] = await Promise.all([
-        fetch("/api/public/shell", { cache: "no-store" }),
-        fetch(`/api/public/listings?${listingParams.toString()}`, {
-          cache: "no-store",
-        }),
+        fetch(`/api/public/shell?mode=${mode}`, { cache: "no-store" }),
+        fetch("/api/public/listings", { cache: "no-store" }),
       ]);
       if (!shellResponse.ok || !listingsResponse.ok) return null;
       const shellData = (await shellResponse.json()) as Partial<InmoState>;
@@ -92,7 +88,6 @@ const fetchRemoteState = async (
     }
 
     const params = new URLSearchParams({ scope });
-    if (collaboratorId) params.set("collaboratorId", collaboratorId);
     const response = await fetch(`/api/inmo-state?${params.toString()}`, {
       cache: "no-store",
     });
@@ -171,12 +166,10 @@ export const useInmoStore = () => {
         pathname?.startsWith("/registro")
           ? "admin"
           : "public";
-      const collaboratorId = pathname?.startsWith("/colaborador/")
-        ? pathname.split("/")[2]
-        : undefined;
+      const mode = pathname?.startsWith("/propiedades") ? "catalog" : "home";
       const local = loadState();
       setState(local);
-      const remote = await fetchRemoteState(scope, collaboratorId);
+      const remote = await fetchRemoteState(scope, mode);
       if (!remote || remote.source === "fallback") {
         setIsReady(true);
         return;
