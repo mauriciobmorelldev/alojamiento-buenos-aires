@@ -29,7 +29,7 @@ import {
 } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { readAdminSession } from "@/lib/session";
-import { isSupportedVideoUrl } from "@/lib/video";
+import { isLocalVideoReference, isSupportedVideoUrl } from "@/lib/video";
 
 const toggleAttributeSelection = (
   group: FilterGroup,
@@ -411,6 +411,12 @@ export default function AdminPropertiesPage() {
   const handleListingVideoAdd = () => {
     const value = videoUrlDraft.trim();
     if (!value) return;
+    if (isLocalVideoReference(value)) {
+      setFormError(
+        "Ese video está en tu computadora. Subilo primero a YouTube, Vimeo o un hosting público y pegá el link https."
+      );
+      return;
+    }
     if (!isSupportedVideoUrl(value)) {
       setFormError("Pegá un link válido de YouTube, Vimeo, embed o archivo MP4/WebM.");
       return;

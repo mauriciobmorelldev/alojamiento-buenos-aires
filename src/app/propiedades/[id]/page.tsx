@@ -18,7 +18,7 @@ import { generatePropertyPdf } from "@/lib/propertyPdf";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice } from "@/lib/pricing";
 import { RealEstateMessage } from "@/components/inmo/RealEstateStatus";
-import { parseVideoUrl } from "@/lib/video";
+import { isLocalVideoReference, parseVideoUrl } from "@/lib/video";
 
 function PropertyLeadFormFallback() {
   return (
@@ -204,6 +204,7 @@ const BuildingHouseLoader = () => (
 
 const PropertyVideo = ({ url, title }: { url: string; title: string }) => {
   const video = parseVideoUrl(url);
+  const isLocal = isLocalVideoReference(url);
 
   if (video?.embedUrl) {
     return (
@@ -237,16 +238,25 @@ const PropertyVideo = ({ url, title }: { url: string; title: string }) => {
           smart_display
         </span>
         <p className="mt-3 text-sm font-semibold text-primary">
-          No pudimos reproducir este video.
+          {isLocal
+            ? "Este video está guardado como archivo local."
+            : "No pudimos reproducir este video."}
         </p>
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-4 inline-flex rounded-full bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary"
-        >
-          Abrir video
-        </a>
+        <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-on-surface-variant">
+          {isLocal
+            ? "Para verlo en la web, subilo a YouTube, Vimeo o un hosting público y pegá una URL https."
+            : "Revisá que el enlace sea público o reemplazalo por YouTube, Vimeo o un MP4/WebM directo."}
+        </p>
+        {!isLocal ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex rounded-full bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary"
+          >
+            Abrir video
+          </a>
+        ) : null}
       </div>
     </div>
   );

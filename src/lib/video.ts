@@ -8,6 +8,16 @@ export type ParsedVideo = {
 };
 
 const directVideoPattern = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
+const windowsLocalPathPattern = /^[a-z]:[\\/]/i;
+
+export const isLocalVideoReference = (value: string) => {
+  const trimmed = value.trim();
+  return (
+    trimmed.startsWith("file://") ||
+    windowsLocalPathPattern.test(trimmed) ||
+    trimmed.startsWith("\\\\")
+  );
+};
 
 const getYoutubeId = (url: URL) => {
   if (url.hostname.includes("youtu.be")) {
@@ -34,6 +44,7 @@ const getVimeoId = (url: URL) => {
 export const parseVideoUrl = (value: string): ParsedVideo | null => {
   const originalUrl = value.trim();
   if (!originalUrl) return null;
+  if (isLocalVideoReference(originalUrl)) return null;
 
   let url: URL;
   try {
@@ -79,3 +90,11 @@ export const isSupportedVideoUrl = (value: string) => {
   const parsed = parseVideoUrl(value);
   return Boolean(parsed && parsed.provider !== "unknown");
 };
+
+export const sanitizeVideoUrls = (videos: unknown) =>
+  Array.isArray(videos)
+    ? videos
+        .filter((video): video is string => typeof video === "string")
+        .map((video) => video.trim())
+        .filter(isSupportedVideoUrl)
+    : [];

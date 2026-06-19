@@ -18,6 +18,7 @@ import {
 } from "@/lib/supabase/server";
 import { mergeState } from "@/lib/stateMerge";
 import { clearResponseCache } from "@/lib/server/responseCache";
+import { sanitizeVideoUrls } from "@/lib/video";
 
 const SETTINGS_ID = "default";
 
@@ -83,7 +84,7 @@ const toPropertyRow = (property: Listing) => ({
   tag: property.tag,
   highlight: property.highlight,
   description: property.description,
-  videos: property.videos ?? [],
+  videos: sanitizeVideoUrls(property.videos),
   cover_index: property.coverIndex,
   agent_id: property.agentId ?? null,
   created_by_admin_id: property.createdByAdminId ?? null,
@@ -453,7 +454,7 @@ export const readPublicProperty = async (
               ensureArray(propertyImages.data).map((image) => image.url),
               1_500_000
             ),
-        videos: row.videos ?? [],
+        videos: sanitizeVideoUrls(row.videos),
         coverIndex: Number(row.cover_index ?? 0),
         agentId: row.agent_id ?? undefined,
         attributes: row.attributes ?? {},
@@ -619,7 +620,7 @@ export const readInmoState = async (
       highlight: property.highlight ?? "",
       description: property.description ?? "",
       images: imagesByProperty.get(property.id) ?? [],
-      videos: property.videos ?? [],
+      videos: sanitizeVideoUrls(property.videos),
       coverIndex: Number(property.cover_index ?? 0),
       agentId: property.agent_id ?? undefined,
       attributes: property.attributes ?? {},

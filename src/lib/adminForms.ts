@@ -14,6 +14,7 @@ import {
   type PropertyType,
 } from "./inmoData";
 import { currencyOptions } from "./pricing";
+import { sanitizeVideoUrls } from "./video";
 
 export type ListingFormState = {
   title: string;
@@ -221,7 +222,7 @@ export const normalizeListing = (form: ListingFormState, id: string): Listing =>
   highlight: form.highlight.trim(),
   description: form.description.trim(),
   images: form.images,
-  videos: form.videos.filter(Boolean),
+  videos: sanitizeVideoUrls(form.videos),
   coverIndex: Math.min(
     Math.max(form.coverIndex, 0),
     Math.max(form.images.length - 1, 0)
