@@ -353,6 +353,7 @@ export const validateIdNumber = (value: string) => {
 export const validateListingForm = (form: ListingFormState) => {
   const errors: string[] = [];
   if (!form.title.trim()) errors.push("Ingresá un título de propiedad.");
+  if (!form.highlight.trim()) errors.push("Ingresá el código obligatorio de la propiedad.");
   if (!form.neighborhood.trim()) errors.push("Ingresá el barrio o ubicación.");
   if (!form.description.trim()) errors.push("Completá una descripción comercial.");
   if (toNumber(form.price) <= 0) errors.push("El precio debe ser mayor a 0.");

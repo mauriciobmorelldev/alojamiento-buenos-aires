@@ -432,8 +432,7 @@ export default function HomeStitchLite({
                   item.createdByAdminId && collaboratorAdminIds.has(item.createdByAdminId)
                 );
                 const narrative = truncate(
-                  item.highlight ||
-                    item.description ||
+                  item.description ||
                     `${item.rooms} ambientes con ${item.area}m2 en ${item.neighborhood}.`
                 );
 

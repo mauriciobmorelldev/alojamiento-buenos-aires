@@ -433,7 +433,7 @@ export const generatePropertyPdf = async ({
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(primary.r, primary.g, primary.b);
-    doc.text("DESTACADO", margin, y + 8);
+    doc.text("CODIGO", margin, y + 8);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(74, 70, 63);

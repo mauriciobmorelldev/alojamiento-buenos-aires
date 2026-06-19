@@ -598,8 +598,7 @@ export default function HomeStitch() {
                 const availability = getAvailability(item.status);
                 const isFromCollaborator = isCollaboratorListing(item.createdByAdminId);
                 const narrative = truncate(
-                  item.highlight ||
-                    item.description ||
+                  item.description ||
                     `${item.rooms} ambientes con ${item.area}m² en ${item.neighborhood}.`
                 );
 

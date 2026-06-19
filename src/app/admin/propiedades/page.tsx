@@ -134,6 +134,7 @@ export default function AdminPropertiesPage() {
         listing.title,
         listing.neighborhood,
         listing.description,
+        listing.highlight,
         listing.id,
         tokkoSku,
         listing.attributes.reference_code?.[0] ?? "",
@@ -659,7 +660,7 @@ export default function AdminPropertiesPage() {
             </div>
           </div>
 
-          <div className={`grid gap-4 ${isOwner ? "sm:grid-cols-3" : "sm:grid-cols-1"}`}>
+          <div className={`grid gap-4 ${isOwner ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
             <input
               className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
               placeholder="Ambientes"
@@ -673,31 +674,30 @@ export default function AdminPropertiesPage() {
               required
             />
             {isOwner ? (
-              <>
-                <input
-                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                  placeholder="Tag"
-                  value={listingForm.tag}
-                  onChange={(event) =>
-                    setListingForm((prev) => ({
-                      ...prev,
-                      tag: event.target.value,
-                    }))
-                  }
-                />
-                <input
-                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                  placeholder="Highlight"
-                  value={listingForm.highlight}
-                  onChange={(event) =>
-                    setListingForm((prev) => ({
-                      ...prev,
-                      highlight: event.target.value,
-                    }))
-                  }
-                />
-              </>
+              <input
+                className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+                placeholder="Tag"
+                value={listingForm.tag}
+                onChange={(event) =>
+                  setListingForm((prev) => ({
+                    ...prev,
+                    tag: event.target.value,
+                  }))
+                }
+              />
             ) : null}
+            <input
+              className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+              placeholder="Código obligatorio"
+              value={listingForm.highlight}
+              onChange={(event) =>
+                setListingForm((prev) => ({
+                  ...prev,
+                  highlight: event.target.value,
+                }))
+              }
+              required
+            />
           </div>
 
           {isOwner ? (
