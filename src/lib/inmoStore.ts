@@ -67,8 +67,8 @@ const fetchRemoteState = async (
   try {
     if (scope === "public") {
       const [shellResponse, listingsResponse] = await Promise.all([
-        fetch(`/api/public/shell?mode=${mode}`),
-        fetch("/api/public/listings"),
+        fetch(`/api/public/shell?mode=${mode}`, { cache: "no-store" }),
+        fetch("/api/public/listings", { cache: "no-store" }),
       ]);
       if (!shellResponse.ok || !listingsResponse.ok) return null;
       const shellData = (await shellResponse.json()) as Partial<InmoState>;

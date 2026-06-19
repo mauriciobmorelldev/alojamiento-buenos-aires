@@ -837,8 +837,7 @@ export default function AdminPropertiesPage() {
             </div>
           </div>
 
-          {isOwner ? (
-            <div className="grid gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
+          <div className="grid gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
               Videos
             </p>
@@ -883,7 +882,6 @@ export default function AdminPropertiesPage() {
               </button>
             </div>
           </div>
-          ) : null}
 
           {isOwner ? (
             <div className="grid gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">
