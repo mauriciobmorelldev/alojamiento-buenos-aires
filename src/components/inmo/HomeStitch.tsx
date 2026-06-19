@@ -143,11 +143,9 @@ export default function HomeStitch() {
   ).slice(0, 6);
 
   const heroImage = useMemo(() => {
-    const activeBanner = homeContent.banners.find((banner) => banner.active && banner.image);
-    if (activeBanner?.image) return activeBanner.image;
     if (theme.heroImage) return theme.heroImage;
     return fallbackHeroImage;
-  }, [homeContent.banners, theme.heroImage]);
+  }, [theme.heroImage]);
 
   const activeBanners = useMemo(
     () => homeContent.banners.filter((banner) => banner.active),

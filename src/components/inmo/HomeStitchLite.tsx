@@ -164,7 +164,7 @@ export default function HomeStitchLite({
   }, [activeBanners.length]);
 
   const activeBanner = activeBanners[activeBannerIndex % activeBanners.length];
-  const heroImage = activeBanner?.image || theme.heroImage || "";
+  const heroImage = theme.heroImage || "";
   const primaryHref = sanitizePublicHref(homeContent.primaryCtaHref);
   const secondaryHref = sanitizePublicHref(homeContent.secondaryCtaHref);
   const secondaryLabel = /cliente|cuenta|acceso/i.test(homeContent.secondaryCtaLabel)

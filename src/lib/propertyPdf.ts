@@ -115,12 +115,6 @@ const drawLimitedWrappedText = (
   };
 };
 
-const getOperationLabel = (priceUnit: Listing["priceUnit"], mode: "short" | "long" = "long") => {
-  if (priceUnit === "mensual") return mode === "short" ? "Alquiler" : "Alquiler mensual";
-  if (priceUnit === "noche") return mode === "short" ? "Temporario" : "Alquiler temporario";
-  return "Venta";
-};
-
 const fitText = (
   doc: import("jspdf").jsPDF,
   value: string,
@@ -133,6 +127,28 @@ const fitText = (
     next = next.slice(0, -1);
   }
   return `${next.trim()}...`;
+};
+
+const drawWrappedTextBlock = (
+  doc: import("jspdf").jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  options: { maxLines?: number } = {}
+) => {
+  const lines = doc.splitTextToSize(text, maxWidth) as string[];
+  const visibleLines =
+    typeof options.maxLines === "number" ? lines.slice(0, options.maxLines) : lines;
+  if (visibleLines.length) {
+    doc.text(visibleLines, x, y, { maxWidth, lineHeightFactor: 1.15 });
+  }
+  return {
+    nextY: y + Math.max(visibleLines.length, 1) * lineHeight,
+    remainingLines:
+      typeof options.maxLines === "number" ? lines.slice(options.maxLines) : [],
+  };
 };
 
 const drawOverflowTextPages = (
@@ -294,8 +310,6 @@ export const generatePropertyPdf = async ({
     : "";
 
   const price = formatPrice(property.price, property.priceUnit, property.currency);
-  const operationLabel = getOperationLabel(property.priceUnit);
-  const operationShortLabel = getOperationLabel(property.priceUnit, "short");
 
   doc.setFillColor(252, 250, 245);
   doc.rect(0, 0, pageWidth, pageHeight, "F");
@@ -327,10 +341,6 @@ export const generatePropertyPdf = async ({
   doc.setFontSize(price.length > 16 ? 12 : 15);
   doc.setTextColor(primary.r, primary.g, primary.b);
   doc.text(fitText(doc, price, 54), pageWidth - margin, 52, { align: "right" });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(94, 90, 82);
-  doc.text(operationLabel.toUpperCase(), pageWidth - margin, 60, { align: "right" });
 
   const imageY = Math.max(88, neighborhoodY + 13);
   const imageHeight = Math.max(100, 208 - imageY);
@@ -349,21 +359,21 @@ export const generatePropertyPdf = async ({
   }
 
   const specY = 220;
-  drawInfoCard(
-    doc,
-    "Operacion",
-    operationShortLabel,
-    margin,
-    specY,
-    42,
-    primary
-  );
-  drawInfoCard(doc, "Ambientes", String(property.rooms), margin + 46, specY, 42, primary);
-  drawInfoCard(doc, "Superficie", `${property.area} m2`, margin + 92, specY, 42, primary);
+  drawInfoCard(doc, "Ambientes", String(property.rooms), margin, specY, 42, primary);
+  drawInfoCard(doc, "Superficie", `${property.area} m2`, margin + 46, specY, 42, primary);
   drawInfoCard(
     doc,
     "Estado",
     availability.label,
+    margin + 92,
+    specY,
+    42,
+    primary
+  );
+  drawInfoCard(
+    doc,
+    "Barrio",
+    property.neighborhood || "Consultar",
     margin + 138,
     specY,
     40,
@@ -375,7 +385,11 @@ export const generatePropertyPdf = async ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(105, 101, 93);
-  doc.text("Mas fotos, consultas y estado actualizado disponibles en la ficha web.", margin, 269);
+  doc.text(
+    fitText(doc, "Mas fotos, consultas y estado actualizado disponibles en la ficha web.", 118),
+    margin,
+    269
+  );
   drawTextLink(doc, "Abrir ficha web", pageWidth - margin - 50, 269, primary, propertyUrl);
 
   doc.addPage();
@@ -423,13 +437,21 @@ export const generatePropertyPdf = async ({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(74, 70, 63);
-    doc.text((doc.splitTextToSize(property.highlight, 108) as string[]).slice(0, 3), margin, y + 16);
+    const highlight = drawWrappedTextBlock(
+      doc,
+      property.highlight,
+      margin,
+      y + 16,
+      108,
+      5.1,
+      { maxLines: 5 }
+    );
+    y = highlight.nextY + 3;
   }
 
   const sideX = 138;
   const details = [
     ["Precio", price],
-    ["Operacion", operationLabel],
     ["Barrio", property.neighborhood],
     ["Tipo", propertyTypeLabels[property.type]],
     ["Ambientes", String(property.rooms)],
@@ -485,18 +507,34 @@ export const generatePropertyPdf = async ({
       value,
     }))
   );
+  let lowerContentY = y;
   if (attributeValues.length) {
-    let chipY = 145;
+    let chipY = Math.max(145, y + 12);
+    if (chipY > 205) {
+      doc.addPage();
+      doc.setFillColor(252, 250, 245);
+      doc.rect(0, 0, pageWidth, pageHeight, "F");
+      drawPremiumHeader(doc, "Atributos", theme, pageWidth, primary, neutral, margin);
+      chipY = 42;
+    }
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(primary.r, primary.g, primary.b);
     doc.text("Amenities y atributos", margin, chipY);
     chipY += 11;
     attributeValues.forEach((item) => {
-      if (chipY > 220) return;
+      if (chipY > 248) {
+        doc.addPage();
+        doc.setFillColor(252, 250, 245);
+        doc.rect(0, 0, pageWidth, pageHeight, "F");
+        drawPremiumHeader(doc, "Atributos", theme, pageWidth, primary, neutral, margin);
+        chipY = 42;
+      }
+      const valueLines = (doc.splitTextToSize(item.value, 100) as string[]).slice(0, 2);
+      const chipHeight = Math.max(12, 8 + valueLines.length * 4.2);
       doc.setFillColor(255, 255, 255);
       doc.setDrawColor(226, 220, 206);
-      doc.roundedRect(margin, chipY - 6, 112, 12, 4, 4, "FD");
+      doc.roundedRect(margin, chipY - 6, 112, chipHeight, 4, 4, "FD");
       doc.setFont("helvetica", "normal");
       doc.setFontSize(6.2);
       doc.setTextColor(115, 112, 105);
@@ -504,27 +542,40 @@ export const generatePropertyPdf = async ({
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
       doc.setTextColor(74, 70, 63);
-      doc.text(item.value, margin + 5, chipY + 3.2, { maxWidth: 100 });
-      chipY += 14;
+      doc.text(valueLines, margin + 5, chipY + 3.2, {
+        maxWidth: 100,
+        lineHeightFactor: 1.15,
+      });
+      chipY += chipHeight + 3;
     });
+    lowerContentY = chipY;
   }
 
+  const nextStepY = pageHeight - 48;
+  if (lowerContentY > nextStepY - 18) {
+    doc.addPage();
+    doc.setFillColor(252, 250, 245);
+    doc.rect(0, 0, pageWidth, pageHeight, "F");
+    drawPremiumHeader(doc, "Siguiente paso", theme, pageWidth, primary, neutral, margin);
+  }
   doc.setDrawColor(226, 220, 206);
-  doc.line(margin, 238, pageWidth - margin, 238);
+  doc.line(margin, nextStepY - 12, pageWidth - margin, nextStepY - 12);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(primary.r, primary.g, primary.b);
-  doc.text("Siguiente paso", margin, 250);
+  doc.text("Siguiente paso", margin, nextStepY);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(74, 70, 63);
-  doc.text(
+  const nextStepLines = (doc.splitTextToSize(
     "Para coordinar una visita o hacer una consulta, abrí la ficha web y enviá el formulario desde la propiedad.",
-    margin,
-    259,
-    { maxWidth: pageWidth - margin * 2 - 55 }
-  );
-  drawTextLink(doc, "Abrir ficha web", pageWidth - margin - 48, 259, primary, propertyUrl);
+    pageWidth - margin * 2 - 58
+  ) as string[]).slice(0, 3);
+  doc.text(nextStepLines, margin, nextStepY + 9, {
+    maxWidth: pageWidth - margin * 2 - 58,
+    lineHeightFactor: 1.15,
+  });
+  drawTextLink(doc, "Abrir ficha web", pageWidth - margin - 48, nextStepY + 9, primary, propertyUrl);
 
   drawOverflowTextPages(doc, overflowDescriptionLines, {
     title: "Descripcion completa",
@@ -579,7 +630,7 @@ export const generatePropertyPdf = async ({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(120, 120, 120);
-    doc.text(`${theme.name || "Connexa"} - ${property.neighborhood}`, margin, pageHeight - 9);
+    doc.text(fitText(doc, `${theme.name || "Connexa"} - ${property.neighborhood}`, 120), margin, pageHeight - 9);
     doc.link(margin, pageHeight - 13, pageWidth - margin * 2, 7, { url: propertyUrl });
     doc.text(`${page}/${totalPages}`, pageWidth - margin, pageHeight - 9, {
       align: "right",

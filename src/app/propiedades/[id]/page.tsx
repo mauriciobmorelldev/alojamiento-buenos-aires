@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
 import { propertyTypeLabels, type FilterGroup, type Listing } from "@/lib/inmoData";
@@ -39,16 +40,6 @@ const PropertyLeadForm = dynamic(
   {
     ssr: false,
     loading: () => <PropertyLeadFormFallback />,
-  }
-);
-
-const DotLottieReact = dynamic(
-  () => import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-full w-full animate-pulse rounded-full bg-primary-fixed/45" />
-    ),
   }
 );
 
