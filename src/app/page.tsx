@@ -1,5 +1,5 @@
-import HomeStitch from "@/components/inmo/HomeStitch";
+import HomeStitchLite from "@/components/inmo/HomeStitchLite";
 
 export default function HomePage() {
-  return <HomeStitch />;
+  return <HomeStitchLite />;
 }

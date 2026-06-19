@@ -156,6 +156,36 @@ textarea:disabled,
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
+.animate-home-rise {
+  animation: home-rise 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-connexa-x {
+  animation: connexa-x-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes connexa-x-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(40px, 0, 0) rotate(12deg) scale(1.18);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}
+
 .inmo-admin form > *,
 .inmo-admin .grid > * {
   min-width: 0;

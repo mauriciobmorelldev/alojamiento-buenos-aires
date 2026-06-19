@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
-import MotionProvider from "@/components/providers/MotionProvider";
+import MaterialSymbolsLoader from "@/components/providers/MaterialSymbolsLoader";
 import "./globals.css";
 
 const inter = Inter({
@@ -34,16 +34,9 @@ export default function RootLayout({
       style={{ colorScheme: "light" }}
       className={`${inter.variable} ${manrope.variable} h-full antialiased`}
     >
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        />
-      </head>
       <body className="min-h-full flex flex-col bg-background text-on-background font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
-        <MotionProvider>{children}</MotionProvider>
+        {children}
+        <MaterialSymbolsLoader />
       </body>
     </html>
   );
