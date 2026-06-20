@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { RealEstateMessage } from "@/components/inmo/RealEstateStatus";
+import { isChunkLoadError, reloadOnceForChunkError } from "@/lib/chunkRecovery";
 import "./globals.css";
 
 export default function GlobalError({
@@ -13,6 +14,9 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error("Fallo global de la aplicacion", error);
+    if (isChunkLoadError(error)) {
+      reloadOnceForChunkError();
+    }
   }, [error]);
 
   return (

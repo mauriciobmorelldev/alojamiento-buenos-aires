@@ -13,17 +13,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    const headers = [
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
-    ];
+    const headers = [];
 
     if (!allowIndexing) {
       headers.push({

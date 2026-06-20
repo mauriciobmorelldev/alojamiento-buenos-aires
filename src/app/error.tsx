@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { RealEstateMessage } from "@/components/inmo/RealEstateStatus";
+import { isChunkLoadError, reloadOnceForChunkError } from "@/lib/chunkRecovery";
 
 export default function Error({
   error,
@@ -12,6 +13,9 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error("La pagina fallo", error);
+    if (isChunkLoadError(error)) {
+      reloadOnceForChunkError();
+    }
   }, [error]);
 
   return (

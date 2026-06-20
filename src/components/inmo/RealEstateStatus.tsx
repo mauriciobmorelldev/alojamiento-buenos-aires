@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import type { ReactNode } from "react";
 
 type StatusAction = {
@@ -52,6 +55,16 @@ const HouseMark = ({ loading = false }: { loading?: boolean }) => (
   </div>
 );
 
+const ConnexaLottieLoader = () => (
+  <div className="mx-auto h-56 w-56">
+    <DotLottieReact
+      src="https://lottie.host/fb1730d2-9648-4008-ba55-f8a989c5e15e/E9ZNH6CJo7.lottie"
+      loop
+      autoplay
+    />
+  </div>
+);
+
 export function RealEstateLoader({
   title = "Preparando la visita",
   message = "Estamos abriendo la propiedad. Esto puede tardar unos segundos.",
@@ -62,8 +75,8 @@ export function RealEstateLoader({
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-6 py-16 text-on-background">
       <section className="w-full max-w-md text-center">
-        <HouseMark loading />
-        <p className="mt-8 text-xs font-bold uppercase tracking-[0.32em] text-on-surface-variant">
+        <ConnexaLottieLoader />
+        <p className="mt-3 text-xs font-bold uppercase tracking-[0.32em] text-on-surface-variant">
           Connexa
         </p>
         <h1 className="mt-3 font-headline text-3xl font-bold text-primary">

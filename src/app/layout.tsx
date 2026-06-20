@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
+import ChunkRecoveryReset from "@/components/providers/ChunkRecoveryReset";
 import MaterialSymbolsLoader from "@/components/providers/MaterialSymbolsLoader";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
       className={`${inter.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-on-background font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+        <ChunkRecoveryReset />
         {children}
         <MaterialSymbolsLoader />
       </body>
