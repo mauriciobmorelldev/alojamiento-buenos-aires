@@ -6,8 +6,50 @@ export async function GET(request: Request) {
   try {
     const startedAt = Date.now();
     const { searchParams } = new URL(request.url);
-    const scope = searchParams.get("scope") === "admin" ? "admin" : "public";
-    const result = await readInmoState({ scope });
+    const scope = searchParams.get("scope");
+    const adminId = request.headers.get("x-admin-id");
+
+    if (scope !== "admin") {
+      return NextResponse.json(
+        { ok: false, error: "Use public endpoints instead." },
+        {
+          status: 404,
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, nofollow, noarchive",
+          },
+        }
+      );
+    }
+
+    if (!adminId) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized" },
+        {
+          status: 401,
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, nofollow, noarchive",
+          },
+        }
+      );
+    }
+
+    const result = await readInmoState({ scope: "admin" });
+    const admin = result.data.adminUsers.find((item) => item.id === adminId && item.active);
+    if (!admin) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized" },
+        {
+          status: 401,
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, nofollow, noarchive",
+          },
+        }
+      );
+    }
+
     return NextResponse.json({
       ...result.data,
       adminUsers: result.data.adminUsers.map((admin) => ({
@@ -21,9 +63,10 @@ export async function GET(request: Request) {
     }, {
       headers: {
         "x-inmo-state-source": result.source,
-        "x-inmo-state-scope": scope,
+        "x-inmo-state-scope": "admin",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "private, max-age=10, stale-while-revalidate=30",
+        "Cache-Control": "private, no-store",
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
       },
     });
   } catch (error) {

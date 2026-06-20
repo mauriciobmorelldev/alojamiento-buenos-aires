@@ -88,8 +88,12 @@ const fetchRemoteState = async (
     }
 
     const params = new URLSearchParams({ scope });
+    const adminSession = readAdminSession();
     const response = await fetch(`/api/inmo-state?${params.toString()}`, {
       cache: "no-store",
+      headers: {
+        ...(adminSession?.adminId ? { "x-admin-id": adminSession.adminId } : {}),
+      },
     });
     if (!response.ok) return null;
     return {

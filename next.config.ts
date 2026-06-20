@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const allowIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
+
 const nextConfig: NextConfig = {
   compress: true,
   images: {
@@ -11,7 +13,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    return [
+    const headers = [
       {
         source: "/_next/static/:path*",
         headers: [
@@ -22,6 +24,20 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
+
+    if (!allowIndexing) {
+      headers.push({
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow, noarchive",
+          },
+        ],
+      });
+    }
+
+    return headers;
   },
 };
 
