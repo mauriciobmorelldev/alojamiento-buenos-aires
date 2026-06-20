@@ -11,8 +11,6 @@ import {
 import {
   createId,
   isValidEmail,
-  normalizeIdNumber,
-  validateIdNumber,
 } from "@/lib/adminForms";
 import type { Listing, ThemeSettings, VisitFormContent } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
@@ -25,7 +23,6 @@ type PropertyLeadFormProps = {
 
 const emptyVisitRequest = {
   nationality: "",
-  idNumber: "",
   age: "",
   moveInDate: "",
   duration: "3 meses",
@@ -69,16 +66,6 @@ const formatCellPhoneInput = (value: string) => {
   if (digits.length <= 4) return digits;
   if (digits.length <= 8) return `${digits.slice(0, 4)} ${digits.slice(4)}`;
   return `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8)}`;
-};
-
-const formatIdNumberInput = (value: string) => {
-  const digits = normalizeIdNumber(value).slice(0, 11);
-  if (digits.length <= 8) {
-    if (digits.length <= 2) return digits;
-    if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
-    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
-  }
-  return `${digits.slice(0, 2)}-${digits.slice(2, 10)}-${digits.slice(10)}`;
 };
 
 const formatIntegerInput = (value: string, maxLength: number) =>
@@ -198,8 +185,6 @@ export default function PropertyLeadForm({
     leadPhone && !isValidCellPhone(leadPhone)
       ? "Ingresá un celular válido con código de área."
       : "";
-  const idNumberError =
-    visitRequest.idNumber ? validateIdNumber(visitRequest.idNumber) : "";
   const ageNumber = Number(visitRequest.age);
   const ageError =
     visitRequest.age && (!Number.isInteger(ageNumber) || ageNumber < 18 || ageNumber > 100)
@@ -221,7 +206,6 @@ export default function PropertyLeadForm({
   const hasVisibleLeadValidationErrors = Boolean(
     emailError ||
       phoneError ||
-      idNumberError ||
       ageError ||
       peopleCountError ||
       petsCountError
@@ -233,7 +217,6 @@ export default function PropertyLeadForm({
     setLeadNotice("");
     const phone = normalizeCellPhone(leadPhone);
     const email = leadEmail.trim().toLowerCase();
-    const documentError = validateIdNumber(visitRequest.idNumber);
     const age = Number(visitRequest.age);
     const peopleCount = Number(visitRequest.peopleCount);
     const petsCount = Number(visitRequest.petsCount);
@@ -247,10 +230,6 @@ export default function PropertyLeadForm({
     }
     if (!isValidCellPhone(leadPhone)) {
       setLeadError("Ingresá un celular válido con código de área.");
-      return;
-    }
-    if (documentError) {
-      setLeadError(documentError);
       return;
     }
     if (!visitRequest.nationality.trim()) {
@@ -291,7 +270,6 @@ export default function PropertyLeadForm({
     const notes = [
       "Solicitud de visita o reserva directa",
       "",
-      `Documento: ${normalizeIdNumber(visitRequest.idNumber)}`,
       `Nacionalidad: ${visitRequest.nationality.trim()}`,
       `Edad: ${age}`,
       `Fecha estimada de ingreso: ${visitRequest.moveInDate}`,
@@ -427,20 +405,6 @@ export default function PropertyLeadForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <FloatingInput
           required
-          inputMode="numeric"
-          label={visitForm.idNumberLabel}
-          value={visitRequest.idNumber}
-          onChange={(event) =>
-            setVisitRequest((prev) => ({
-              ...prev,
-              idNumber: formatIdNumberInput(event.target.value),
-            }))
-          }
-          error={idNumberError}
-          isValid={Boolean(visitRequest.idNumber && !idNumberError)}
-        />
-        <FloatingInput
-          required
           label={visitForm.nationalityLabel}
           value={visitRequest.nationality}
           onChange={(event) =>
@@ -451,9 +415,6 @@ export default function PropertyLeadForm({
           }
           isValid={Boolean(visitRequest.nationality.trim())}
         />
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
         <FloatingInput
           required
           type="number"
