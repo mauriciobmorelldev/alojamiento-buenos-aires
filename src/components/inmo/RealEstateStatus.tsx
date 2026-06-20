@@ -93,6 +93,38 @@ export function RealEstateLoader({
   );
 }
 
+export function InlineRealEstateLoader({
+  title = "Cargando propiedades",
+  message = "Estamos preparando el catálogo.",
+}: {
+  title?: string;
+  message?: string;
+}) {
+  return (
+    <div className="rounded-3xl bg-surface-container-lowest p-8 text-center shadow-[0_34px_75px_-58px_rgba(27,54,93,0.55)]">
+      <div className="mx-auto h-40 w-40">
+        <DotLottieReact
+          src="https://lottie.host/fb1730d2-9648-4008-ba55-f8a989c5e15e/E9ZNH6CJo7.lottie"
+          loop
+          autoplay
+        />
+      </div>
+      <p className="mt-2 text-xs font-bold uppercase tracking-[0.28em] text-on-surface-variant">
+        Connexa
+      </p>
+      <h3 className="mt-3 font-headline text-2xl font-bold text-primary">
+        {title}
+      </h3>
+      <p className="mt-2 text-sm leading-6 text-on-surface-variant">
+        {message}
+      </p>
+      <div className="mx-auto mt-6 h-1.5 w-40 overflow-hidden rounded-full bg-surface-container-high">
+        <div className="h-full w-1/2 animate-[statusBar_1.15s_ease-in-out_infinite] rounded-full bg-primary" />
+      </div>
+    </div>
+  );
+}
+
 export function RealEstateMessage({
   eyebrow = "Oops",
   title,

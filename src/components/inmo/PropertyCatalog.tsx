@@ -12,6 +12,7 @@ import { buildThemeStyles } from "@/lib/theme";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice, getListingComparablePriceInArs } from "@/lib/pricing";
+import { InlineRealEstateLoader } from "@/components/inmo/RealEstateStatus";
 
 type PropertyCatalogProps = {
   showHero?: boolean;
@@ -58,7 +59,7 @@ const toggleAttributeSelection = (
 };
 
 export default function PropertyCatalog({ showHero = false }: PropertyCatalogProps) {
-  const { state } = useInmoStore();
+  const { state, isReady } = useInmoStore();
   const { listings, filterGroups, theme } = state;
 
   const [query, setQuery] = useState("");
@@ -295,7 +296,14 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
           </div>
         </div>
 
-        {listings.length === 0 ? (
+        {!isReady ? (
+          <div className="mt-10">
+            <InlineRealEstateLoader
+              title="Cargando propiedades"
+              message="Estamos consultando el catálogo disponible."
+            />
+          </div>
+        ) : listings.length === 0 ? (
           <div className="mt-10 rounded-2xl bg-surface-container-lowest p-8 text-center shadow-[0_30px_50px_-30px_rgba(27,27,28,0.3)]">
             <p className="text-xs uppercase tracking-[0.3em] text-on-surface-variant">
               Catálogo vacío

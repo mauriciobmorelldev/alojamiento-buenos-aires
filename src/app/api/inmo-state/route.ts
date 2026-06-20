@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import type { InmoState } from "@/lib/inmoData";
-import { readInmoState, writeInmoState } from "@/lib/server/inmoRepository";
+import {
+  readInmoState,
+  readPublicListings,
+  readPublicShell,
+  writeInmoState,
+} from "@/lib/server/inmoRepository";
+import { readThroughCache } from "@/lib/server/responseCache";
 
 export async function GET(request: Request) {
   try {
@@ -10,11 +16,30 @@ export async function GET(request: Request) {
     const adminId = request.headers.get("x-admin-id");
 
     if (scope !== "admin") {
+      const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
+      const [shell, listings] = await Promise.all([
+        readThroughCache(`public:shell:${mode}:compat:v1`, 30 * 1000, () =>
+          readPublicShell(mode)
+        ),
+        readThroughCache("public:listings:compat:v1", 30 * 1000, readPublicListings),
+      ]);
+      const source =
+        shell.value.source === "supabase" || listings.value.source === "supabase"
+          ? "supabase"
+          : "fallback";
+
       return NextResponse.json(
-        { ok: false, error: "Use public endpoints instead." },
         {
-          status: 404,
+          ...shell.value.data,
+          ...listings.value.data,
+        },
+        {
           headers: {
+            "x-inmo-state-source": source,
+            "x-inmo-state-scope": `public-compat-${mode}`,
+            "x-inmo-cache":
+              shell.hit && listings.hit ? "hit" : shell.hit || listings.hit ? "partial" : "miss",
+            "x-inmo-state-duration-ms": String(Date.now() - startedAt),
             "Cache-Control": "no-store",
             "X-Robots-Tag": "noindex, nofollow, noarchive",
           },

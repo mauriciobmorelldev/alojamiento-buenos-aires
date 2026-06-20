@@ -11,6 +11,7 @@ import {
 import { buildThemeStyles } from "@/lib/theme";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice, getListingComparablePriceInArs } from "@/lib/pricing";
+import { InlineRealEstateLoader } from "@/components/inmo/RealEstateStatus";
 
 type PropertyTypeFilter = "all" | PropertyType;
 type PropertyStatusFilter = "all" | "disponible" | "no-disponible";
@@ -54,7 +55,7 @@ const toggleAttributeSelection = (
 };
 
 export default function ResultsStitch() {
-  const { state } = useInmoStore();
+  const { state, isReady } = useInmoStore();
   const { listings, filterGroups, theme, adminUsers } = state;
 
   const [query, setQuery] = useState("");
@@ -407,7 +408,12 @@ export default function ResultsStitch() {
               </div>
             </div>
 
-            {filteredListings.length === 0 ? (
+            {!isReady ? (
+              <InlineRealEstateLoader
+                title="Cargando propiedades"
+                message="Estamos consultando el catálogo disponible."
+              />
+            ) : filteredListings.length === 0 ? (
               <div className="rounded-2xl bg-surface-container-lowest p-8 text-center editorial-shadow">
                 <p className="text-xs uppercase tracking-widest text-on-surface-variant">
                   Sin resultados
