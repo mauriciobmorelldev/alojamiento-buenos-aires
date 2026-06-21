@@ -630,7 +630,12 @@ export const readInmoState = async (
     return { data: defaultState, source: "fallback" };
   }
   const isPublicScope = options.scope === "public";
-  const propertiesQuery = supabase.from("properties").select("*");
+  const propertiesQuery = supabase
+    .from("properties")
+    .select(
+      "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,description,videos,cover_index,agent_id,created_by_admin_id,attributes"
+    )
+    .order("updated_at", { ascending: false });
 
   const [
     settings,
@@ -643,25 +648,39 @@ export const readInmoState = async (
     leadEvents,
     metrics,
   ] = await Promise.all([
-    supabase.from("platform_settings").select("*").eq("id", SETTINGS_ID).maybeSingle(),
-    supabase.from("profiles").select("*"),
-    supabase.from("agents").select("*"),
+    supabase
+      .from("platform_settings")
+      .select("theme,home_content,filter_groups")
+      .eq("id", SETTINGS_ID)
+      .maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("id,kind,name,email,password,role,phone,active"),
+    supabase.from("agents").select("id,name,role,phone,email,photo"),
     isPublicScope
       ? Promise.resolve({ data: null, error: null })
-      : supabase.from("clients").select("*"),
+      : supabase
+          .from("clients")
+          .select("id,name,email,password,phone,id_number,email_verified,verification_token,active"),
     propertiesQuery,
     isPublicScope
       ? Promise.resolve({ data: null, error: null })
-      : supabase.from("property_favorites").select("*"),
+      : supabase.from("property_favorites").select("id,client_id,property_id,created_at"),
     isPublicScope
       ? Promise.resolve({ data: null, error: null })
-      : supabase.from("leads").select("*"),
+      : supabase
+          .from("leads")
+          .select("id,name,email,phone,property_id,agent_id,client_id,status,created_at,updated_at,notes"),
     isPublicScope
       ? Promise.resolve({ data: null, error: null })
-      : supabase.from("lead_events").select("*"),
+      : supabase
+          .from("lead_events")
+          .select("id,lead_id,from_status,to_status,note,created_at"),
     isPublicScope
       ? Promise.resolve({ data: null, error: null })
-      : supabase.from("property_metrics").select("*"),
+      : supabase
+          .from("property_metrics")
+          .select("id,property_id,views,leads,favorites,last_viewed_at"),
   ]);
   const tokkoLogs = isPublicScope
     ? { data: null, error: null }
@@ -683,7 +702,7 @@ export const readInmoState = async (
   const propertyImages = propertyIds.length
     ? await supabase
         .from("property_images")
-        .select("*")
+        .select("property_id,url,sort_order")
         .in("property_id", propertyIds)
         .order("sort_order")
     : { data: [], error: null };

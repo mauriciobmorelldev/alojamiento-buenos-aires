@@ -22,7 +22,7 @@ import { buildThemeStyles } from "@/lib/theme";
 
 export default function AdminBrandingPage() {
   const { state, updateState } = useInmoStore();
-  const { theme, homeContent, listings, customPages } = state;
+  const { theme, homeContent, listings, customPages, filterGroups } = state;
   const [adminSession] = useState(() => readAdminSession());
 
   const [themeForm, setThemeForm] = useState<ThemeSettings>(theme);
@@ -59,7 +59,34 @@ export default function AdminBrandingPage() {
 
   const previewStyles = useMemo(() => buildThemeStyles(themeForm), [themeForm]);
 
-  const handleThemeSubmit = (event: FormEvent) => {
+  const persistBrandingSettings = async (
+    nextTheme: ThemeSettings,
+    nextHomeContent: HomeContent,
+    nextCustomPages: CustomPage[]
+  ) => {
+    const response = await fetch("/api/admin/branding-state", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(adminSession?.adminId ? { "x-admin-id": adminSession.adminId } : {}),
+      },
+      body: JSON.stringify({
+        theme: nextTheme,
+        homeContent: nextHomeContent,
+        customPages: nextCustomPages,
+        filterGroups,
+      }),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      error?: string;
+    } | null;
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.error ?? "No se pudo guardar branding.");
+    }
+  };
+
+  const handleThemeSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setFormError("");
     setFormNotice("");
@@ -72,27 +99,34 @@ export default function AdminBrandingPage() {
       setFormError(errors[0]);
       return;
     }
+    const nextTheme = {
+      ...theme,
+      name: themeForm.name.trim() || theme.name,
+      primary: themeForm.primary.trim(),
+      secondary: themeForm.secondary.trim(),
+      accent: themeForm.accent?.trim(),
+      dark: themeForm.dark?.trim(),
+      neutral: themeForm.neutral?.trim(),
+      surface: themeForm.surface?.trim(),
+      logo: themeForm.logo,
+      heroImage: themeForm.heroImage,
+      whatsappPhone: themeForm.whatsappPhone?.trim(),
+      whatsappMessage: themeForm.whatsappMessage?.trim(),
+      usdToArsRate:
+        Number.isFinite(Number(themeForm.usdToArsRate)) && Number(themeForm.usdToArsRate) > 0
+          ? Number(themeForm.usdToArsRate)
+          : theme.usdToArsRate,
+    };
+    try {
+      await persistBrandingSettings(nextTheme, homeContent, customPages);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo guardar branding.");
+      return;
+    }
     updateState((prev) => ({
       ...prev,
-      theme: {
-        ...prev.theme,
-        name: themeForm.name.trim() || prev.theme.name,
-        primary: themeForm.primary.trim(),
-        secondary: themeForm.secondary.trim(),
-        accent: themeForm.accent?.trim(),
-        dark: themeForm.dark?.trim(),
-        neutral: themeForm.neutral?.trim(),
-        surface: themeForm.surface?.trim(),
-        logo: themeForm.logo,
-        heroImage: themeForm.heroImage,
-        whatsappPhone: themeForm.whatsappPhone?.trim(),
-        whatsappMessage: themeForm.whatsappMessage?.trim(),
-        usdToArsRate:
-          Number.isFinite(Number(themeForm.usdToArsRate)) && Number(themeForm.usdToArsRate) > 0
-            ? Number(themeForm.usdToArsRate)
-            : prev.theme.usdToArsRate,
-      },
-    }));
+      theme: nextTheme,
+    }), { persist: false });
     setFormNotice("Branding actualizado.");
   };
 
@@ -166,7 +200,7 @@ export default function AdminBrandingPage() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)+/g, "");
 
-  const handleHomeSubmit = (event: FormEvent) => {
+  const handleHomeSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setFormError("");
     setFormNotice("");
@@ -182,33 +216,31 @@ export default function AdminBrandingPage() {
       setFormError("Agregá al menos un ítem visible para el menú.");
       return;
     }
-    updateState((prev) => ({
-      ...prev,
-      homeContent: {
-        ...homeForm,
-        banners: homeForm.banners.map((banner) => ({
+    const nextHomeContent = {
+      ...homeForm,
+      banners: homeForm.banners.map((banner) => ({
           ...banner,
           title: banner.title.trim(),
           subtitle: banner.subtitle.trim(),
           ctaLabel: banner.ctaLabel.trim(),
           ctaHref: banner.ctaHref.trim() || "/propiedades",
-        })),
-        partnerLogos: homeForm.partnerLogos
+      })),
+      partnerLogos: homeForm.partnerLogos
           .map((logo) => ({
             ...logo,
             name: logo.name.trim(),
             href: logo.href.trim(),
           }))
           .filter((logo) => logo.name || logo.image),
-        menuItems: normalizedMenuItems,
-        visitForm: Object.fromEntries(
+      menuItems: normalizedMenuItems,
+      visitForm: Object.fromEntries(
           Object.entries(homeForm.visitForm).map(([key, value]) => [
             key,
             typeof value === "string" ? value.trim() : value,
           ])
-        ) as HomeContent["visitForm"],
-      },
-      customPages: pageForms
+      ) as HomeContent["visitForm"],
+    };
+    const nextCustomPages = pageForms
         .map((page) => ({
           ...page,
           title: page.title.trim(),
@@ -230,8 +262,19 @@ export default function AdminBrandingPage() {
             })),
           })),
         }))
-        .filter((page) => page.title && page.slug),
-    }));
+        .filter((page) => page.title && page.slug);
+
+    try {
+      await persistBrandingSettings(theme, nextHomeContent, nextCustomPages);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo guardar la home.");
+      return;
+    }
+    updateState((prev) => ({
+      ...prev,
+      homeContent: nextHomeContent,
+      customPages: nextCustomPages,
+    }), { persist: false });
     setHomeForm((prev) => ({ ...prev, menuItems: normalizedMenuItems }));
     setFormNotice(
       activeTab === "menu"

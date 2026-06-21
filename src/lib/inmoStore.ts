@@ -62,7 +62,7 @@ const writeStorage = (value: string) => {
 
 const fetchRemoteState = async (
   scope: "public" | "admin" = "public",
-  mode: "home" | "catalog" = "home"
+  mode: "home" | "catalog" | "branding" = "home"
 ) => {
   try {
     if (scope === "public") {
@@ -76,6 +76,25 @@ const fetchRemoteState = async (
           | "supabase"
           | "fallback"
           | null,
+      };
+    }
+
+    if (mode === "branding") {
+      const adminSession = readAdminSession();
+      const response = await fetch("/api/admin/branding-state", {
+        cache: "no-store",
+        headers: {
+          ...(adminSession?.adminId ? { "x-admin-id": adminSession.adminId } : {}),
+        },
+      });
+      if (!response.ok) return null;
+      const payload = (await response.json()) as {
+        data?: Partial<InmoState>;
+        source?: "supabase" | "fallback";
+      };
+      return {
+        data: payload.data ?? {},
+        source: payload.source ?? "fallback",
       };
     }
 
@@ -179,7 +198,11 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
         pathname?.startsWith("/registro")
           ? "admin"
           : "public";
-      const mode = pathname?.startsWith("/propiedades") ? "catalog" : "home";
+      const mode = pathname?.startsWith("/admin/branding")
+        ? "branding"
+        : pathname?.startsWith("/propiedades")
+          ? "catalog"
+          : "home";
       if (initialState && scope === "public") {
         const mergedInitial = mergeState(defaultState, initialState);
         inMemoryState = mergedInitial;
@@ -242,12 +265,28 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
   const updateState = useCallback(
     (
       updater: InmoState | ((prev: InmoState) => InmoState),
-      options?: { silent?: boolean }
+      options?: { silent?: boolean; persist?: boolean }
     ) => {
       setState((prev) => {
         const nextState =
           typeof updater === "function" ? updater(prev) : updater;
-        saveState(nextState, options);
+        if (options?.persist === false) {
+          inMemoryState = nextState;
+          writeStorage(JSON.stringify(nextState));
+          const notify = () =>
+            window.dispatchEvent(
+              new CustomEvent(UPDATE_EVENT, {
+                detail: { silent: Boolean(options?.silent) },
+              })
+            );
+          if (typeof queueMicrotask === "function") {
+            queueMicrotask(notify);
+          } else {
+            window.setTimeout(notify, 0);
+          }
+        } else {
+          saveState(nextState, options);
+        }
         return nextState;
       });
     },
