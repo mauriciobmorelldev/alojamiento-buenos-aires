@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import { useInmoStore } from "@/lib/inmoStore";
@@ -55,6 +55,58 @@ const accordionDetailVariants = {
 const fallbackBuenosAiresImage =
   "https://images.unsplash.com/photo-1599167758481-83f550bb49b3?auto=format&fit=crop&w=2200&q=85";
 
+const preconnectVideoOrigin = (videoUrl: string) => {
+  try {
+    const { origin } = new URL(videoUrl);
+    if (origin === window.location.origin) return;
+    const id = `video-preconnect-${origin}`;
+    if (document.getElementById(id)) return;
+
+    const preconnect = document.createElement("link");
+    preconnect.id = id;
+    preconnect.rel = "preconnect";
+    preconnect.href = origin;
+    preconnect.crossOrigin = "anonymous";
+    document.head.appendChild(preconnect);
+  } catch {
+    // Ignore invalid admin-entered URLs; parseVideoUrl already guards rendering.
+  }
+};
+
+const scheduleAfterLcp = (callback: () => void, fallbackDelay = 900) => {
+  let timeoutId = 0;
+  let observer: PerformanceObserver | undefined;
+  let done = false;
+
+  const run = (delay = 0) => {
+    if (done) return;
+    done = true;
+    observer?.disconnect();
+    window.clearTimeout(timeoutId);
+    window.setTimeout(callback, delay);
+  };
+
+  if ("PerformanceObserver" in window) {
+    try {
+      observer = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        if (entries.length) run(260);
+      });
+      observer.observe({ type: "largest-contentful-paint", buffered: true });
+    } catch {
+      observer = undefined;
+    }
+  }
+
+  timeoutId = window.setTimeout(() => run(), fallbackDelay);
+
+  return () => {
+    done = true;
+    observer?.disconnect();
+    window.clearTimeout(timeoutId);
+  };
+};
+
 export default function BuenosAiresPage() {
   const { state } = useInmoStore();
   const themeStyles = buildThemeStyles(state.theme);
@@ -65,6 +117,7 @@ export default function BuenosAiresPage() {
   const [isDesktopAccordion, setIsDesktopAccordion] = useState(false);
   const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
   const [isHeroVideoReady, setIsHeroVideoReady] = useState(false);
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -76,6 +129,7 @@ export default function BuenosAiresPage() {
 
   useEffect(() => {
     if (!heroVideo) return;
+    preconnectVideoOrigin(heroVideo);
 
     const connection = (
       navigator as Navigator & { connection?: { saveData?: boolean } }
@@ -94,13 +148,16 @@ export default function BuenosAiresPage() {
     };
 
     if (!isSmallViewport && idleWindow.requestIdleCallback) {
-      const idleId = idleWindow.requestIdleCallback(loadVideo, { timeout: 1800 });
+      const idleId = idleWindow.requestIdleCallback(loadVideo, { timeout: 900 });
       return () => idleWindow.cancelIdleCallback?.(idleId);
     }
 
     const scheduleAfterLoad = () => {
-      const timeoutId = globalThis.setTimeout(loadVideo, isSmallViewport ? 2200 : 1200);
-      return () => globalThis.clearTimeout(timeoutId);
+      if (isSmallViewport) {
+        return scheduleAfterLcp(loadVideo, 1400);
+      }
+      const timeoutId = window.setTimeout(loadVideo, 500);
+      return () => window.clearTimeout(timeoutId);
     };
 
     if (document.readyState === "complete") {
@@ -118,6 +175,11 @@ export default function BuenosAiresPage() {
     };
   }, [heroVideo]);
 
+  useEffect(() => {
+    if (!shouldLoadHeroVideo || !heroVideoRef.current) return;
+    heroVideoRef.current.load();
+  }, [shouldLoadHeroVideo]);
+
   return (
     <div style={themeStyles} className="min-h-screen bg-background text-on-background">
       <FrontHeader active="detail" />
@@ -134,15 +196,19 @@ export default function BuenosAiresPage() {
           />
           {heroVideo && shouldLoadHeroVideo ? (
             <video
+              ref={heroVideoRef}
               src={heroVideo}
               autoPlay
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               poster={content.heroImage || fallbackBuenosAiresImage}
               onLoadStart={() => setIsHeroVideoReady(false)}
-              onCanPlay={() => setIsHeroVideoReady(true)}
+              onLoadedData={() => {
+                setIsHeroVideoReady(true);
+                void heroVideoRef.current?.play().catch(() => undefined);
+              }}
               onError={() => {
                 setShouldLoadHeroVideo(false);
                 setIsHeroVideoReady(false);
