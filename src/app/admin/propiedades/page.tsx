@@ -10,8 +10,8 @@ import {
   getListingForm,
   normalizeListing,
   optimizeImageDataUrl,
+  optimizeImageFileForUpload,
   priceUnitOptions,
-  readImageFileAsOptimizedDataUrl,
   statusOptions,
   typeOptions,
   validateListingForm,
@@ -27,6 +27,7 @@ import {
   type PropertyStatus,
   type PropertyType,
 } from "@/lib/inmoData";
+import { uploadAdminMedia } from "@/lib/adminMedia";
 import { useInmoStore } from "@/lib/inmoStore";
 import { readAdminSession } from "@/lib/session";
 import { isLocalVideoReference, isSupportedVideoUrl } from "@/lib/video";
@@ -95,6 +96,7 @@ export default function AdminPropertiesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isVideoUploading, setIsVideoUploading] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [successNotice, setSuccessNotice] = useState("");
   const [mediaNotice, setMediaNotice] = useState("");
   const [inventoryQuery, setInventoryQuery] = useState("");
@@ -380,9 +382,22 @@ export default function AdminPropertiesPage() {
 
   const handleListingImageUpload = async (files: FileList | null) => {
     if (!files?.length) return;
+    if (!authedAdmin) {
+      setFormError("Iniciá sesión para subir imágenes.");
+      return;
+    }
+    setIsImageUploading(true);
+    setFormError("");
     try {
       const images = await Promise.all(
-        Array.from(files).map((file) => readImageFileAsOptimizedDataUrl(file))
+        Array.from(files).map(async (file) => {
+          const optimized = await optimizeImageFileForUpload(file, {
+            maxSize: 1800,
+            quality: 0.78,
+            mimeType: "image/webp",
+          });
+          return uploadAdminMedia(optimized, "image", authedAdmin.id);
+        })
       );
       setListingForm((prev) => ({
         ...prev,
@@ -390,8 +405,14 @@ export default function AdminPropertiesPage() {
       }));
       setMediaNotice(`${images.length} imagen${images.length === 1 ? "" : "es"} agregada${images.length === 1 ? "" : "s"}.`);
       if (imageFileInputRef.current) imageFileInputRef.current.value = "";
-    } catch {
-      setFormError("No se pudieron cargar las imágenes. Probá con otro archivo.");
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "No se pudieron cargar las imágenes. Probá con otro archivo."
+      );
+    } finally {
+      setIsImageUploading(false);
     }
   };
 
@@ -440,28 +461,8 @@ export default function AdminPropertiesPage() {
     setIsVideoUploading(true);
     setFormError("");
     try {
-      const formData = new FormData();
-      formData.append("kind", "video");
-      formData.append("file", file);
-
-      const response = await fetch("/api/media/upload", {
-        method: "POST",
-        headers: {
-          "x-admin-id": authedAdmin.id,
-        },
-        body: formData,
-      });
-      const result = (await response.json().catch(() => null)) as {
-        ok?: boolean;
-        url?: string;
-        error?: string;
-      } | null;
-
-      if (!response.ok || !result?.ok || !result.url) {
-        throw new Error(result?.error ?? "No se pudo subir el video.");
-      }
-
-      setListingForm((prev) => ({ ...prev, videos: [...prev.videos, result.url ?? ""] }));
+      const url = await uploadAdminMedia(file, "video", authedAdmin.id);
+      setListingForm((prev) => ({ ...prev, videos: [...prev.videos, url] }));
       setMediaNotice("Video subido correctamente.");
       if (videoFileInputRef.current) videoFileInputRef.current.value = "";
     } catch (error) {
@@ -880,11 +881,15 @@ export default function AdminPropertiesPage() {
               <button
                 type="button"
                 onClick={() => imageFileInputRef.current?.click()}
-                className="rounded-full bg-surface-container-high px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary"
+                disabled={isImageUploading}
+                className="rounded-full bg-surface-container-high px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary disabled:cursor-wait disabled:opacity-60"
               >
-                Subir imágenes
+                {isImageUploading ? "Subiendo..." : "Subir imágenes"}
               </button>
             </div>
+            <p className="text-xs leading-5 text-on-surface-variant">
+              Las imágenes se optimizan y se guardan en Supabase Storage. La base solo guarda la URL.
+            </p>
           </div>
 
           <div className="grid gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">

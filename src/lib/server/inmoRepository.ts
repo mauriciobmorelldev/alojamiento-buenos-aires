@@ -133,6 +133,26 @@ const sanitizeHomeContent = (value: unknown) => {
         : logo
     );
   }
+  if (homeContent.buenosAires && typeof homeContent.buenosAires === "object") {
+    const buenosAires = homeContent.buenosAires as Record<string, unknown>;
+    homeContent.buenosAires = {
+      ...buenosAires,
+      heroImage: sanitizePublicImage(buenosAires.heroImage, 1_100_000),
+      sections: Array.isArray(buenosAires.sections)
+        ? buenosAires.sections.map((section) =>
+            section && typeof section === "object"
+              ? {
+                  ...section,
+                  image: sanitizePublicImage(
+                    (section as { image?: unknown }).image,
+                    900_000
+                  ),
+                }
+              : section
+          )
+        : buenosAires.sections,
+    };
+  }
   return homeContent as InmoState["homeContent"];
 };
 

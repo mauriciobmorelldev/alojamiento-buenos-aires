@@ -60,6 +60,41 @@ export type PartnerLogo = {
   active: boolean;
 };
 
+export type BuenosAiresSection = {
+  id: string;
+  title: string;
+  eyebrow: string;
+  text: string;
+  detail: string;
+  icon: string;
+  image: string;
+  active: boolean;
+};
+
+export type BuenosAiresContent = {
+  active: boolean;
+  menuLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  heroImage: string;
+  heroVideo: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+  introEyebrow: string;
+  introTitle: string;
+  introText: string;
+  quickFacts: string[];
+  sections: BuenosAiresSection[];
+  finalEyebrow: string;
+  finalTitle: string;
+  finalText: string;
+  finalCtaLabel: string;
+  finalCtaHref: string;
+};
+
 export type VisitFormContent = {
   title: string;
   subtitle: string;
@@ -134,6 +169,7 @@ export type HomeContent = {
   partnersSubtitle: string;
   partnerLogos: PartnerLogo[];
   banners: HomeBanner[];
+  buenosAires: BuenosAiresContent;
 };
 
 export type AdminRole = "owner" | "colaborador";
@@ -385,6 +421,99 @@ export const defaultState: InmoState = {
         active: true,
       },
     ],
+    buenosAires: {
+      active: true,
+      menuLabel: "Buenos Aires",
+      eyebrow: "Buenos Aires para instalarte mejor",
+      title: "Llegar a la ciudad con mapa, contexto y casa.",
+      subtitle:
+        "Una guía para entender dónde conviene vivir, cómo moverse, qué trámites anticipar y qué ritmo tiene cada zona antes de elegir propiedad.",
+      heroImage:
+        "https://images.unsplash.com/photo-1599167758481-83f550bb49b3?auto=format&fit=crop&w=2200&q=85",
+      heroVideo: "",
+      primaryCtaLabel: "Empezar la guía",
+      primaryCtaHref: "#guia-ba",
+      secondaryCtaLabel: "Ver propiedades",
+      secondaryCtaHref: "/propiedades",
+      introEyebrow: "Información BA",
+      introTitle: "No alcanza con ver metros cuadrados: hay que entender la vida alrededor.",
+      introText:
+        "Buenos Aires cambia mucho de una cuadra a otra. Esta guía ordena lo importante para tomar una decisión inmobiliaria con menos dudas: conectividad, universidades, vida cotidiana, cultura, trabajo y requisitos básicos para instalarse.",
+      quickFacts: [
+        "Zonas recomendadas según rutina y movilidad",
+        "Contexto para estudiantes, profesionales y familias",
+        "Agenda cultural y servicios para integrarte rápido",
+        "Requisitos claros antes de reservar una propiedad",
+      ],
+      sections: [
+        {
+          id: "ba-guia",
+          title: "Guía",
+          eyebrow: "Primeros pasos",
+          text: "Lo básico para aterrizar sin perderte entre barrios, trámites y requisitos.",
+          icon: "map",
+          detail:
+            "Te ayudamos a leer la ciudad: qué zonas conectan mejor con tu rutina, cómo estimar tiempos reales de traslado, qué documentación conviene tener preparada y qué costos aparecen además del alquiler.",
+          image:
+            "https://images.unsplash.com/photo-1612294037637-ec328d0e075e?auto=format&fit=crop&w=1200&q=80",
+          active: true,
+        },
+        {
+          id: "ba-cultura",
+          title: "Cultura",
+          eyebrow: "Agenda viva",
+          text: "La ciudad se entiende saliendo: teatro, cafés, ferias, gastronomía y comunidad.",
+          icon: "theater_comedy",
+          detail:
+            "Buenos Aires tiene planes todos los días. Reunimos referencias culturales y espacios de encuentro para que no elijas solo una dirección, sino también el tipo de vida que querés tener cerca.",
+          image:
+            "https://images.unsplash.com/photo-1577801599718-f4e3ad3fc794?auto=format&fit=crop&w=1200&q=80",
+          active: true,
+        },
+        {
+          id: "ba-educacion",
+          title: "Educación",
+          eyebrow: "Campus y ciudad",
+          text: "Dónde vivir si venís a estudiar, cursar un posgrado o moverte entre campus.",
+          icon: "school",
+          detail:
+            "Ubicamos universidades, centros de formación, zonas con buena conexión y barrios prácticos para estudiantes internacionales o argentinos que llegan por primera vez a la ciudad.",
+          image:
+            "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
+          active: true,
+        },
+        {
+          id: "ba-recursos",
+          title: "Recursos",
+          eyebrow: "Vida cotidiana",
+          text: "Checklist de llegada: servicios, conectividad, contratos y organización diaria.",
+          icon: "article",
+          detail:
+            "Un espacio para ordenar lo que suele aparecer después de elegir: servicios básicos, medios de pago, requisitos de reserva, movilidad, salud, conectividad y recomendaciones para la primera semana.",
+          image:
+            "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80",
+          active: true,
+        },
+        {
+          id: "ba-trabajo",
+          title: "Trabajo",
+          eyebrow: "Oportunidades",
+          text: "Zonas y redes para profesionales, freelancers y personas que trabajan remoto.",
+          icon: "work",
+          detail:
+            "Buenos Aires funciona muy bien para trabajo remoto, networking y proyectos freelance. La guía conecta barrios, espacios de coworking y circuitos profesionales para elegir mejor dónde instalarte.",
+          image:
+            "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80",
+          active: true,
+        },
+      ],
+      finalEyebrow: "Próximo paso",
+      finalTitle: "Cuando el barrio empieza a tener sentido, la propiedad se elige mejor.",
+      finalText:
+        "Usá esta guía como punto de partida y después explorá propiedades según rutina, conectividad, presupuesto y estilo de vida.",
+      finalCtaLabel: "Explorar propiedades",
+      finalCtaHref: "/propiedades",
+    },
   },
   adminUsers: [
     {

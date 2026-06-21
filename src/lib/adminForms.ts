@@ -179,6 +179,33 @@ export const readImageFileAsOptimizedDataUrl = (
     reader.readAsDataURL(file);
   });
 
+const dataUrlToBlob = (dataUrl: string) => {
+  const [header, base64] = dataUrl.split(",");
+  const mimeType = header.match(/data:(.*?);base64/)?.[1] || "image/webp";
+  const binary = atob(base64 ?? "");
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return new Blob([bytes], { type: mimeType });
+};
+
+export const optimizeImageFileForUpload = async (
+  file: File,
+  opts: { maxSize?: number; quality?: number; mimeType?: "image/webp" | "image/jpeg" } = {}
+) => {
+  const mimeType = opts.mimeType ?? "image/webp";
+  const dataUrl = await readImageFileAsOptimizedDataUrl(file, {
+    maxSize: opts.maxSize ?? 1800,
+    quality: opts.quality ?? 0.78,
+    mimeType,
+  });
+  const blob = dataUrlToBlob(dataUrl);
+  const extension = mimeType === "image/jpeg" ? "jpg" : "webp";
+  const safeName = file.name.replace(/\.[^.]+$/, "") || "image";
+  return new File([blob], `${safeName}.${extension}`, { type: mimeType });
+};
+
 const toNumber = (value: string) => {
   const parsed = Number(value.replace(",", "."));
   return Number.isFinite(parsed) ? parsed : 0;

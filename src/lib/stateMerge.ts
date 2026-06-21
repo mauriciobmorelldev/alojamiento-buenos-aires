@@ -9,10 +9,110 @@ const appendLocalOnly = <T extends { id: string }>(incoming: T[], base: T[]) => 
   ...base.filter((baseItem) => !incoming.some((item) => item.id === baseItem.id)),
 ];
 
+const oldBuenosAiresDefaults = {
+  title: "Vivir la ciudad antes de elegir dónde vivir.",
+  subtitle:
+    "Una guía inmersiva para quienes llegan a Buenos Aires y necesitan entender cultura, educación, trámites, trabajo y ritmo urbano antes de tomar una decisión inmobiliaria.",
+  introTitle: "Una brújula urbana para llegar mejor.",
+  introText:
+    "No es solo encontrar una propiedad. Es entender cómo se vive la ciudad: qué zonas conectan mejor, dónde estudiar, cómo moverse, qué trámites anticipar y qué redes activar desde el primer día.",
+  quickFacts: [
+    "Barrios con identidad propia",
+    "Movilidad urbana amplia",
+    "Oferta cultural diaria",
+    "Ecosistema educativo internacional",
+  ],
+  sections: {
+    "ba-guia": {
+      text: "Información práctica para quienes llegan por primera vez a Buenos Aires.",
+      detail:
+        "Orientación por barrios, movilidad, moneda, conectividad, salud, documentación básica y hábitos cotidianos para instalarte con más claridad.",
+    },
+    "ba-cultura": {
+      text: "Agenda de eventos culturales y actividades de networking en Buenos Aires.",
+      detail:
+        "Teatros, galerías, ciclos gastronómicos, ferias, charlas, encuentros de comunidad y experiencias para integrarte rápido al pulso local.",
+    },
+    "ba-educacion": {
+      text: "Acceso a universidades y centros educativos destacados en la ciudad.",
+      detail:
+        "Universidades, posgrados, cursos ejecutivos, idiomas y zonas recomendadas para vivir cerca de polos educativos.",
+    },
+    "ba-recursos": {
+      text: "Artículos y guías sobre trámites y vida cotidiana en la ciudad.",
+      detail:
+        "Guías sobre servicios, contratos, conectividad, bancos, transporte, requisitos de alquiler y organización de la llegada.",
+    },
+    "ba-trabajo": {
+      text: "Oportunidades laborales y freelance para nuevos residentes y visitantes.",
+      detail:
+        "Mapa de espacios de coworking, comunidades profesionales, plataformas freelance, eventos de networking y sectores con movimiento.",
+    },
+  },
+};
+
+const getNewDefaultIfOld = (value: string | undefined, oldValue: string, newValue: string) =>
+  !value || value === oldValue ? newValue : value;
+
 export const mergeState = (
   base: InmoState = defaultState,
   incoming: Partial<InmoState>
-): InmoState => ({
+): InmoState => {
+  const incomingBuenosAires = incoming.homeContent?.buenosAires;
+  const mergedBuenosAires = {
+    ...base.homeContent.buenosAires,
+    ...(incomingBuenosAires ?? {}),
+    title: getNewDefaultIfOld(
+      incomingBuenosAires?.title,
+      oldBuenosAiresDefaults.title,
+      base.homeContent.buenosAires.title
+    ),
+    subtitle: getNewDefaultIfOld(
+      incomingBuenosAires?.subtitle,
+      oldBuenosAiresDefaults.subtitle,
+      base.homeContent.buenosAires.subtitle
+    ),
+    introTitle: getNewDefaultIfOld(
+      incomingBuenosAires?.introTitle,
+      oldBuenosAiresDefaults.introTitle,
+      base.homeContent.buenosAires.introTitle
+    ),
+    introText: getNewDefaultIfOld(
+      incomingBuenosAires?.introText,
+      oldBuenosAiresDefaults.introText,
+      base.homeContent.buenosAires.introText
+    ),
+    quickFacts:
+      Array.isArray(incomingBuenosAires?.quickFacts) &&
+      incomingBuenosAires.quickFacts.join("|") !== oldBuenosAiresDefaults.quickFacts.join("|")
+        ? incomingBuenosAires.quickFacts
+        : base.homeContent.buenosAires.quickFacts,
+    sections: Array.isArray(incomingBuenosAires?.sections)
+      ? incomingBuenosAires.sections.map((section) => {
+          const baseSection = base.homeContent.buenosAires.sections.find(
+            (item) => item.id === section.id
+          );
+          const oldSection =
+            oldBuenosAiresDefaults.sections[
+              section.id as keyof typeof oldBuenosAiresDefaults.sections
+            ];
+          return {
+            ...section,
+            text:
+              oldSection && section.text === oldSection.text
+                ? baseSection?.text ?? section.text
+                : section.text,
+            detail:
+              oldSection && section.detail === oldSection.detail
+                ? baseSection?.detail ?? section.detail
+                : section.detail,
+            active: section.active ?? true,
+          };
+        })
+      : base.homeContent.buenosAires.sections,
+  };
+
+  return {
   ...base,
   ...incoming,
   version: STATE_VERSION,
@@ -33,6 +133,7 @@ export const mergeState = (
       ...base.homeContent.visitForm,
       ...(incoming.homeContent?.visitForm ?? {}),
     },
+    buenosAires: mergedBuenosAires,
     partnerLogos: Array.isArray(incoming.homeContent?.partnerLogos)
       ? incoming.homeContent.partnerLogos.map((logo) => ({
           ...logo,
@@ -108,4 +209,5 @@ export const mergeState = (
         blocks: Array.isArray(page.blocks) ? page.blocks : [],
       }))
     : base.customPages,
-});
+  };
+};

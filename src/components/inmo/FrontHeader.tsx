@@ -53,6 +53,35 @@ const opensPropertyModule = (href: string) => href.startsWith("/propiedades");
 const propertyModuleLinkProps = (href: string) =>
   opensPropertyModule(href) ? { target: "_blank", rel: "noreferrer" } : {};
 
+const ensureBuenosAiresMenuItem = (
+  items: Array<{ id: string; label: string; href: string; active: boolean }>,
+  label = "Buenos Aires",
+  active = true
+) => {
+  if (!active) return items;
+  if (items.some((item) => normalizeMenuHref(item.href) === "/buenos-aires")) {
+    return items;
+  }
+
+  const nextItems = [...items];
+  const propertiesIndex = nextItems.findIndex(
+    (item) => normalizeMenuHref(item.href).startsWith("/propiedades")
+  );
+  const item = {
+    id: "menu-buenos-aires",
+    label,
+    href: "/buenos-aires",
+    active: true,
+  };
+
+  if (propertiesIndex >= 0) {
+    nextItems.splice(propertiesIndex, 0, item);
+    return nextItems;
+  }
+
+  return [...nextItems, item];
+};
+
 export default function FrontHeader({
   active = "home",
   showSearch = false,
@@ -67,21 +96,24 @@ export default function FrontHeader({
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const menuItems = useMemo(
     () =>
-      (homeContent.menuItems?.length
-        ? homeContent.menuItems
-        : [
-            { id: "menu-inicio", label: "Inicio", href: "/", active: true },
-            {
-              id: "menu-propiedades",
-              label: "Propiedades",
-              href: "/propiedades",
-              active: true,
-            },
-          ]
+      ensureBuenosAiresMenuItem(
+        homeContent.menuItems?.length
+          ? homeContent.menuItems
+          : [
+              { id: "menu-inicio", label: "Inicio", href: "/", active: true },
+              {
+                id: "menu-propiedades",
+                label: "Propiedades",
+                href: "/propiedades",
+                active: true,
+              },
+            ],
+        homeContent.buenosAires?.menuLabel?.trim() || "Buenos Aires",
+        homeContent.buenosAires?.active !== false
       )
         .filter((item) => item.active && item.label.trim() && item.href.trim())
         .map((item) => ({ ...item, href: normalizeMenuHref(item.href) })),
-    [homeContent.menuItems]
+    [homeContent.buenosAires?.active, homeContent.buenosAires?.menuLabel, homeContent.menuItems]
   );
   const whatsappPhone =
     normalizeWhatsAppPhone(theme.whatsappPhone) || fallbackWhatsAppPhone;

@@ -5,9 +5,10 @@ import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import AdminShell from "@/components/inmo/admin/AdminShell";
 import {
   createId,
-  readImageFileAsOptimizedDataUrl,
+  optimizeImageFileForUpload,
   validateBrandingForm,
 } from "@/lib/adminForms";
+import { uploadAdminMedia } from "@/lib/adminMedia";
 import type {
   CustomPage,
   CustomPageBlock,
@@ -16,22 +17,33 @@ import type {
   ThemeSettings,
 } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
+import { readAdminSession } from "@/lib/session";
 import { buildThemeStyles } from "@/lib/theme";
 
 export default function AdminBrandingPage() {
   const { state, updateState } = useInmoStore();
   const { theme, homeContent, listings, customPages } = state;
+  const [adminSession] = useState(() => readAdminSession());
 
   const [themeForm, setThemeForm] = useState<ThemeSettings>(theme);
   const [homeForm, setHomeForm] = useState<HomeContent>(homeContent);
   const [pageForms, setPageForms] = useState<CustomPage[]>(customPages);
   const [activeTab, setActiveTab] = useState<
-    "identity" | "hero" | "menu" | "pages" | "form" | "sections" | "banners" | "logos"
+    | "identity"
+    | "hero"
+    | "menu"
+    | "pages"
+    | "form"
+    | "sections"
+    | "ba"
+    | "banners"
+    | "logos"
   >(
     "identity"
   );
   const [formError, setFormError] = useState("");
   const [formNotice, setFormNotice] = useState("");
+  const [uploadingField, setUploadingField] = useState("");
 
   useEffect(() => {
     setThemeForm(theme);
@@ -84,24 +96,50 @@ export default function AdminBrandingPage() {
     setFormNotice("Branding actualizado.");
   };
 
+  const uploadOptimizedImage = async (
+    file: File,
+    field: string,
+    opts: { maxSize?: number; quality?: number } = {}
+  ) => {
+    setUploadingField(field);
+    try {
+      const optimized = await optimizeImageFileForUpload(file, {
+        maxSize: opts.maxSize ?? 1600,
+        quality: opts.quality ?? 0.78,
+        mimeType: "image/webp",
+      });
+      return await uploadAdminMedia(optimized, "image", adminSession?.adminId);
+    } finally {
+      setUploadingField("");
+    }
+  };
+
   const handleLogoUpload = async (files: FileList | null) => {
     if (!files?.length) return;
-    const url = await readImageFileAsOptimizedDataUrl(files[0], {
-      maxSize: 520,
-      quality: 0.82,
-      mimeType: "image/webp",
-    });
-    setThemeForm((prev) => ({ ...prev, logo: url }));
+    try {
+      const url = await uploadOptimizedImage(files[0], "logo", {
+        maxSize: 520,
+        quality: 0.82,
+      });
+      setThemeForm((prev) => ({ ...prev, logo: url }));
+      setFormNotice("Logo subido a Storage.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo subir el logo.");
+    }
   };
 
   const handleHeroUpload = async (files: FileList | null) => {
     if (!files?.length) return;
-    const url = await readImageFileAsOptimizedDataUrl(files[0], {
-      maxSize: 1800,
-      quality: 0.76,
-      mimeType: "image/webp",
-    });
-    setThemeForm((prev) => ({ ...prev, heroImage: url }));
+    try {
+      const url = await uploadOptimizedImage(files[0], "theme-hero", {
+        maxSize: 1800,
+        quality: 0.76,
+      });
+      setThemeForm((prev) => ({ ...prev, heroImage: url }));
+      setFormNotice("Imagen de portada subida a Storage.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo subir la imagen.");
+    }
   };
 
   const normalizeMenuHref = (href: string) => {
@@ -202,7 +240,9 @@ export default function AdminBrandingPage() {
           ? "Páginas actualizadas."
         : activeTab === "form"
           ? "Formulario actualizado."
-          : activeTab === "logos"
+        : activeTab === "ba"
+          ? "Página Buenos Aires actualizada."
+        : activeTab === "logos"
             ? "Logos actualizados."
           : "Home editable actualizada."
     );
@@ -241,14 +281,157 @@ export default function AdminBrandingPage() {
     }));
   };
 
+  const updateBuenosAiresField = <K extends keyof HomeContent["buenosAires"]>(
+    key: K,
+    value: HomeContent["buenosAires"][K]
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      buenosAires: {
+        ...prev.buenosAires,
+        [key]: value,
+      },
+    }));
+  };
+
+  const updateBuenosAiresFact = (index: number, value: string) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      buenosAires: {
+        ...prev.buenosAires,
+        quickFacts: prev.buenosAires.quickFacts.map((fact, factIndex) =>
+          factIndex === index ? value : fact
+        ),
+      },
+    }));
+  };
+
+  const addBuenosAiresFact = () => {
+    setHomeForm((prev) => ({
+      ...prev,
+      buenosAires: {
+        ...prev.buenosAires,
+        quickFacts: [...prev.buenosAires.quickFacts, "Nuevo dato destacado"],
+      },
+    }));
+  };
+
+  const removeBuenosAiresFact = (index: number) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      buenosAires: {
+        ...prev.buenosAires,
+        quickFacts: prev.buenosAires.quickFacts.filter((_, factIndex) => factIndex !== index),
+      },
+    }));
+  };
+
+  const updateBuenosAiresSection = (
+    sectionId: string,
+    key: keyof HomeContent["buenosAires"]["sections"][number],
+    value: string | boolean
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      buenosAires: {
+        ...prev.buenosAires,
+        sections: prev.buenosAires.sections.map((section) =>
+          section.id === sectionId ? { ...section, [key]: value } : section
+        ),
+      },
+    }));
+  };
+
+  const addBuenosAiresSection = () => {
+    setHomeForm((prev) => ({
+      ...prev,
+      buenosAires: {
+        ...prev.buenosAires,
+        sections: [
+          ...prev.buenosAires.sections,
+          {
+            id: createId(),
+            title: "Nueva sección",
+            eyebrow: "Categoría",
+            text: "Texto breve para la card.",
+            detail: "Texto ampliado para el bloque interno.",
+            icon: "location_city",
+            image: "",
+            active: true,
+          },
+        ],
+      },
+    }));
+  };
+
+  const removeBuenosAiresSection = (sectionId: string) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      buenosAires: {
+        ...prev.buenosAires,
+        sections: prev.buenosAires.sections.filter((section) => section.id !== sectionId),
+      },
+    }));
+  };
+
+  const handleBuenosAiresSectionImageUpload = async (
+    sectionId: string,
+    files: FileList | null
+  ) => {
+    if (!files?.length) return;
+    try {
+      const url = await uploadOptimizedImage(files[0], `ba-section-${sectionId}`, {
+        maxSize: 1400,
+        quality: 0.78,
+      });
+      updateBuenosAiresSection(sectionId, "image", url);
+      setFormNotice("Imagen de sección subida a Storage.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo subir la imagen.");
+    }
+  };
+
+  const handleBuenosAiresHeroImageUpload = async (files: FileList | null) => {
+    if (!files?.length) return;
+    try {
+      const url = await uploadOptimizedImage(files[0], "ba-hero-image", {
+        maxSize: 2200,
+        quality: 0.78,
+      });
+      updateBuenosAiresField("heroImage", url);
+      setFormNotice("Imagen hero de Buenos Aires subida a Storage.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo subir la imagen.");
+    }
+  };
+
+  const handleBuenosAiresHeroVideoUpload = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    setUploadingField("ba-hero-video");
+    try {
+      const url = await uploadAdminMedia(file, "video", adminSession?.adminId);
+      updateBuenosAiresField("heroVideo", url);
+      setFormNotice("Video hero de Buenos Aires subido a Storage.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo subir el video.");
+    } finally {
+      setUploadingField("");
+    }
+  };
+
   const handleBannerUpload = async (bannerId: string, files: FileList | null) => {
     if (!files?.length) return;
-    const url = await readImageFileAsOptimizedDataUrl(files[0], {
-      maxSize: 1600,
-      quality: 0.76,
-      mimeType: "image/webp",
-    });
-    updateBanner(bannerId, "image", url);
+    try {
+      const url = await uploadOptimizedImage(files[0], `banner-${bannerId}`, {
+        maxSize: 1600,
+        quality: 0.76,
+      });
+      updateBanner(bannerId, "image", url);
+      setFormNotice("Banner subido a Storage.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo subir el banner.");
+    }
   };
 
   const updatePartnerLogo = (
@@ -266,12 +449,16 @@ export default function AdminBrandingPage() {
 
   const handlePartnerLogoUpload = async (logoId: string, files: FileList | null) => {
     if (!files?.length) return;
-    const url = await readImageFileAsOptimizedDataUrl(files[0], {
-      maxSize: 520,
-      quality: 0.84,
-      mimeType: "image/webp",
-    });
-    updatePartnerLogo(logoId, "image", url);
+    try {
+      const url = await uploadOptimizedImage(files[0], `partner-logo-${logoId}`, {
+        maxSize: 520,
+        quality: 0.84,
+      });
+      updatePartnerLogo(logoId, "image", url);
+      setFormNotice("Logo de aliado subido a Storage.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo subir el logo.");
+    }
   };
 
   const updateMenuItem = (
@@ -425,12 +612,16 @@ export default function AdminBrandingPage() {
     files: FileList | null
   ) => {
     if (!files?.length) return;
-    const url = await readImageFileAsOptimizedDataUrl(files[0], {
-      maxSize: 1400,
-      quality: 0.78,
-      mimeType: "image/webp",
-    });
-    updatePageBlock(pageId, blockId, "image", url);
+    try {
+      const url = await uploadOptimizedImage(files[0], `page-block-${blockId}`, {
+        maxSize: 1400,
+        quality: 0.78,
+      });
+      updatePageBlock(pageId, blockId, "image", url);
+      setFormNotice("Imagen de página subida a Storage.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "No se pudo subir la imagen.");
+    }
   };
 
   const addCardItem = (pageId: string, block: CustomPageBlock) => {
@@ -528,6 +719,7 @@ export default function AdminBrandingPage() {
           ["pages", "Páginas", "article"],
           ["form", "Formulario", "dynamic_form"],
           ["sections", "Secciones", "dashboard_customize"],
+          ["ba", "Buenos Aires", "travel_explore"],
           ["banners", "Carrusel", "panorama"],
           ["logos", "Logos", "handshake"],
         ].map(([id, label, icon]) => (
@@ -825,6 +1017,8 @@ export default function AdminBrandingPage() {
                   ? "Formulario de solicitud"
                 : activeTab === "sections"
                   ? "Textos de secciones"
+                : activeTab === "ba"
+                  ? "Página Buenos Aires"
                 : activeTab === "banners"
                   ? "Carrusel de banners"
                   : "Logos de aliados"}
@@ -840,6 +1034,8 @@ export default function AdminBrandingPage() {
                   ? "Editá labels, textos legales, requisitos y mensajes del formulario de visita o reserva."
                 : activeTab === "sections"
                   ? "Ajustá los títulos y bajadas de los bloques principales de la home."
+                : activeTab === "ba"
+                  ? "Administrá el contenido inmersivo de Buenos Aires: hero, video, datos rápidos, cards y llamados a la acción."
                 : activeTab === "banners"
                   ? "Creá banners que se muestran como carrusel en la home."
                   : "Cargá logos de marcas, estudios o aliados para mostrarlos en un carrusel infinito."}
@@ -879,6 +1075,15 @@ export default function AdminBrandingPage() {
               className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
             >
               Agregar logo
+            </button>
+          ) : null}
+          {activeTab === "ba" ? (
+            <button
+              type="button"
+              onClick={addBuenosAiresSection}
+              className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
+            >
+              Agregar sección
             </button>
           ) : null}
         </div>
@@ -1387,6 +1592,340 @@ export default function AdminBrandingPage() {
           </div>
           ) : null}
 
+          {activeTab === "ba" ? (
+          <div className="grid gap-6">
+            <div className="grid gap-4 rounded-3xl bg-surface-container-low p-5 lg:grid-cols-2">
+              <label className="flex items-center gap-3 rounded-2xl bg-surface-container-lowest px-4 py-3 text-xs font-semibold text-primary">
+                <input
+                  type="checkbox"
+                  checked={homeForm.buenosAires.active}
+                  onChange={(event) =>
+                    updateBuenosAiresField("active", event.target.checked)
+                  }
+                />
+                Mostrar en el menú público
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Texto del menú
+                <input
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.menuLabel}
+                  onChange={(event) => updateBuenosAiresField("menuLabel", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Eyebrow hero
+                <input
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.eyebrow}
+                  onChange={(event) => updateBuenosAiresField("eyebrow", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Título hero
+                <input
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.title}
+                  onChange={(event) => updateBuenosAiresField("title", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant lg:col-span-2">
+                Subtítulo hero
+                <textarea
+                  className="min-h-28 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.subtitle}
+                  onChange={(event) => updateBuenosAiresField("subtitle", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Imagen hero
+                <input
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.heroImage}
+                  onChange={(event) => updateBuenosAiresField("heroImage", event.target.value)}
+                  placeholder="https://..."
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => handleBuenosAiresHeroImageUpload(event.target.files)}
+                  className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-lowest px-4 py-3 text-sm"
+                />
+                {uploadingField === "ba-hero-image" ? (
+                  <span className="text-xs normal-case tracking-normal text-primary">
+                    Subiendo imagen...
+                  </span>
+                ) : null}
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Video hero directo opcional
+                <input
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.heroVideo}
+                  onChange={(event) => updateBuenosAiresField("heroVideo", event.target.value)}
+                  placeholder="https://.../obelisco.mp4"
+                />
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogg,.mov"
+                  onChange={(event) => handleBuenosAiresHeroVideoUpload(event.target.files)}
+                  className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-lowest px-4 py-3 text-sm"
+                />
+                {uploadingField === "ba-hero-video" ? (
+                  <span className="text-xs normal-case tracking-normal text-primary">
+                    Subiendo video...
+                  </span>
+                ) : null}
+              </label>
+              <div className="grid gap-4 md:grid-cols-2 lg:col-span-2">
+                {[
+                  ["primaryCtaLabel", "CTA principal"],
+                  ["primaryCtaHref", "Link principal"],
+                  ["secondaryCtaLabel", "CTA secundario"],
+                  ["secondaryCtaHref", "Link secundario"],
+                ].map(([key, label]) => (
+                  <label
+                    key={key}
+                    className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant"
+                  >
+                    {label}
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={String(homeForm.buenosAires[key as keyof HomeContent["buenosAires"]] ?? "")}
+                      onChange={(event) =>
+                        updateBuenosAiresField(
+                          key as keyof HomeContent["buenosAires"],
+                          event.target.value as HomeContent["buenosAires"][keyof HomeContent["buenosAires"]]
+                        )
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-4 rounded-3xl bg-surface-container-low p-5 lg:grid-cols-2">
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Eyebrow introducción
+                <input
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.introEyebrow}
+                  onChange={(event) => updateBuenosAiresField("introEyebrow", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Título introducción
+                <input
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.introTitle}
+                  onChange={(event) => updateBuenosAiresField("introTitle", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant lg:col-span-2">
+                Texto introducción
+                <textarea
+                  className="min-h-28 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.introText}
+                  onChange={(event) => updateBuenosAiresField("introText", event.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-3 rounded-3xl bg-surface-container-low p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h4 className="font-headline text-lg font-bold text-primary">
+                  Datos rápidos del hero
+                </h4>
+                <button
+                  type="button"
+                  onClick={addBuenosAiresFact}
+                  className="rounded-full bg-surface-container-lowest px-4 py-2 text-xs font-bold text-primary"
+                >
+                  Agregar dato
+                </button>
+              </div>
+              {homeForm.buenosAires.quickFacts.map((fact, index) => (
+                <motion.div
+                  key={`ba-fact-${index}`}
+                  layout
+                  className="grid gap-3 rounded-2xl bg-surface-container-lowest p-4 md:grid-cols-[1fr_auto]"
+                >
+                  <input
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                    value={fact}
+                    onChange={(event) => updateBuenosAiresFact(index, event.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeBuenosAiresFact(index)}
+                    className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest text-error hover:bg-error-container"
+                  >
+                    Quitar
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="grid gap-4">
+              {homeForm.buenosAires.sections.map((section, index) => (
+                <motion.article
+                  key={section.id}
+                  layout
+                  initial={{ opacity: 0, y: 14, scale: 0.985 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 180, damping: 22, delay: index * 0.02 }}
+                  className="grid gap-4 rounded-3xl bg-surface-container-low p-5"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        Card animada
+                      </p>
+                      <h4 className="mt-1 text-lg font-headline font-bold text-primary">
+                        {section.title || "Sección sin título"}
+                      </h4>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-3 text-xs font-semibold text-primary">
+                        <input
+                          type="checkbox"
+                          checked={section.active}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "active", event.target.checked)
+                          }
+                        />
+                        Visible
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => removeBuenosAiresSection(section.id)}
+                        className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest text-error hover:bg-error-container"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-[180px_1fr]">
+                    <div className="overflow-hidden rounded-2xl bg-surface-container-lowest">
+                      {section.image ? (
+                        <img
+                          src={section.image}
+                          alt={section.title}
+                          className="h-44 w-full object-cover"
+                        />
+                      ) : (
+                        <div className="brand-gradient flex h-44 items-center justify-center text-xs font-bold uppercase tracking-widest text-on-primary">
+                          Imagen
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        Título
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.title}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "title", event.target.value)
+                          }
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        Eyebrow
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.eyebrow}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "eyebrow", event.target.value)
+                          }
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        Icono Material
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.icon}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "icon", event.target.value)
+                          }
+                          placeholder="map, school, work..."
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        Imagen card
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(event) =>
+                            handleBuenosAiresSectionImageUpload(section.id, event.target.files)
+                          }
+                          className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-lowest px-4 py-3 text-sm"
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                        Texto breve
+                        <textarea
+                          className="min-h-24 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.text}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "text", event.target.value)
+                          }
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                        Texto detalle
+                        <textarea
+                          className="min-h-28 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.detail}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "detail", event.target.value)
+                          }
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+
+            <div className="grid gap-4 rounded-3xl bg-surface-container-low p-5 lg:grid-cols-2">
+              {[
+                ["finalEyebrow", "Eyebrow cierre"],
+                ["finalTitle", "Título cierre"],
+                ["finalCtaLabel", "CTA cierre"],
+                ["finalCtaHref", "Link CTA cierre"],
+              ].map(([key, label]) => (
+                <label
+                  key={key}
+                  className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant"
+                >
+                  {label}
+                  <input
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                    value={String(homeForm.buenosAires[key as keyof HomeContent["buenosAires"]] ?? "")}
+                    onChange={(event) =>
+                      updateBuenosAiresField(
+                        key as keyof HomeContent["buenosAires"],
+                        event.target.value as HomeContent["buenosAires"][keyof HomeContent["buenosAires"]]
+                      )
+                    }
+                  />
+                </label>
+              ))}
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant lg:col-span-2">
+                Texto cierre
+                <textarea
+                  className="min-h-28 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.buenosAires.finalText}
+                  onChange={(event) => updateBuenosAiresField("finalText", event.target.value)}
+                />
+              </label>
+            </div>
+          </div>
+          ) : null}
+
           {activeTab === "banners" ? (
           <div className="grid gap-4">
             {homeForm.banners.map((banner, index) => (
@@ -1565,6 +2104,8 @@ export default function AdminBrandingPage() {
               ? "Guardar menú"
               : activeTab === "form"
                 ? "Guardar formulario"
+              : activeTab === "ba"
+                ? "Guardar Buenos Aires"
               : activeTab === "logos"
                 ? "Guardar logos"
                 : "Guardar home"}

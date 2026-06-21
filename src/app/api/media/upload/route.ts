@@ -7,12 +7,15 @@ import { readInmoState } from "@/lib/server/inmoRepository";
 
 const MEDIA_BUCKET = "property-media";
 const MAX_VIDEO_BYTES = 120 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 const allowedVideoTypes = new Set([
   "video/mp4",
   "video/webm",
   "video/ogg",
   "video/quicktime",
 ]);
+const allowedMediaTypes = new Set([...allowedImageTypes, ...allowedVideoTypes]);
 
 const sanitizeFileName = (value: string) =>
   value
@@ -25,12 +28,22 @@ const sanitizeFileName = (value: string) =>
 
 const ensureBucket = async (supabase: NonNullable<ReturnType<typeof getSupabaseWriteClient>>) => {
   const bucket = await supabase.storage.getBucket(MEDIA_BUCKET);
-  if (!bucket.error) return;
+  if (!bucket.error) {
+    const updated = await supabase.storage.updateBucket(MEDIA_BUCKET, {
+      public: true,
+      fileSizeLimit: MAX_VIDEO_BYTES,
+      allowedMimeTypes: Array.from(allowedMediaTypes),
+    });
+    if (updated.error) {
+      throw new Error(`No se pudo actualizar el bucket de medios: ${updated.error.message}`);
+    }
+    return;
+  }
 
   const created = await supabase.storage.createBucket(MEDIA_BUCKET, {
     public: true,
     fileSizeLimit: MAX_VIDEO_BYTES,
-    allowedMimeTypes: Array.from(allowedVideoTypes),
+    allowedMimeTypes: Array.from(allowedMediaTypes),
   });
 
   if (created.error && !created.error.message.toLowerCase().includes("already exists")) {
@@ -69,27 +82,41 @@ export async function POST(request: Request) {
     if (!(file instanceof File)) {
       return NextResponse.json({ ok: false, error: "Archivo requerido." }, { status: 400 });
     }
-    if (kind !== "video") {
+    if (kind !== "video" && kind !== "image") {
       return NextResponse.json({ ok: false, error: "Tipo de medio inválido." }, { status: 400 });
     }
-    if (!allowedVideoTypes.has(file.type)) {
+    if (kind === "image" && !allowedImageTypes.has(file.type)) {
+      return NextResponse.json(
+        { ok: false, error: "Subí una imagen JPG, PNG, WebP o AVIF." },
+        { status: 400 }
+      );
+    }
+    if (kind === "video" && !allowedVideoTypes.has(file.type)) {
       return NextResponse.json(
         { ok: false, error: "Subí un video MP4, WebM, OGG o MOV." },
         { status: 400 }
       );
     }
-    if (file.size > MAX_VIDEO_BYTES) {
+    const maxBytes = kind === "image" ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
+    if (file.size > maxBytes) {
       return NextResponse.json(
-        { ok: false, error: "El video supera el límite de 120 MB." },
+        {
+          ok: false,
+          error:
+            kind === "image"
+              ? "La imagen supera el límite de 8 MB."
+              : "El video supera el límite de 120 MB.",
+        },
         { status: 400 }
       );
     }
 
     await ensureBucket(supabase);
 
-    const extension = sanitizeFileName(file.name).split(".").pop() || "mp4";
-    const safeBaseName = sanitizeFileName(file.name.replace(/\.[^.]+$/, "")) || "video";
-    const path = `videos/${admin.id}/${Date.now()}-${safeBaseName}.${extension}`;
+    const fallbackExtension = kind === "image" ? "webp" : "mp4";
+    const extension = sanitizeFileName(file.name).split(".").pop() || fallbackExtension;
+    const safeBaseName = sanitizeFileName(file.name.replace(/\.[^.]+$/, "")) || kind;
+    const path = `${kind === "image" ? "images" : "videos"}/${admin.id}/${Date.now()}-${safeBaseName}.${extension}`;
     const buffer = Buffer.from(await file.arrayBuffer());
     const upload = await supabase.storage.from(MEDIA_BUCKET).upload(path, buffer, {
       contentType: file.type,
@@ -111,7 +138,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "No se pudo subir el video.",
+        error: error instanceof Error ? error.message : "No se pudo subir el archivo.",
       },
       { status: 500 }
     );
