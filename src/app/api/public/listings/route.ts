@@ -13,7 +13,7 @@ export async function GET() {
         "x-inmo-state-scope": "public-listings",
         "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "no-store",
+        "Cache-Control": "public, max-age=30, s-maxage=120, stale-while-revalidate=300",
       },
     });
   } catch (error) {

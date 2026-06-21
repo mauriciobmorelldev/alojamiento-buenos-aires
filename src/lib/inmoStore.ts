@@ -122,6 +122,21 @@ const persistRemoteState = async (state: InmoState) => {
   }
 };
 
+const waitForNonCriticalRefresh = () =>
+  new Promise<void>((resolve) => {
+    if (!isBrowser) {
+      resolve();
+      return;
+    }
+
+    const run = () => window.setTimeout(resolve, 1200);
+    if (document.readyState === "complete") {
+      run();
+      return;
+    }
+    window.addEventListener("load", run, { once: true });
+  });
+
 export const loadState = (): InmoState => {
   if (!isBrowser) return defaultState;
   if (inMemoryState) {
@@ -178,6 +193,7 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
         inMemoryState = mergedInitial;
         setState(mergedInitial);
         setIsReady(true);
+        await waitForNonCriticalRefresh();
         const remote = await fetchRemoteState(scope, mode);
         if (remote?.source === "supabase") {
           const mergedRemote = mergeState(defaultState, remote.data);

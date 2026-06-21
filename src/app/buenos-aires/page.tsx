@@ -94,12 +94,28 @@ export default function BuenosAiresPage() {
     };
 
     if (!isSmallViewport && idleWindow.requestIdleCallback) {
-      const idleId = idleWindow.requestIdleCallback(loadVideo, { timeout: 900 });
+      const idleId = idleWindow.requestIdleCallback(loadVideo, { timeout: 1800 });
       return () => idleWindow.cancelIdleCallback?.(idleId);
     }
 
-    const timeoutId = globalThis.setTimeout(loadVideo, isSmallViewport ? 350 : 700);
-    return () => globalThis.clearTimeout(timeoutId);
+    const scheduleAfterLoad = () => {
+      const timeoutId = globalThis.setTimeout(loadVideo, isSmallViewport ? 2200 : 1200);
+      return () => globalThis.clearTimeout(timeoutId);
+    };
+
+    if (document.readyState === "complete") {
+      return scheduleAfterLoad();
+    }
+
+    let cleanupTimeout: (() => void) | undefined;
+    const handleWindowLoad = () => {
+      cleanupTimeout = scheduleAfterLoad();
+    };
+    window.addEventListener("load", handleWindowLoad, { once: true });
+    return () => {
+      window.removeEventListener("load", handleWindowLoad);
+      cleanupTimeout?.();
+    };
   }, [heroVideo]);
 
   return (
@@ -123,7 +139,7 @@ export default function BuenosAiresPage() {
               muted
               loop
               playsInline
-              preload="auto"
+              preload="metadata"
               poster={content.heroImage || fallbackBuenosAiresImage}
               onLoadStart={() => setIsHeroVideoReady(false)}
               onCanPlay={() => setIsHeroVideoReady(true)}

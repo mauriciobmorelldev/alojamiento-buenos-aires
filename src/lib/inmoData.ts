@@ -152,6 +152,8 @@ export type HomeContent = {
   title: string;
   italicTitle: string;
   subtitle: string;
+  publicInventoryTotal?: number;
+  publicInventoryAvailable?: number;
   primaryCtaLabel: string;
   primaryCtaHref: string;
   secondaryCtaLabel: string;

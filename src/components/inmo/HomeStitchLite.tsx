@@ -170,7 +170,10 @@ export default function HomeStitchLite({
   const secondaryLabel = /cliente|cuenta|acceso/i.test(homeContent.secondaryCtaLabel)
     ? "Consultar ahora"
     : homeContent.secondaryCtaLabel;
-  const availableCount = listings.filter((item) => item.status === "disponible").length;
+  const inventoryTotal = homeContent.publicInventoryTotal ?? listings.length;
+  const availableCount =
+    homeContent.publicInventoryAvailable ??
+    listings.filter((item) => item.status === "disponible").length;
 
   return (
     <div
@@ -247,7 +250,9 @@ export default function HomeStitchLite({
                   <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">
                     Propiedades
                   </p>
-                  <p className="mt-2 text-3xl font-headline font-bold text-primary">{listings.length}</p>
+                  <p className="mt-2 text-3xl font-headline font-bold text-primary">
+                    {inventoryTotal}
+                  </p>
                 </div>
                 <div className="rounded-xl bg-surface-container-low p-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">
@@ -424,7 +429,6 @@ export default function HomeStitchLite({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               {featuredListings.map((item, index) => {
                 const cover = getCoverImage(item.images, item.coverIndex);
-                const video = item.videos?.[0];
                 const agent = item.agentId ? agentsById[item.agentId] : undefined;
                 const features = getPropertyFeatures(item);
                 const availability = getAvailability(item.status);
@@ -445,17 +449,7 @@ export default function HomeStitchLite({
                     className="group block overflow-hidden rounded-3xl bg-surface-container-lowest pro-card transition-transform hover:-translate-y-2"
                   >
                     <div className="relative aspect-[4/5] overflow-hidden">
-                      {video ? (
-                        <video
-                          className="h-full w-full object-cover"
-                          src={video}
-                          muted
-                          playsInline
-                          loop
-                          autoPlay
-                          preload="metadata"
-                        />
-                      ) : cover ? (
+                      {cover ? (
                         <PublicImage
                           src={cover}
                           alt={item.title}

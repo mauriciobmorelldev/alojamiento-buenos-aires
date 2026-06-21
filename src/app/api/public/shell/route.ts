@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         "x-inmo-state-scope": `public-shell-${mode}`,
         "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "no-store",
+        "Cache-Control": "public, max-age=30, s-maxage=120, stale-while-revalidate=300",
       },
     });
   } catch (error) {

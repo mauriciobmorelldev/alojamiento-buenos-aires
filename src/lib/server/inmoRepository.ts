@@ -33,6 +33,24 @@ type ReadInmoStateOptions = {
 
 type PublicReadResult = RepositoryResult<Partial<InmoState>>;
 type PublicShellMode = "home" | "catalog";
+type PublicPropertyRow = {
+  id: string;
+  title: string;
+  created_by_admin_id?: string | null;
+  type: string;
+  status: string;
+  price: number | string | null;
+  price_unit: string;
+  currency?: string | null;
+  neighborhood: string;
+  area: number | string | null;
+  rooms: number | string | null;
+  tag?: string | null;
+  highlight?: string | null;
+  cover_index?: number | string | null;
+  agent_id?: string | null;
+  attributes?: Record<string, string[]>;
+};
 
 const publicListingPropertySelect =
   "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,cover_index,agent_id,created_by_admin_id,attributes";
@@ -170,6 +188,32 @@ const getCatalogTheme = (theme: InmoState["theme"]) => ({
   logo: "",
   heroImage: "",
 });
+
+const mapPublicListingRows = (
+  rows: PublicPropertyRow[],
+  imagesByProperty: Map<string, string[]>
+): Listing[] =>
+  rows.map((property) => ({
+    id: property.id,
+    title: property.title,
+    createdByAdminId: property.created_by_admin_id ?? undefined,
+    type: property.type as PropertyType,
+    status: property.status as PropertyStatus,
+    price: Number(property.price ?? 0),
+    priceUnit: property.price_unit as PriceUnit,
+    currency: (property.currency === "USD" ? "USD" : "ARS") as PriceCurrency,
+    neighborhood: property.neighborhood,
+    area: Number(property.area ?? 0),
+    rooms: Number(property.rooms ?? 0),
+    tag: property.tag ?? "",
+    highlight: property.highlight ?? "",
+    description: "",
+    images: sanitizePublicImages(imagesByProperty.get(property.id) ?? []),
+    videos: [],
+    coverIndex: Number(property.cover_index ?? 0),
+    agentId: property.agent_id ?? undefined,
+    attributes: property.attributes ?? {},
+  }));
 
 export const readPublicShell = async (
   mode: PublicShellMode = "home"
@@ -392,27 +436,121 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
   return {
     data: {
       version: STATE_VERSION,
-      listings: ensureArray(properties.data).map((property) => ({
-        id: property.id,
-        title: property.title,
-        createdByAdminId: property.created_by_admin_id ?? undefined,
-        type: property.type as PropertyType,
-        status: property.status as PropertyStatus,
-        price: Number(property.price ?? 0),
-        priceUnit: property.price_unit as PriceUnit,
-        currency: (property.currency === "USD" ? "USD" : "ARS") as PriceCurrency,
-        neighborhood: property.neighborhood,
-        area: Number(property.area ?? 0),
-        rooms: Number(property.rooms ?? 0),
-        tag: property.tag ?? "",
-        highlight: property.highlight ?? "",
-        description: "",
-        images: sanitizePublicImages(imagesByProperty.get(property.id) ?? []),
-        videos: [],
-        coverIndex: Number(property.cover_index ?? 0),
-        agentId: property.agent_id ?? undefined,
-        attributes: property.attributes ?? {},
-      })),
+      listings: mapPublicListingRows(
+        ensureArray(properties.data) as PublicPropertyRow[],
+        imagesByProperty
+      ),
+    },
+    source: "supabase",
+  };
+};
+
+export const readPublicHomeListings = async (): Promise<PublicReadResult> => {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseConfigured()) {
+    const fallbackListings = defaultState.listings.slice(0, 9).map((listing) => ({
+      ...listing,
+      description: "",
+      images: sanitizePublicImages(listing.images.slice(0, 2)),
+      videos: [],
+    }));
+    return {
+      data: {
+        version: STATE_VERSION,
+        listings: fallbackListings,
+        homeContent: {
+          publicInventoryTotal: fallbackListings.length,
+          publicInventoryAvailable: fallbackListings.filter(
+            (listing) => listing.status === "disponible"
+          ).length,
+        } as InmoState["homeContent"],
+      },
+      source: "fallback",
+    };
+  }
+
+  const [pinned, recent, totalCount, availableCount] = await Promise.all([
+    supabase
+      .from("properties")
+      .select(publicListingPropertySelect)
+      .contains("attributes", { pinned_home: ["true"] })
+      .order("updated_at", { ascending: false })
+      .limit(6),
+    supabase
+      .from("properties")
+      .select(publicListingPropertySelect)
+      .order("updated_at", { ascending: false })
+      .limit(9),
+    supabase.from("properties").select("id", { count: "exact", head: true }),
+    supabase
+      .from("properties")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "disponible"),
+  ]);
+
+  const propertyErrors = [pinned.error, recent.error].filter(Boolean);
+  if (propertyErrors.length) {
+    console.warn(
+      "Supabase public home listings read failed",
+      propertyErrors.map((error) => error?.message).join(" | ")
+    );
+    return {
+      data: {
+        version: STATE_VERSION,
+        listings: [],
+        homeContent: {
+          publicInventoryTotal: 0,
+          publicInventoryAvailable: 0,
+        } as InmoState["homeContent"],
+      },
+      source: "fallback",
+    };
+  }
+
+  const rowsById = new Map<string, PublicPropertyRow>();
+  ([...(pinned.data ?? []), ...(recent.data ?? [])] as PublicPropertyRow[]).forEach(
+    (row) => {
+      if (rowsById.size >= 12 && !rowsById.has(row.id)) return;
+      rowsById.set(row.id, row);
+    }
+  );
+  const rows = [...rowsById.values()];
+  const propertyIds = rows.map((property) => property.id);
+  const propertyImages = propertyIds.length
+    ? await supabase
+        .from("property_images")
+        .select("property_id,url,sort_order")
+        .in("property_id", propertyIds)
+        .lte("sort_order", 1)
+        .order("sort_order")
+    : { data: [], error: null };
+
+  if (propertyImages.error) {
+    console.warn("Supabase public home property_images read failed", propertyImages.error.message);
+  }
+
+  const imagesByProperty = new Map<string, string[]>();
+  const propertyImageRows = (propertyImages.data ?? []) as Array<{
+    property_id: string;
+    url: string;
+  }>;
+  propertyImageRows.forEach((image) => {
+    const list = imagesByProperty.get(image.property_id) ?? [];
+    if (list.length >= 2) return;
+    list.push(image.url);
+    imagesByProperty.set(image.property_id, list);
+  });
+
+  return {
+    data: {
+      version: STATE_VERSION,
+      listings: mapPublicListingRows(rows, imagesByProperty),
+      homeContent: {
+        publicInventoryTotal: totalCount.count ?? rows.length,
+        publicInventoryAvailable:
+          availableCount.count ??
+          rows.filter((property) => property.status === "disponible").length,
+      } as InmoState["homeContent"],
     },
     source: "supabase",
   };
@@ -892,7 +1030,7 @@ export const writeInmoState = async (state: InmoState) => {
     }
   }
 
-  clearResponseCache("public:");
+  clearResponseCache();
   return { source: "supabase" as const };
 };
 
@@ -920,7 +1058,7 @@ export const upsertListing = async (property: Listing) => {
     );
   }
 
-  clearResponseCache("public:");
+  clearResponseCache();
   return { source: "supabase" as const };
 };
 
@@ -954,7 +1092,7 @@ export const deleteObsoleteTokkoListings = async (keepIds: string[]) => {
     }
   }
 
-  if (obsoleteIds.length) clearResponseCache("public:");
+  if (obsoleteIds.length) clearResponseCache();
   return { source: "supabase" as const, deletedCount: obsoleteIds.length };
 };
 
@@ -969,6 +1107,6 @@ export const deleteListing = async (propertyId: string) => {
     "delete property"
   );
 
-  clearResponseCache("public:");
+  clearResponseCache();
   return { source: "supabase" as const };
 };

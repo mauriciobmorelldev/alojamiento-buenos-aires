@@ -426,7 +426,6 @@ export default function ResultsStitch() {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-10">
                 {filteredListings.map((item, index) => {
                   const cover = getCoverImage(item.images, item.coverIndex);
-                  const video = item.videos?.[0];
                   const availability = getAvailability(item.status);
                   const isFromCollaborator = isCollaboratorListing(item.createdByAdminId);
                   return (
@@ -436,16 +435,7 @@ export default function ResultsStitch() {
                       className="group relative block overflow-hidden rounded-3xl bg-surface-container-lowest editorial-shadow transition-transform duration-500 hover:-translate-y-2"
                     >
                       <div className="relative h-64 overflow-hidden sm:h-80">
-                        {video ? (
-                          <video
-                            className="h-full w-full object-cover"
-                            src={video}
-                            muted
-                            playsInline
-                            loop
-                            autoPlay
-                          />
-                        ) : cover ? (
+                        {cover ? (
                           <img
                             src={cover}
                             alt={item.title}
