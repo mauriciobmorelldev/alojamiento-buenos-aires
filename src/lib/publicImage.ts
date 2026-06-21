@@ -1,6 +1,20 @@
 const STORAGE_PUBLIC_MARKER = "/storage/v1/object/public/";
 const STORAGE_RENDER_MARKER = "/storage/v1/render/image/public/";
 
+export const isSupabasePublicImage = (src: string) => {
+  if (!src || src.startsWith("data:") || src.startsWith("blob:")) return false;
+
+  try {
+    const url = new URL(src);
+    return (
+      url.hostname.endsWith(".supabase.co") &&
+      url.pathname.includes(STORAGE_PUBLIC_MARKER)
+    );
+  } catch {
+    return false;
+  }
+};
+
 export const getOptimizedPublicImageUrl = (
   src: string,
   options: { width?: number; quality?: number } = {}
@@ -25,3 +39,18 @@ export const getOptimizedPublicImageUrl = (
     return src;
   }
 };
+
+export const getOptimizedPublicImageSrcSet = (
+  src: string,
+  widths: number[],
+  options: { quality?: number } = {}
+) =>
+  widths
+    .map(
+      (width) =>
+        `${getOptimizedPublicImageUrl(src, {
+          width,
+          quality: options.quality,
+        })} ${width}w`
+    )
+    .join(", ");

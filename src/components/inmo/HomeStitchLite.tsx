@@ -8,7 +8,11 @@ import { getAvailability } from "@/lib/availability";
 import { propertyTypeLabels, type InmoState } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { formatPrice } from "@/lib/pricing";
-import { getOptimizedPublicImageUrl } from "@/lib/publicImage";
+import {
+  getOptimizedPublicImageSrcSet,
+  getOptimizedPublicImageUrl,
+  isSupabasePublicImage,
+} from "@/lib/publicImage";
 import { buildThemeStyles } from "@/lib/theme";
 
 const getCoverImage = (images: string[], coverIndex: number) => {
@@ -72,6 +76,7 @@ function PublicImage({
   priority = false,
   sizes,
   quality = 76,
+  responsiveWidths,
 }: {
   src: string;
   alt: string;
@@ -81,16 +86,32 @@ function PublicImage({
   priority?: boolean;
   sizes?: string;
   quality?: number;
+  responsiveWidths?: number[];
 }) {
   const optimizedSrc = getOptimizedPublicImageUrl(src, {
     width,
     quality,
   });
+  const shouldUseDirectResponsiveImage =
+    isSupabasePublicImage(src) && Array.isArray(responsiveWidths) && responsiveWidths.length > 0;
 
-  if (isInlineImage(src)) {
+  if (shouldUseDirectResponsiveImage || isInlineImage(src)) {
+    const directSrc = shouldUseDirectResponsiveImage
+      ? getOptimizedPublicImageUrl(src, {
+          width: Math.min(...responsiveWidths),
+          quality,
+        })
+      : optimizedSrc;
+
     return (
       <img
-        src={optimizedSrc}
+        src={directSrc}
+        srcSet={
+          shouldUseDirectResponsiveImage
+            ? getOptimizedPublicImageSrcSet(src, responsiveWidths, { quality })
+            : undefined
+        }
+        sizes={sizes}
         alt={alt}
         width={width}
         height={height}
@@ -203,6 +224,7 @@ export default function HomeStitchLite({
                 height={900}
                 priority
                 quality={72}
+                responsiveWidths={[480, 640, 768, 960, 1200, 1440]}
                 sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, 1440px"
               />
             ) : (
@@ -467,6 +489,7 @@ export default function HomeStitchLite({
                           height={720}
                           quality={74}
                           priority={index === 0}
+                          responsiveWidths={[360, 480, 720, 900]}
                           sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
                           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                         />
