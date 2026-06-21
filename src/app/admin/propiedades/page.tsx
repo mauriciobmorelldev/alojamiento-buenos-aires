@@ -9,7 +9,6 @@ import {
   getEmptyListingForm,
   getListingForm,
   normalizeListing,
-  optimizeImageDataUrl,
   optimizeImageFileForUpload,
   priceUnitOptions,
   statusOptions,
@@ -227,10 +226,13 @@ export default function AdminPropertiesPage() {
     }
 
     const id = editingListingId ?? createId();
-    const optimizedImages = await Promise.all(
-      listingForm.images.map((image) => optimizeImageDataUrl(image))
-    );
-    const baseListing = normalizeListing({ ...listingForm, images: optimizedImages }, id);
+    if (
+      listingForm.images.some((image) => image.startsWith("data:") || image.startsWith("blob:"))
+    ) {
+      setFormError("Hay imágenes embebidas en base64. Volvé a subirlas como archivo para guardarlas en Storage.");
+      return;
+    }
+    const baseListing = normalizeListing(listingForm, id);
     const previousListing = listings.find((item) => item.id === id);
     const isOwnListing =
       isOwner ||

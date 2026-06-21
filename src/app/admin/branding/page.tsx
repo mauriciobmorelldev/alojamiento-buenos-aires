@@ -45,6 +45,15 @@ export default function AdminBrandingPage() {
   const [formNotice, setFormNotice] = useState("");
   const [uploadingField, setUploadingField] = useState("");
 
+  const hasEmbeddedMedia = (value: unknown): boolean => {
+    if (typeof value === "string") return value.startsWith("data:") || value.startsWith("blob:");
+    if (Array.isArray(value)) return value.some(hasEmbeddedMedia);
+    if (value && typeof value === "object") {
+      return Object.values(value as Record<string, unknown>).some(hasEmbeddedMedia);
+    }
+    return false;
+  };
+
   useEffect(() => {
     setThemeForm(theme);
   }, [theme]);
@@ -97,6 +106,10 @@ export default function AdminBrandingPage() {
     });
     if (errors.length) {
       setFormError(errors[0]);
+      return;
+    }
+    if (hasEmbeddedMedia({ logo: themeForm.logo, heroImage: themeForm.heroImage })) {
+      setFormError("Hay una imagen embebida en base64. Volvé a subirla desde el botón de archivo para guardarla en Storage.");
       return;
     }
     const nextTheme = {
@@ -263,6 +276,11 @@ export default function AdminBrandingPage() {
           })),
         }))
         .filter((page) => page.title && page.slug);
+
+    if (hasEmbeddedMedia({ home: nextHomeContent, pages: nextCustomPages })) {
+      setFormError("Hay imágenes embebidas en base64. Volvé a subirlas desde el botón de archivo para guardarlas en Storage.");
+      return;
+    }
 
     try {
       await persistBrandingSettings(theme, nextHomeContent, nextCustomPages);

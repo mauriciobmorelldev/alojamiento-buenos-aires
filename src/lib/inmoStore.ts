@@ -73,16 +73,28 @@ const fetchRemoteState = async (
 ) => {
   try {
     if (scope === "public") {
-      const response = await fetch(`/api/inmo-state?mode=${mode}`, {
-        cache: "no-store",
-      });
-      if (!response.ok) return null;
+      const publicMode = mode === "catalog" ? "catalog" : "home";
+      const [shellResponse, listingsResponse] = await Promise.all([
+        fetch(`/api/public/shell?mode=${publicMode}`, { cache: "no-store" }),
+        fetch(`/api/public/listings?mode=${publicMode}`, { cache: "no-store" }),
+      ]);
+      if (!shellResponse.ok || !listingsResponse.ok) return null;
+      const shell = (await shellResponse.json()) as Partial<InmoState>;
+      const listings = (await listingsResponse.json()) as Partial<InmoState>;
       return {
-        data: (await response.json()) as Partial<InmoState>,
-        source: response.headers.get("x-inmo-state-source") as
-          | "supabase"
-          | "fallback"
-          | null,
+        data: {
+          ...shell,
+          ...listings,
+          homeContent: {
+            ...(shell.homeContent ?? {}),
+            ...(listings.homeContent ?? {}),
+          },
+        } as Partial<InmoState>,
+        source:
+          shellResponse.headers.get("x-inmo-state-source") === "supabase" ||
+          listingsResponse.headers.get("x-inmo-state-source") === "supabase"
+            ? "supabase"
+            : "fallback",
       };
     }
 
@@ -191,10 +203,15 @@ export const resetState = () => {
 
 export const useInmoStore = (initialState?: Partial<InmoState>) => {
   const pathname = usePathname();
-  const [state, setState] = useState<InmoState>(() =>
-    initialState ? mergeState(defaultState, initialState) : defaultState
-  );
-  const [isReady, setIsReady] = useState(Boolean(initialState));
+  const [state, setState] = useState<InmoState>(() => {
+    if (initialState) {
+      const merged = mergeState(defaultState, initialState);
+      if (isBrowser) inMemoryState = merged;
+      return merged;
+    }
+    return isBrowser && inMemoryState ? inMemoryState : defaultState;
+  });
+  const [isReady, setIsReady] = useState(Boolean(initialState || (isBrowser && inMemoryState)));
 
   useEffect(() => {
     const hydrate = async () => {

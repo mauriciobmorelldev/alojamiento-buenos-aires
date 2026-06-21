@@ -5,19 +5,23 @@ import AdminShell from "@/components/inmo/admin/AdminShell";
 import {
   createId,
   getEmptyAgentForm,
-  readFileAsDataUrl,
+  optimizeImageFileForUpload,
   validateAgentForm,
   type AgentFormState,
 } from "@/lib/adminForms";
+import { uploadAdminMedia } from "@/lib/adminMedia";
 import { useInmoStore } from "@/lib/inmoStore";
+import { readAdminSession } from "@/lib/session";
 
 export default function AdminAgentsPage() {
   const { state, updateState } = useInmoStore();
   const { agents, listings } = state;
+  const [adminSession] = useState(() => readAdminSession());
 
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
   const [agentForm, setAgentForm] = useState<AgentFormState>(getEmptyAgentForm());
   const [formError, setFormError] = useState("");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [highlightForm, setHighlightForm] = useState(false);
 
   useEffect(() => {
@@ -202,11 +206,36 @@ export default function AdminAgentsPage() {
               onChange={async (event) => {
                 const file = event.target.files?.[0];
                 if (!file) return;
-                const url = await readFileAsDataUrl(file);
-                setAgentForm((prev) => ({ ...prev, photo: url }));
+                if (!adminSession?.adminId) {
+                  setFormError("Iniciá sesión para subir fotos.");
+                  return;
+                }
+                setIsUploadingPhoto(true);
+                setFormError("");
+                try {
+                  const optimized = await optimizeImageFileForUpload(file, {
+                    maxSize: 520,
+                    quality: 0.82,
+                    mimeType: "image/webp",
+                  });
+                  const url = await uploadAdminMedia(optimized, "image", adminSession.adminId);
+                  setAgentForm((prev) => ({ ...prev, photo: url }));
+                  event.currentTarget.value = "";
+                } catch (error) {
+                  setFormError(
+                    error instanceof Error ? error.message : "No se pudo subir la foto."
+                  );
+                } finally {
+                  setIsUploadingPhoto(false);
+                }
               }}
               className="text-sm"
             />
+            {isUploadingPhoto ? (
+              <span className="text-xs normal-case tracking-normal text-primary">
+                Optimizando y subiendo foto...
+              </span>
+            ) : null}
           </label>
 
           <div className="flex flex-wrap items-center gap-3">

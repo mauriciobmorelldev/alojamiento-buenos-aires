@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { InmoState } from "@/lib/inmoData";
+import { defaultState } from "@/lib/inmoData";
 import {
   readInmoState,
   readPublicHomeListings,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/server/inmoRepository";
 import { deleteRemovedStateMedia } from "@/lib/server/mediaStorage";
 import { readThroughCache } from "@/lib/server/responseCache";
+import { mergeState } from "@/lib/stateMerge";
 
 export async function GET(request: Request) {
   try {
@@ -34,11 +36,18 @@ export async function GET(request: Request) {
           ? "supabase"
           : "fallback";
 
-      return NextResponse.json(
-        {
-          ...shell.value.data,
-          ...listings.value.data,
+      const publicPayload = {
+        ...shell.value.data,
+        ...listings.value.data,
+        homeContent: {
+          ...(shell.value.data.homeContent ?? {}),
+          ...(listings.value.data.homeContent ?? {}),
         },
+      } as Partial<InmoState>;
+      const publicState = mergeState(defaultState, publicPayload);
+
+      return NextResponse.json(
+        publicState,
         {
           headers: {
             "x-inmo-state-source": source,

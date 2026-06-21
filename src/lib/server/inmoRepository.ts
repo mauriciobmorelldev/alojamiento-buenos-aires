@@ -67,7 +67,12 @@ const isOversizedDataImage = (value: unknown, maxBytes: number) =>
   value.length > maxBytes;
 
 const sanitizePublicImage = (value: unknown, maxBytes: number) =>
-  typeof value === "string" && !isOversizedDataImage(value, maxBytes) ? value : "";
+  typeof value === "string" &&
+  !value.startsWith("data:") &&
+  !value.startsWith("blob:") &&
+  !isOversizedDataImage(value, maxBytes)
+    ? value
+    : "";
 
 const sanitizePublicImages = (images: unknown, maxBytes = 900_000) =>
   Array.isArray(images)
@@ -322,7 +327,7 @@ export const readPublicShell = async (
         role: agent.role,
         phone: agent.phone,
         email: agent.email,
-        photo: agent.photo ?? undefined,
+        photo: sanitizePublicImage(agent.photo, 260_000) || undefined,
       })),
     },
     source: "supabase",
@@ -757,7 +762,7 @@ export const readInmoState = async (
       role: agent.role,
       phone: agent.phone,
       email: agent.email,
-      photo: agent.photo ?? undefined,
+      photo: sanitizePublicImage(agent.photo, 260_000) || undefined,
     })),
     clientUsers: ensureArray(clients.data).map((client) => ({
       id: client.id,
