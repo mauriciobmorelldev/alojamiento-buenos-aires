@@ -5,7 +5,7 @@ import { readThroughCache } from "@/lib/server/responseCache";
 export async function GET() {
   try {
     const startedAt = Date.now();
-    const cached = await readThroughCache("public:listings:v3", 30 * 1000, readPublicListings);
+    const cached = await readThroughCache("public:listings:v3", 5 * 1000, readPublicListings);
     const result = cached.value;
     return NextResponse.json(result.data, {
       headers: {
@@ -13,7 +13,7 @@ export async function GET() {
         "x-inmo-state-scope": "public-listings",
         "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=30, s-maxage=120, stale-while-revalidate=300",
+        "Cache-Control": "public, max-age=5, s-maxage=15, stale-while-revalidate=30",
       },
     });
   } catch (error) {

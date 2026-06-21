@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { InmoState } from "@/lib/inmoData";
 import {
   readInmoState,
+  readPublicHomeListings,
   readPublicListings,
   readPublicShell,
   writeInmoState,
@@ -19,10 +20,14 @@ export async function GET(request: Request) {
     if (scope !== "admin") {
       const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
       const [shell, listings] = await Promise.all([
-        readThroughCache(`public:shell:${mode}:compat:v1`, 30 * 1000, () =>
+        readThroughCache(`public:shell:${mode}:compat:v1`, 5 * 1000, () =>
           readPublicShell(mode)
         ),
-        readThroughCache("public:listings:compat:v1", 30 * 1000, readPublicListings),
+        readThroughCache(
+          `public:listings:${mode}:compat:v1`,
+          5 * 1000,
+          mode === "home" ? readPublicHomeListings : readPublicListings
+        ),
       ]);
       const source =
         shell.value.source === "supabase" || listings.value.source === "supabase"

@@ -66,24 +66,16 @@ const fetchRemoteState = async (
 ) => {
   try {
     if (scope === "public") {
-      const [shellResponse, listingsResponse] = await Promise.all([
-        fetch(`/api/public/shell?mode=${mode}`, { cache: "no-store" }),
-        fetch("/api/public/listings", { cache: "no-store" }),
-      ]);
-      if (!shellResponse.ok || !listingsResponse.ok) return null;
-      const shellData = (await shellResponse.json()) as Partial<InmoState>;
-      const listingsData = (await listingsResponse.json()) as Partial<InmoState>;
-      const shellSource = shellResponse.headers.get("x-inmo-state-source");
-      const listingsSource = listingsResponse.headers.get("x-inmo-state-source");
+      const response = await fetch(`/api/inmo-state?mode=${mode}`, {
+        cache: "no-store",
+      });
+      if (!response.ok) return null;
       return {
-        data: {
-          ...shellData,
-          ...listingsData,
-        },
-        source:
-          shellSource === "supabase" || listingsSource === "supabase"
-            ? "supabase"
-            : "fallback",
+        data: (await response.json()) as Partial<InmoState>,
+        source: response.headers.get("x-inmo-state-source") as
+          | "supabase"
+          | "fallback"
+          | null,
       };
     }
 
@@ -122,19 +114,19 @@ const persistRemoteState = async (state: InmoState) => {
   }
 };
 
-const waitForNonCriticalRefresh = () =>
+const waitForPublicRefresh = () =>
   new Promise<void>((resolve) => {
     if (!isBrowser) {
       resolve();
       return;
     }
 
-    const run = () => window.setTimeout(resolve, 1200);
-    if (document.readyState === "complete") {
-      run();
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => resolve());
       return;
     }
-    window.addEventListener("load", run, { once: true });
+
+    window.setTimeout(resolve, 0);
   });
 
 export const loadState = (): InmoState => {
@@ -193,7 +185,7 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
         inMemoryState = mergedInitial;
         setState(mergedInitial);
         setIsReady(true);
-        await waitForNonCriticalRefresh();
+        await waitForPublicRefresh();
         const remote = await fetchRemoteState(scope, mode);
         if (remote?.source === "supabase") {
           const mergedRemote = mergeState(defaultState, remote.data);
@@ -217,17 +209,14 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
         setIsReady(true);
         return;
       }
-      const local = loadState();
-      setState(local);
+      setIsReady(false);
       const remote = await fetchRemoteState(scope, mode);
       if (!remote || remote.source === "fallback") {
+        setState(defaultState);
         setIsReady(true);
         return;
       }
-      const merged =
-        remote.source === "supabase"
-          ? mergeState(defaultState, remote.data)
-          : mergeState(local, remote.data);
+      const merged = mergeState(defaultState, remote.data);
       inMemoryState = merged;
       setState(merged);
       setIsReady(true);
