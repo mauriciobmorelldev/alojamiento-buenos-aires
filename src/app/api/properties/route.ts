@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Listing } from "@/lib/inmoData";
 import { deleteListing, readInmoState, upsertListing } from "@/lib/server/inmoRepository";
+import { deleteRemovedListingMedia } from "@/lib/server/mediaStorage";
 
 const getAdmin = async (request: Request) => {
   const adminId = request.headers.get("x-admin-id");
@@ -52,6 +53,11 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+    try {
+      await deleteRemovedListingMedia(previous, listing);
+    } catch (cleanupError) {
+      console.warn("No se pudieron borrar medios removidos de la propiedad", cleanupError);
+    }
     return NextResponse.json({ ok: true, source: result.source, property: listing });
   } catch (error) {
     return NextResponse.json(
@@ -98,6 +104,11 @@ export async function DELETE(request: Request) {
         },
         { status: 500 }
       );
+    }
+    try {
+      await deleteRemovedListingMedia(listing, null);
+    } catch (cleanupError) {
+      console.warn("No se pudieron borrar medios de la propiedad eliminada", cleanupError);
     }
     return NextResponse.json({ ok: true, source: result.source });
   } catch (error) {

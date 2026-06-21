@@ -6,6 +6,7 @@ import {
   readPublicShell,
   writeInmoState,
 } from "@/lib/server/inmoRepository";
+import { deleteRemovedStateMedia } from "@/lib/server/mediaStorage";
 import { readThroughCache } from "@/lib/server/responseCache";
 
 export async function GET(request: Request) {
@@ -123,6 +124,13 @@ export async function PUT(request: Request) {
 
     const state = (await request.json()) as InmoState;
     const result = await writeInmoState(state);
+    if (result.source === "supabase") {
+      try {
+        await deleteRemovedStateMedia(currentState.data, state);
+      } catch (cleanupError) {
+        console.warn("No se pudieron borrar medios removidos", cleanupError);
+      }
+    }
     return NextResponse.json({ ok: true, source: result.source });
   } catch (error) {
     return NextResponse.json(

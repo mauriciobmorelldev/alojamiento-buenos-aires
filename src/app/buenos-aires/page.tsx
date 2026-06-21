@@ -82,23 +82,23 @@ export default function BuenosAiresPage() {
     ).connection;
     const shouldAvoidVideo =
       connection?.saveData ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-      window.matchMedia("(max-width: 767px)").matches;
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (shouldAvoidVideo) return;
 
     const loadVideo = () => setShouldLoadHeroVideo(true);
+    const isSmallViewport = window.matchMedia("(max-width: 767px)").matches;
     const idleWindow = window as Window & {
       requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
       cancelIdleCallback?: (id: number) => void;
     };
 
-    if (idleWindow.requestIdleCallback) {
-      const idleId = idleWindow.requestIdleCallback(loadVideo, { timeout: 1600 });
+    if (!isSmallViewport && idleWindow.requestIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(loadVideo, { timeout: 900 });
       return () => idleWindow.cancelIdleCallback?.(idleId);
     }
 
-    const timeoutId = globalThis.setTimeout(loadVideo, 900);
+    const timeoutId = globalThis.setTimeout(loadVideo, isSmallViewport ? 350 : 700);
     return () => globalThis.clearTimeout(timeoutId);
   }, [heroVideo]);
 
@@ -123,10 +123,14 @@ export default function BuenosAiresPage() {
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               poster={content.heroImage || fallbackBuenosAiresImage}
               onLoadStart={() => setIsHeroVideoReady(false)}
               onCanPlay={() => setIsHeroVideoReady(true)}
+              onError={() => {
+                setShouldLoadHeroVideo(false);
+                setIsHeroVideoReady(false);
+              }}
               className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
                 isHeroVideoReady ? "opacity-100" : "opacity-0"
               }`}
@@ -135,6 +139,12 @@ export default function BuenosAiresPage() {
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(13,28,50,0.94),rgba(27,54,93,0.62),rgba(27,54,93,0.06))]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,243,194,0.22),transparent_34%),radial-gradient(circle_at_18%_78%,rgba(47,93,161,0.28),transparent_30%)]" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-background via-background/44 to-transparent" />
+          {heroVideo && shouldLoadHeroVideo && !isHeroVideoReady ? (
+            <div className="pointer-events-none absolute right-4 top-4 z-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/12 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white/78 backdrop-blur-md sm:right-6 sm:top-6">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-primary-fixed" />
+              Cargando video
+            </div>
+          ) : null}
 
           <div className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-screen-2xl items-end px-6 pb-10 pt-20 lg:px-8 lg:pb-14">
             <div className="w-full">
