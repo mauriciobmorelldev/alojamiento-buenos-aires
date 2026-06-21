@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import { useInmoStore } from "@/lib/inmoStore";
@@ -62,6 +62,15 @@ export default function BuenosAiresPage() {
   const sections = (content.sections ?? []).filter((section) => section.active);
   const heroVideo = content.heroVideo ? parseVideoUrl(content.heroVideo)?.fileUrl : "";
   const [activeAccordionIndex, setActiveAccordionIndex] = useState(0);
+  const [isDesktopAccordion, setIsDesktopAccordion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktopAccordion(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener("change", update);
+    return () => mediaQuery.removeEventListener("change", update);
+  }, []);
 
   return (
     <div style={themeStyles} className="min-h-screen bg-background text-on-background">
@@ -136,7 +145,7 @@ export default function BuenosAiresPage() {
                   hidden: {},
                   visible: { transition: { staggerChildren: 0.08, delayChildren: 0.14 } },
                 }}
-                className="mt-12 grid gap-px overflow-hidden rounded-[1.6rem] border border-white/14 bg-white/16 text-white shadow-[0_35px_90px_-58px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4"
+                className="-mx-6 mt-7 flex gap-2 overflow-x-auto px-6 pb-2 text-white [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:mt-12 sm:grid sm:gap-px sm:overflow-hidden sm:rounded-[1.6rem] sm:border sm:border-white/14 sm:bg-white/16 sm:p-0 sm:shadow-[0_35px_90px_-58px_rgba(0,0,0,0.8)] sm:backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4"
               >
                 {content.quickFacts.slice(0, 4).map((fact, index) => (
                   <motion.div
@@ -144,12 +153,14 @@ export default function BuenosAiresPage() {
                     variants={fadeUp}
                     whileHover={{ y: -6 }}
                     transition={{ type: "spring", stiffness: 260, damping: 22 }}
-                    className="group bg-white/8 p-5 transition hover:bg-white/16"
+                    className="group min-w-[13rem] rounded-2xl border border-white/12 bg-white/12 px-4 py-3 backdrop-blur-md transition hover:bg-white/16 sm:min-w-0 sm:rounded-none sm:border-0 sm:bg-white/8 sm:p-5 sm:backdrop-blur-0"
                   >
-                    <span className="text-[10px] font-black uppercase tracking-[0.28em] text-primary-fixed/85">
+                    <span className="text-[9px] font-black uppercase tracking-[0.24em] text-primary-fixed/85 sm:text-[10px] sm:tracking-[0.28em]">
                       0{index + 1}
                     </span>
-                    <p className="mt-3 text-sm font-bold leading-6 text-white/88">{fact}</p>
+                    <p className="mt-2 text-xs font-bold leading-5 text-white/88 sm:mt-3 sm:text-sm sm:leading-6">
+                      {fact}
+                    </p>
                   </motion.div>
                 ))}
               </motion.div>
@@ -195,14 +206,23 @@ export default function BuenosAiresPage() {
                     key={section.id}
                     type="button"
                     variants={fadeUp}
-                    animate={{ flexGrow: isActive ? 2.35 : 0.78 }}
+                    animate={
+                      isDesktopAccordion
+                        ? { flexGrow: isActive ? 2.35 : 0.78, height: "100%" }
+                        : { flexGrow: 0, height: isActive ? 520 : 132 }
+                    }
                     onMouseEnter={() => setActiveAccordionIndex(index)}
                     onFocus={() => setActiveAccordionIndex(index)}
                     onClick={() => setActiveAccordionIndex(index)}
                     aria-expanded={isActive}
-                    whileHover={{ y: -6 }}
-                    transition={{ type: "spring", stiffness: 190, damping: 34, mass: 1 }}
-                    className="group relative min-h-[20rem] overflow-hidden rounded-[1.75rem] bg-primary text-left text-white outline-none ring-primary-fixed/0 transition focus-visible:ring-4 lg:min-h-full lg:basis-0"
+                    whileHover={isDesktopAccordion ? { y: -6 } : undefined}
+                    transition={{
+                      type: "spring",
+                      stiffness: isDesktopAccordion ? 190 : 260,
+                      damping: isDesktopAccordion ? 34 : 32,
+                      mass: isDesktopAccordion ? 1 : 0.75,
+                    }}
+                    className="group relative overflow-hidden rounded-[1.75rem] bg-primary text-left text-white outline-none ring-primary-fixed/0 transition focus-visible:ring-4 lg:min-h-full lg:basis-0"
                   >
                     <Image
                       src={section.image || fallbackBuenosAiresImage}
@@ -213,16 +233,26 @@ export default function BuenosAiresPage() {
                     />
                     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(27,54,93,0.05),rgba(27,54,93,0.42)_38%,rgba(13,28,50,0.94))]" />
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_12%,rgba(255,243,194,0.28),transparent_34%)] opacity-80" />
-                    <div className="relative flex h-full min-h-[20rem] flex-col justify-end p-6 lg:min-h-full">
-                      <span className="material-symbols-outlined w-fit rounded-2xl bg-primary-fixed p-3 text-3xl text-primary transition group-hover:scale-105">
+                    <span
+                      className={`material-symbols-outlined absolute right-4 top-4 z-10 rounded-full border border-white/18 bg-white/12 p-2 text-lg text-white backdrop-blur transition lg:hidden ${
+                        isActive ? "rotate-180" : ""
+                      }`}
+                    >
+                      keyboard_arrow_down
+                    </span>
+                    <div className="relative flex h-full flex-col justify-end p-5 sm:p-6 lg:min-h-full">
+                      <span className="material-symbols-outlined hidden w-fit rounded-2xl bg-primary-fixed p-3 text-3xl text-primary transition group-hover:scale-105 sm:inline-flex">
                         {section.icon}
                       </span>
-                      <p className="mt-6 text-[10px] font-bold uppercase tracking-[0.28em] text-white/58">
+                      <p className="mt-0 text-[10px] font-bold uppercase tracking-[0.28em] text-white/58 sm:mt-6">
                         {section.eyebrow}
                       </p>
-                      <h3 className="mt-2 text-3xl font-black leading-tight text-primary-fixed lg:text-4xl">
+                      <h3 className="mt-2 pr-12 text-2xl font-black leading-tight text-primary-fixed sm:pr-0 sm:text-3xl lg:text-4xl">
                         {section.title}
                       </h3>
+                      <span className="mt-2 inline-flex w-fit rounded-full border border-white/14 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/68 lg:hidden">
+                        {isActive ? "Abierto" : "Tocar para abrir"}
+                      </span>
                       <motion.p
                         variants={accordionTextVariants}
                         initial="collapsed"
