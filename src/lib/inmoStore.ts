@@ -62,7 +62,14 @@ const writeStorage = (value: string) => {
 
 const fetchRemoteState = async (
   scope: "public" | "admin" = "public",
-  mode: "home" | "catalog" | "branding" = "home"
+  mode:
+    | "home"
+    | "catalog"
+    | "branding"
+    | "dashboard"
+    | "properties"
+    | "leads"
+    | "settings" = "home"
 ) => {
   try {
     if (scope === "public") {
@@ -98,7 +105,7 @@ const fetchRemoteState = async (
       };
     }
 
-    const params = new URLSearchParams({ scope });
+    const params = new URLSearchParams({ scope, mode });
     const adminSession = readAdminSession();
     const response = await fetch(`/api/inmo-state?${params.toString()}`, {
       cache: "no-store",
@@ -200,9 +207,19 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
           : "public";
       const mode = pathname?.startsWith("/admin/branding")
         ? "branding"
-        : pathname?.startsWith("/propiedades")
-          ? "catalog"
-          : "home";
+        : pathname === "/admin"
+          ? "dashboard"
+          : pathname?.startsWith("/admin/propiedades") ||
+              pathname?.startsWith("/admin/inventario") ||
+              pathname?.startsWith("/admin/inventory")
+            ? "properties"
+            : pathname?.startsWith("/admin/leads")
+              ? "leads"
+              : pathname?.startsWith("/admin")
+                ? "settings"
+                : pathname?.startsWith("/propiedades")
+                  ? "catalog"
+                  : "home";
       if (initialState && scope === "public") {
         const mergedInitial = mergeState(defaultState, initialState);
         inMemoryState = mergedInitial;

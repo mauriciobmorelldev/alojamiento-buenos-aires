@@ -29,6 +29,7 @@ type RepositoryResult<T> = {
 
 type ReadInmoStateOptions = {
   scope?: "public" | "admin";
+  adminMode?: "dashboard" | "properties" | "leads" | "settings" | "full";
 };
 
 type PublicReadResult = RepositoryResult<Partial<InmoState>>;
@@ -265,41 +266,14 @@ export const readPublicShell = async (
     supabase.from("agents").select("id,name,role,phone,email,photo"),
   ]);
 
-  const readErrors = [
-    ["profiles", profiles.error?.message],
-    ["agents", agents.error?.message],
-  ].filter(([, error]) => error);
-
   if (settings.error) {
     console.warn("Supabase public settings read failed", settings.error.message);
   }
-
-  if (readErrors.length) {
-    console.warn(
-      "Supabase public shell read failed",
-      readErrors.map(([table, error]) => `${table}: ${error}`).join(" | ")
-    );
-    return {
-      data: {
-        version: STATE_VERSION,
-        theme: isCatalogMode
-          ? getCatalogTheme(defaultState.theme)
-          : sanitizePublicTheme(defaultState.theme),
-        ...(isCatalogMode
-          ? {}
-          : {
-              homeContent: sanitizeHomeContent(defaultState.homeContent),
-              customPages: sanitizeCustomPages(defaultState.customPages),
-            }),
-        filterGroups: defaultState.filterGroups,
-        adminUsers: defaultState.adminUsers.map((admin) => ({
-          ...admin,
-          password: "",
-        })),
-        agents: defaultState.agents,
-      },
-      source: "fallback",
-    };
+  if (profiles.error) {
+    console.warn("Supabase public profiles read failed", profiles.error.message);
+  }
+  if (agents.error) {
+    console.warn("Supabase public agents read failed", agents.error.message);
   }
 
   const settingsData = settings.data as {
@@ -333,7 +307,7 @@ export const readPublicShell = async (
       filterGroups: settings.error
         ? defaultState.filterGroups
         : settingsData?.filter_groups ?? defaultState.filterGroups,
-      adminUsers: ensureArray(profiles.data).map((profile) => ({
+      adminUsers: profiles.error ? [] : ensureArray(profiles.data).map((profile) => ({
         id: profile.id,
         name: profile.name,
         email: profile.email,
@@ -342,7 +316,7 @@ export const readPublicShell = async (
         phone: profile.phone ?? "",
         active: Boolean(profile.active),
       })),
-      agents: ensureArray(agents.data).map((agent) => ({
+      agents: agents.error ? [] : ensureArray(agents.data).map((agent) => ({
         id: agent.id,
         name: agent.name,
         role: agent.role,
@@ -630,12 +604,27 @@ export const readInmoState = async (
     return { data: defaultState, source: "fallback" };
   }
   const isPublicScope = options.scope === "public";
-  const propertiesQuery = supabase
-    .from("properties")
-    .select(
-      "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,description,videos,cover_index,agent_id,created_by_admin_id,attributes"
-    )
-    .order("updated_at", { ascending: false });
+  const adminMode = options.adminMode ?? "full";
+  const needsClients = adminMode === "full";
+  const needsFavorites = adminMode === "full";
+  const needsLeads = adminMode === "full" || adminMode === "dashboard" || adminMode === "leads";
+  const needsLeadEvents = adminMode === "full" || adminMode === "leads";
+  const needsMetrics = adminMode === "full" || adminMode === "dashboard";
+  const needsTokkoLogs = adminMode === "full" || adminMode === "dashboard";
+  const needsProperties =
+    adminMode === "full" ||
+    adminMode === "dashboard" ||
+    adminMode === "properties" ||
+    adminMode === "leads";
+  const needsPropertyImages = adminMode === "full" || adminMode === "properties";
+  const propertiesQuery = needsProperties
+    ? supabase
+        .from("properties")
+        .select(
+          "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,description,videos,cover_index,agent_id,created_by_admin_id,attributes"
+        )
+        .order("updated_at", { ascending: false })
+    : Promise.resolve({ data: null, error: null });
 
   const [
     settings,
@@ -657,32 +646,32 @@ export const readInmoState = async (
       .from("profiles")
       .select("id,kind,name,email,password,role,phone,active"),
     supabase.from("agents").select("id,name,role,phone,email,photo"),
-    isPublicScope
+    isPublicScope || !needsClients
       ? Promise.resolve({ data: null, error: null })
       : supabase
           .from("clients")
           .select("id,name,email,password,phone,id_number,email_verified,verification_token,active"),
     propertiesQuery,
-    isPublicScope
+    isPublicScope || !needsFavorites
       ? Promise.resolve({ data: null, error: null })
       : supabase.from("property_favorites").select("id,client_id,property_id,created_at"),
-    isPublicScope
+    isPublicScope || !needsLeads
       ? Promise.resolve({ data: null, error: null })
       : supabase
           .from("leads")
           .select("id,name,email,phone,property_id,agent_id,client_id,status,created_at,updated_at,notes"),
-    isPublicScope
+    isPublicScope || !needsLeadEvents
       ? Promise.resolve({ data: null, error: null })
       : supabase
           .from("lead_events")
           .select("id,lead_id,from_status,to_status,note,created_at"),
-    isPublicScope
+    isPublicScope || !needsMetrics
       ? Promise.resolve({ data: null, error: null })
       : supabase
           .from("property_metrics")
           .select("id,property_id,views,leads,favorites,last_viewed_at"),
   ]);
-  const tokkoLogs = isPublicScope
+  const tokkoLogs = isPublicScope || !needsTokkoLogs
     ? { data: null, error: null }
     : await (async () => {
         const primaryTokkoLogs = await supabase
@@ -699,7 +688,7 @@ export const readInmoState = async (
           : primaryTokkoLogs;
       })();
   const propertyIds = ensureArray(properties.data).map((property) => property.id);
-  const propertyImages = propertyIds.length
+  const propertyImages = needsPropertyImages && propertyIds.length
     ? await supabase
         .from("property_images")
         .select("property_id,url,sort_order")

@@ -66,7 +66,15 @@ export async function GET(request: Request) {
       );
     }
 
-    const result = await readInmoState({ scope: "admin" });
+    const adminModeParam = searchParams.get("mode");
+    const adminMode =
+      adminModeParam === "dashboard" ||
+      adminModeParam === "properties" ||
+      adminModeParam === "leads" ||
+      adminModeParam === "settings"
+        ? adminModeParam
+        : "full";
+    const result = await readInmoState({ scope: "admin", adminMode });
     const admin = result.data.adminUsers.find((item) => item.id === adminId && item.active);
     if (!admin) {
       return NextResponse.json(
