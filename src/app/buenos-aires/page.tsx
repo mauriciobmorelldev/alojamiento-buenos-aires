@@ -63,6 +63,8 @@ export default function BuenosAiresPage() {
   const heroVideo = content.heroVideo ? parseVideoUrl(content.heroVideo)?.fileUrl : "";
   const [activeAccordionIndex, setActiveAccordionIndex] = useState(0);
   const [isDesktopAccordion, setIsDesktopAccordion] = useState(false);
+  const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
+  const [isHeroVideoReady, setIsHeroVideoReady] = useState(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -72,32 +74,64 @@ export default function BuenosAiresPage() {
     return () => mediaQuery.removeEventListener("change", update);
   }, []);
 
+  useEffect(() => {
+    if (!heroVideo) return;
+
+    const connection = (
+      navigator as Navigator & { connection?: { saveData?: boolean } }
+    ).connection;
+    const shouldAvoidVideo =
+      connection?.saveData ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      window.matchMedia("(max-width: 767px)").matches;
+
+    if (shouldAvoidVideo) return;
+
+    const loadVideo = () => setShouldLoadHeroVideo(true);
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    if (idleWindow.requestIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(loadVideo, { timeout: 1600 });
+      return () => idleWindow.cancelIdleCallback?.(idleId);
+    }
+
+    const timeoutId = globalThis.setTimeout(loadVideo, 900);
+    return () => globalThis.clearTimeout(timeoutId);
+  }, [heroVideo]);
+
   return (
     <div style={themeStyles} className="min-h-screen bg-background text-on-background">
       <FrontHeader active="detail" />
       <main className="overflow-hidden pt-20">
         <section className="relative min-h-[calc(100svh-5rem)]">
-          {heroVideo ? (
+          <Image
+            src={content.heroImage || fallbackBuenosAiresImage}
+            alt={content.menuLabel || "Buenos Aires"}
+            fill
+            priority
+            sizes="100vw"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          {heroVideo && shouldLoadHeroVideo ? (
             <video
               src={heroVideo}
               autoPlay
               muted
               loop
               playsInline
-              poster={content.heroImage || undefined}
-              className="absolute inset-0 h-full w-full object-cover"
+              preload="metadata"
+              poster={content.heroImage || fallbackBuenosAiresImage}
+              onLoadStart={() => setIsHeroVideoReady(false)}
+              onCanPlay={() => setIsHeroVideoReady(true)}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+                isHeroVideoReady ? "opacity-100" : "opacity-0"
+              }`}
             />
-          ) : (
-            <Image
-              src={content.heroImage || fallbackBuenosAiresImage}
-              alt={content.menuLabel || "Buenos Aires"}
-              fill
-              priority
-              sizes="100vw"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          )}
+          ) : null}
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(13,28,50,0.94),rgba(27,54,93,0.62),rgba(27,54,93,0.06))]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,243,194,0.22),transparent_34%),radial-gradient(circle_at_18%_78%,rgba(47,93,161,0.28),transparent_30%)]" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-background via-background/44 to-transparent" />
