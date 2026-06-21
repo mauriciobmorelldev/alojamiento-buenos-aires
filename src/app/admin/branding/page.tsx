@@ -290,6 +290,12 @@ export default function AdminBrandingPage() {
       buenosAires: {
         ...prev.buenosAires,
         [key]: value,
+        ...(key === "heroImage" && typeof value === "string" && value.trim()
+          ? { heroVideo: "" }
+          : {}),
+        ...(key === "heroVideo" && typeof value === "string" && value.trim()
+          ? { heroImage: "" }
+          : {}),
       },
     }));
   };
@@ -399,7 +405,7 @@ export default function AdminBrandingPage() {
         quality: 0.78,
       });
       updateBuenosAiresField("heroImage", url);
-      setFormNotice("Imagen hero de Buenos Aires subida a Storage.");
+      setFormNotice("Imagen hero subida a Storage. Se quitó el video porque son excluyentes.");
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "No se pudo subir la imagen.");
     }
@@ -412,7 +418,7 @@ export default function AdminBrandingPage() {
     try {
       const url = await uploadAdminMedia(file, "video", adminSession?.adminId);
       updateBuenosAiresField("heroVideo", url);
-      setFormNotice("Video hero de Buenos Aires subido a Storage.");
+      setFormNotice("Video hero subido a Storage. Se quitó la imagen porque son excluyentes.");
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "No se pudo subir el video.");
     } finally {
@@ -1640,17 +1646,24 @@ export default function AdminBrandingPage() {
               <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
                 Imagen hero
                 <input
-                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                   value={homeForm.buenosAires.heroImage}
                   onChange={(event) => updateBuenosAiresField("heroImage", event.target.value)}
                   placeholder="https://..."
+                  disabled={Boolean(homeForm.buenosAires.heroVideo)}
                 />
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(event) => handleBuenosAiresHeroImageUpload(event.target.files)}
-                  className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-lowest px-4 py-3 text-sm"
+                  disabled={Boolean(homeForm.buenosAires.heroVideo)}
+                  className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-lowest px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 />
+                {homeForm.buenosAires.heroVideo ? (
+                  <span className="text-xs normal-case tracking-normal text-on-surface-variant">
+                    Quitá el video para cargar una imagen.
+                  </span>
+                ) : null}
                 {uploadingField === "ba-hero-image" ? (
                   <span className="text-xs normal-case tracking-normal text-primary">
                     Subiendo imagen...
@@ -1660,17 +1673,24 @@ export default function AdminBrandingPage() {
               <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
                 Video hero directo opcional
                 <input
-                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                   value={homeForm.buenosAires.heroVideo}
                   onChange={(event) => updateBuenosAiresField("heroVideo", event.target.value)}
                   placeholder="https://.../obelisco.mp4"
+                  disabled={Boolean(homeForm.buenosAires.heroImage)}
                 />
                 <input
                   type="file"
                   accept="video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogg,.mov"
                   onChange={(event) => handleBuenosAiresHeroVideoUpload(event.target.files)}
-                  className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-lowest px-4 py-3 text-sm"
+                  disabled={Boolean(homeForm.buenosAires.heroImage)}
+                  className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-lowest px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 />
+                {homeForm.buenosAires.heroImage ? (
+                  <span className="text-xs normal-case tracking-normal text-on-surface-variant">
+                    Quitá la imagen para cargar un video.
+                  </span>
+                ) : null}
                 {uploadingField === "ba-hero-video" ? (
                   <span className="text-xs normal-case tracking-normal text-primary">
                     Subiendo video...

@@ -6,6 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import { useInmoStore } from "@/lib/inmoStore";
+import {
+  getOptimizedPublicImageSrcSet,
+  getOptimizedPublicImageUrl,
+  isSupabasePublicImage,
+} from "@/lib/publicImage";
 import { buildThemeStyles } from "@/lib/theme";
 import { parseVideoUrl } from "@/lib/video";
 
@@ -51,9 +56,6 @@ const accordionDetailVariants = {
     filter: "blur(0px)",
   },
 };
-
-const fallbackBuenosAiresImage =
-  "https://images.unsplash.com/photo-1599167758481-83f550bb49b3?auto=format&fit=crop&w=2200&q=85";
 
 const preconnectVideoOrigin = (videoUrl: string) => {
   try {
@@ -113,6 +115,10 @@ export default function BuenosAiresPage() {
   const content = state.homeContent.buenosAires;
   const sections = (content.sections ?? []).filter((section) => section.active);
   const heroVideo = content.heroVideo ? parseVideoUrl(content.heroVideo)?.fileUrl : "";
+  const heroImage = heroVideo ? "" : content.heroImage;
+  const optimizedHeroImage = heroImage
+    ? getOptimizedPublicImageUrl(heroImage, { width: 1440, quality: 72 })
+    : "";
   const [activeAccordionIndex, setActiveAccordionIndex] = useState(0);
   const [isDesktopAccordion, setIsDesktopAccordion] = useState(false);
   const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
@@ -184,16 +190,31 @@ export default function BuenosAiresPage() {
     <div style={themeStyles} className="min-h-screen bg-background text-on-background">
       <FrontHeader active="detail" />
       <main className="overflow-hidden pt-20">
-        <section className="relative min-h-[calc(100svh-5rem)]">
-          <Image
-            src={content.heroImage || fallbackBuenosAiresImage}
-            alt={content.menuLabel || "Buenos Aires"}
-            fill
-            priority
-            sizes="100vw"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+        <section className="relative min-h-[calc(100svh-5rem)] bg-primary">
+          {optimizedHeroImage ? (
+            <img
+              src={optimizedHeroImage}
+              srcSet={
+                isSupabasePublicImage(heroImage)
+                  ? getOptimizedPublicImageSrcSet(
+                      heroImage,
+                      [480, 640, 768, 960, 1200, 1440],
+                      { quality: 72 }
+                    )
+                  : undefined
+              }
+              sizes="100vw"
+              alt={content.menuLabel || "Buenos Aires"}
+              width={1440}
+              height={900}
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 brand-gradient" />
+          )}
           {heroVideo && shouldLoadHeroVideo ? (
             <video
               ref={heroVideoRef}
@@ -203,7 +224,6 @@ export default function BuenosAiresPage() {
               loop
               playsInline
               preload="auto"
-              poster={content.heroImage || fallbackBuenosAiresImage}
               onLoadStart={() => setIsHeroVideoReady(false)}
               onLoadedData={() => {
                 setIsHeroVideoReady(true);
@@ -350,13 +370,17 @@ export default function BuenosAiresPage() {
                     }}
                     className="group relative overflow-hidden rounded-[1.75rem] bg-primary text-left text-white outline-none ring-primary-fixed/0 transition focus-visible:ring-4 lg:min-h-full lg:basis-0"
                   >
-                    <Image
-                      src={section.image || fallbackBuenosAiresImage}
-                      alt={section.title}
-                      fill
-                      sizes="(min-width: 1024px) 42vw, 100vw"
-                      className="object-cover opacity-72 transition duration-700 group-hover:scale-105 group-hover:opacity-88"
-                    />
+                    {section.image ? (
+                      <Image
+                        src={section.image}
+                        alt={section.title}
+                        fill
+                        sizes="(min-width: 1024px) 42vw, 100vw"
+                        className="object-cover opacity-72 transition duration-700 group-hover:scale-105 group-hover:opacity-88"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 brand-gradient opacity-80" />
+                    )}
                     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(27,54,93,0.05),rgba(27,54,93,0.42)_38%,rgba(13,28,50,0.94))]" />
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_12%,rgba(255,243,194,0.28),transparent_34%)] opacity-80" />
                     <span
@@ -439,15 +463,19 @@ export default function BuenosAiresPage() {
                     index % 2 ? "lg:order-2" : ""
                   }`}
                 >
-                  <Image
-                    src={section.image || fallbackBuenosAiresImage}
-                    alt={section.title}
-                    fill
-                    sizes="(min-width: 1024px) 50vw, 100vw"
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover transition duration-700 hover:scale-[1.04]"
-                  />
+                  {section.image ? (
+                    <Image
+                      src={section.image}
+                      alt={section.title}
+                      fill
+                      sizes="(min-width: 1024px) 50vw, 100vw"
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover transition duration-700 hover:scale-[1.04]"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 brand-gradient" />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/82 via-primary/12 to-transparent" />
                   <div className="absolute bottom-5 left-5 rounded-full border border-white/18 bg-white/12 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-white backdrop-blur">
                     Capítulo {String(index + 1).padStart(2, "0")}
