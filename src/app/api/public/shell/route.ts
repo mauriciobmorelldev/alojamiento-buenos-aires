@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
     const cached = await readThroughCache(
       `public:shell:${mode}:v2`,
-      5 * 60 * 1000,
+      15 * 1000,
       () => readPublicShell(mode)
     );
     const result = cached.value;
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         "x-inmo-state-scope": `public-shell-${mode}`,
         "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
+        "Cache-Control": "no-store",
       },
     });
   } catch (error) {

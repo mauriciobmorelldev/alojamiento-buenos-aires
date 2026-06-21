@@ -186,6 +186,21 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
         }
         return;
       }
+      if (scope === "admin") {
+        setIsReady(false);
+        const remote = await fetchRemoteState(scope, mode);
+        if (remote?.source === "supabase") {
+          const mergedRemote = mergeState(defaultState, remote.data);
+          inMemoryState = mergedRemote;
+          setState(mergedRemote);
+          setIsReady(true);
+          return;
+        }
+        const local = loadState();
+        setState(local);
+        setIsReady(true);
+        return;
+      }
       const local = loadState();
       setState(local);
       const remote = await fetchRemoteState(scope, mode);

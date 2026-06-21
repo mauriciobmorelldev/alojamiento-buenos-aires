@@ -6,7 +6,13 @@ import {
 import { readInmoState } from "@/lib/server/inmoRepository";
 
 const MEDIA_BUCKET = "property-media";
-const MAX_VIDEO_BYTES = 120 * 1024 * 1024;
+const getConfiguredVideoLimitBytes = () => {
+  const configuredMb = Number(process.env.SUPABASE_MAX_VIDEO_UPLOAD_MB ?? 50);
+  const safeMb = Number.isFinite(configuredMb) && configuredMb > 0 ? configuredMb : 50;
+  return Math.min(safeMb, 50) * 1024 * 1024;
+};
+
+const MAX_VIDEO_BYTES = getConfiguredVideoLimitBytes();
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 const allowedVideoTypes = new Set([
@@ -28,17 +34,7 @@ const sanitizeFileName = (value: string) =>
 
 const ensureBucket = async (supabase: NonNullable<ReturnType<typeof getSupabaseWriteClient>>) => {
   const bucket = await supabase.storage.getBucket(MEDIA_BUCKET);
-  if (!bucket.error) {
-    const updated = await supabase.storage.updateBucket(MEDIA_BUCKET, {
-      public: true,
-      fileSizeLimit: MAX_VIDEO_BYTES,
-      allowedMimeTypes: Array.from(allowedMediaTypes),
-    });
-    if (updated.error) {
-      throw new Error(`No se pudo actualizar el bucket de medios: ${updated.error.message}`);
-    }
-    return;
-  }
+  if (!bucket.error) return;
 
   const created = await supabase.storage.createBucket(MEDIA_BUCKET, {
     public: true,
@@ -47,6 +43,17 @@ const ensureBucket = async (supabase: NonNullable<ReturnType<typeof getSupabaseW
   });
 
   if (created.error && !created.error.message.toLowerCase().includes("already exists")) {
+    const message = created.error.message.toLowerCase();
+    if (message.includes("maximum allowed size") || message.includes("exceeded")) {
+      const fallbackCreated = await supabase.storage.createBucket(MEDIA_BUCKET, {
+        public: true,
+        allowedMimeTypes: Array.from(allowedMediaTypes),
+      });
+      if (!fallbackCreated.error || fallbackCreated.error.message.toLowerCase().includes("already exists")) {
+        return;
+      }
+      throw new Error(`No se pudo crear el bucket de medios: ${fallbackCreated.error.message}`);
+    }
     throw new Error(`No se pudo crear el bucket de medios: ${created.error.message}`);
   }
 };
@@ -105,7 +112,7 @@ export async function POST(request: Request) {
           error:
             kind === "image"
               ? "La imagen supera el límite de 8 MB."
-              : "El video supera el límite de 120 MB.",
+              : `El video supera el límite de ${Math.round(MAX_VIDEO_BYTES / 1024 / 1024)} MB.`,
         },
         { status: 400 }
       );

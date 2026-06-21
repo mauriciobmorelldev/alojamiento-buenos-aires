@@ -11,7 +11,7 @@ export async function GET(
     const { id } = await params;
     const cached = await readThroughCache(
       `public:property:${id}:v2`,
-      5 * 60 * 1000,
+      15 * 1000,
       () => readPublicProperty(id)
     );
     const result = cached.value;
@@ -22,7 +22,7 @@ export async function GET(
         {
           status: 404,
           headers: {
-            "Cache-Control": "public, max-age=60, s-maxage=120, stale-while-revalidate=600",
+            "Cache-Control": "no-store",
           },
         }
       );
@@ -34,7 +34,7 @@ export async function GET(
         "x-inmo-state-scope": "public-property",
         "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
+        "Cache-Control": "no-store",
       },
     });
   } catch (error) {
