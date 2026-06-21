@@ -8,6 +8,7 @@ import { getAvailability } from "@/lib/availability";
 import { propertyTypeLabels, type InmoState } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { formatPrice } from "@/lib/pricing";
+import { getOptimizedPublicImageUrl } from "@/lib/publicImage";
 import { buildThemeStyles } from "@/lib/theme";
 
 const getCoverImage = (images: string[], coverIndex: number) => {
@@ -70,6 +71,7 @@ function PublicImage({
   className,
   priority = false,
   sizes,
+  quality = 76,
 }: {
   src: string;
   alt: string;
@@ -78,11 +80,17 @@ function PublicImage({
   className?: string;
   priority?: boolean;
   sizes?: string;
+  quality?: number;
 }) {
+  const optimizedSrc = getOptimizedPublicImageUrl(src, {
+    width,
+    quality,
+  });
+
   if (isInlineImage(src)) {
     return (
       <img
-        src={src}
+        src={optimizedSrc}
         alt={alt}
         width={width}
         height={height}
@@ -96,11 +104,12 @@ function PublicImage({
 
   return (
     <Image
-      src={src}
+      src={optimizedSrc}
       alt={alt}
       width={width}
       height={height}
       priority={priority}
+      quality={quality}
       sizes={sizes}
       className={className}
     />
@@ -190,10 +199,11 @@ export default function HomeStitchLite({
                 className="h-full w-full scale-[1.03] object-cover"
                 alt="Portada"
                 src={heroImage}
-                width={1600}
-                height={1000}
+                width={1440}
+                height={900}
                 priority
-                sizes="100vw"
+                quality={72}
+                sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, 1440px"
               />
             ) : (
               <div className="h-full w-full brand-gradient" />
@@ -455,6 +465,7 @@ export default function HomeStitchLite({
                           alt={item.title}
                           width={900}
                           height={720}
+                          quality={74}
                           priority={index === 0}
                           sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
                           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
