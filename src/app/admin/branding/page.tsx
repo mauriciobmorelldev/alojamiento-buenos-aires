@@ -121,6 +121,12 @@ export default function AdminBrandingPage() {
       dark: themeForm.dark?.trim(),
       neutral: themeForm.neutral?.trim(),
       surface: themeForm.surface?.trim(),
+      homePrimary: themeForm.homePrimary?.trim(),
+      homeSecondary: themeForm.homeSecondary?.trim(),
+      homeAccent: themeForm.homeAccent?.trim(),
+      homeDark: themeForm.homeDark?.trim(),
+      homeNeutral: themeForm.homeNeutral?.trim(),
+      homeSurface: themeForm.homeSurface?.trim(),
       logo: themeForm.logo,
       heroImage: themeForm.heroImage,
       whatsappPhone: themeForm.whatsappPhone?.trim(),
@@ -901,6 +907,65 @@ export default function AdminBrandingPage() {
                   />
                 </label>
               ))}
+            </div>
+
+            <div className="rounded-3xl border border-outline-variant/25 bg-surface-container-low p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    Colores solo Home
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-on-surface-variant">
+                    Si dejás estos campos vacíos, la home usa el branding general. Estos colores no afectan catálogo, ficha ni admin.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setThemeForm((prev) => ({
+                      ...prev,
+                      homePrimary: "",
+                      homeSecondary: "",
+                      homeAccent: "",
+                      homeNeutral: "",
+                      homeDark: "",
+                      homeSurface: "",
+                    }))
+                  }
+                  className="rounded-full border border-outline-variant/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary transition hover:border-primary"
+                >
+                  Heredar global
+                </button>
+              </div>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {[
+                  ["homePrimary", "Primario home"],
+                  ["homeSecondary", "Secundario home"],
+                  ["homeAccent", "Acento home"],
+                  ["homeNeutral", "Neutral home"],
+                  ["homeDark", "Texto home"],
+                  ["homeSurface", "Superficie home"],
+                ].map(([key, label]) => (
+                  <label
+                    key={key}
+                    className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant"
+                  >
+                    {label}
+                    <input
+                      className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+                      placeholder="Hereda global"
+                      value={String(themeForm[key as keyof ThemeSettings] ?? "")}
+                      onChange={(event) =>
+                        setThemeForm((prev) => ({
+                          ...prev,
+                          [key]: event.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
             </div>
 
             <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">

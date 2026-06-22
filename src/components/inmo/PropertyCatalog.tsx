@@ -19,7 +19,6 @@ type PropertyCatalogProps = {
 };
 
 type PropertyTypeFilter = "all" | PropertyType;
-type PropertyStatusFilter = "all" | "disponible" | "no-disponible";
 
 const typeFilters: Array<{ id: PropertyTypeFilter; label: string }> = [
   { id: "all", label: "Todos" },
@@ -27,12 +26,6 @@ const typeFilters: Array<{ id: PropertyTypeFilter; label: string }> = [
   { id: "temporario", label: propertyTypeLabels.temporario },
   { id: "pozo", label: propertyTypeLabels.pozo },
   { id: "listo", label: propertyTypeLabels.listo },
-];
-
-const statusFilters: Array<{ id: PropertyStatusFilter; label: string }> = [
-  { id: "all", label: "Todos" },
-  { id: "disponible", label: "Disponible" },
-  { id: "no-disponible", label: "No disponible" },
 ];
 
 const getCoverImage = (images: string[], coverIndex: number) => {
@@ -64,7 +57,6 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
 
   const [query, setQuery] = useState("");
   const [type, setType] = useState<PropertyTypeFilter>("all");
-  const [status, setStatus] = useState<PropertyStatusFilter>("all");
   const [sort, setSort] = useState("featured");
   const [attributeFilters, setAttributeFilters] = useState<
     Record<string, string[]>
@@ -82,12 +74,6 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
     }
     if (type !== "all") {
       items = items.filter((item) => item.type === type);
-    }
-    if (status === "disponible") {
-      items = items.filter((item) => item.status === status);
-    }
-    if (status === "no-disponible") {
-      items = items.filter((item) => item.status !== "disponible");
     }
     items = items.filter((item) =>
       filterGroups.every((group) => {
@@ -112,7 +98,7 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
       );
     }
     return items;
-  }, [attributeFilters, filterGroups, listings, query, sort, status, theme, type]);
+  }, [attributeFilters, filterGroups, listings, query, sort, theme, type]);
 
   const themeStyles = buildThemeStyles(theme);
 
@@ -166,14 +152,6 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
                       {listings.filter((item) => item.status === "disponible").length}
                     </p>
                   </div>
-                  <div className="rounded-xl bg-surface-container-low p-4">
-                    <p className="text-xs uppercase tracking-widest text-on-surface-variant">
-                      No disponibles
-                    </p>
-                    <p className="mt-2 text-2xl font-semibold text-primary">
-                      {listings.filter((item) => item.status !== "disponible").length}
-                    </p>
-                  </div>
                 </div>
                 <div className="rounded-xl bg-surface-container-low p-4">
                   <p className="text-xs uppercase tracking-widest text-on-surface-variant">
@@ -210,7 +188,7 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
               Encontrá propiedades a tu medida
             </h2>
             <p className="text-on-surface-variant">
-              Filtrá por tipo, estado y características de cada propiedad.
+              Filtrá por tipo y características de cada propiedad.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 text-sm font-semibold">
@@ -231,7 +209,7 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
           </div>
         </div>
 
-        <div className="mt-8 grid gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-[0_30px_50px_-30px_rgba(27,27,28,0.3)] lg:grid-cols-5">
+        <div className="mt-8 grid gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-[0_30px_50px_-30px_rgba(27,27,28,0.3)] lg:grid-cols-4">
           <label className="flex flex-col gap-2 text-xs uppercase tracking-widest text-on-surface-variant">
             Buscar
             <input
@@ -240,20 +218,6 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-          </label>
-          <label className="flex flex-col gap-2 text-xs uppercase tracking-widest text-on-surface-variant">
-            Estado
-            <select
-              className="rounded-lg border border-outline-variant/30 bg-transparent px-3 py-2 text-sm font-semibold text-on-background focus:border-primary focus:outline-none"
-              value={status}
-              onChange={(event) => setStatus(event.target.value as PropertyStatusFilter)}
-            >
-              {statusFilters.map((filter) => (
-                <option key={filter.id} value={filter.id}>
-                  {filter.label}
-                </option>
-              ))}
-            </select>
           </label>
           <label className="flex flex-col gap-2 text-xs uppercase tracking-widest text-on-surface-variant">
             Orden

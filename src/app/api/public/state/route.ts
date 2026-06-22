@@ -14,11 +14,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
     const [shell, listings] = await Promise.all([
-      readThroughCache(`public:state:shell:${mode}:v1`, 5 * 1000, () =>
+      readThroughCache(`public:state:shell:${mode}:v2`, 5 * 1000, () =>
         readPublicShell(mode)
       ),
       readThroughCache(
-        `public:state:listings:${mode}:v1`,
+        `public:state:listings:${mode}:v2`,
         5 * 1000,
         mode === "home" ? readPublicHomeListings : readPublicListings
       ),

@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") === "home" ? "home" : "catalog";
     const cached = await readThroughCache(
-      `public:listings:${mode}:v4`,
+      `public:listings:${mode}:v5`,
       5 * 1000,
       mode === "home" ? readPublicHomeListings : readPublicListings
     );

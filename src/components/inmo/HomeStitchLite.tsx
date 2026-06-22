@@ -13,7 +13,7 @@ import {
   getOptimizedPublicImageUrl,
   isSupabasePublicImage,
 } from "@/lib/publicImage";
-import { buildThemeStyles } from "@/lib/theme";
+import { buildHomeThemeStyles } from "@/lib/theme";
 
 const getCoverImage = (images: string[], coverIndex: number) => {
   if (!images.length) return "";
@@ -40,6 +40,9 @@ const hasFeature = (attributes: Record<string, string[]>, keywords: string[]) =>
 
 const isPinnedHome = (attributes: Record<string, string[]>) =>
   attributes.pinned_home?.includes("true");
+
+const isPubliclyVisibleListing = (item: { status: string }) =>
+  item.status !== "tasacion" && item.status !== "no_disponible";
 
 const getPropertyFeatures = (item: {
   rooms: number;
@@ -147,7 +150,7 @@ export default function HomeStitchLite({
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const bannerTouchStartX = useRef<number | null>(null);
 
-  const themeStyles = useMemo(() => buildThemeStyles(theme), [theme]);
+  const themeStyles = useMemo(() => buildHomeThemeStyles(theme), [theme]);
   const activeBanners = useMemo(
     () => homeContent.banners.filter((banner) => banner.active),
     [homeContent.banners]
@@ -159,19 +162,23 @@ export default function HomeStitchLite({
       ),
     [homeContent.partnerLogos]
   );
-  const pinnedHomeListings = useMemo(
-    () => listings.filter((item) => isPinnedHome(item.attributes)),
+  const publicListings = useMemo(
+    () => listings.filter(isPubliclyVisibleListing),
     [listings]
+  );
+  const pinnedHomeListings = useMemo(
+    () => publicListings.filter((item) => isPinnedHome(item.attributes)),
+    [publicListings]
   );
   const featuredListings = useMemo(
     () =>
       (pinnedHomeListings.length
         ? pinnedHomeListings
-        : listings.filter((item) => item.status === "disponible")
+        : publicListings.filter((item) => item.status === "disponible")
       ).slice(0, 6),
-    [listings, pinnedHomeListings]
+    [pinnedHomeListings, publicListings]
   );
-  const recentListings = useMemo(() => [...listings].slice(-3).reverse(), [listings]);
+  const recentListings = useMemo(() => [...publicListings].slice(-3).reverse(), [publicListings]);
   const agentsById = useMemo(
     () => Object.fromEntries(agents.map((agent) => [agent.id, agent])),
     [agents]
@@ -203,10 +210,10 @@ export default function HomeStitchLite({
   const secondaryLabel = /cliente|cuenta|acceso/i.test(homeContent.secondaryCtaLabel)
     ? "Consultar ahora"
     : homeContent.secondaryCtaLabel;
-  const inventoryTotal = homeContent.publicInventoryTotal ?? listings.length;
+  const inventoryTotal = homeContent.publicInventoryTotal ?? publicListings.length;
   const availableCount =
     homeContent.publicInventoryAvailable ??
-    listings.filter((item) => item.status === "disponible").length;
+    publicListings.filter((item) => item.status === "disponible").length;
   const goToPreviousBanner = () => {
     if (activeBanners.length <= 1) return;
     setActiveBannerIndex(

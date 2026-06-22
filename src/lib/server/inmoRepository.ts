@@ -59,6 +59,11 @@ const publicListingPropertySelect =
 const publicPropertyDetailSelect =
   "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,description,videos,cover_index,agent_id,created_by_admin_id,attributes";
 
+const hiddenPublicStatuses: PropertyStatus[] = ["tasacion", "no_disponible"];
+
+const isPublicListingStatus = (status: string | null | undefined) =>
+  !hiddenPublicStatuses.includes(status as PropertyStatus);
+
 const ensureArray = <T>(value: T[] | null) => value ?? [];
 
 const isOversizedDataImage = (value: unknown, maxBytes: number) =>
@@ -340,12 +345,14 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
     return {
       data: {
         version: STATE_VERSION,
-        listings: defaultState.listings.map((listing) => ({
-          ...listing,
-          description: "",
-          images: sanitizePublicImages(listing.images.slice(0, 4)),
-          videos: [],
-        })),
+        listings: defaultState.listings
+          .filter((listing) => isPublicListingStatus(listing.status))
+          .map((listing) => ({
+            ...listing,
+            description: "",
+            images: sanitizePublicImages(listing.images.slice(0, 4)),
+            videos: [],
+          })),
       },
       source: "fallback",
     };
@@ -354,6 +361,7 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
   const propertiesQuery = supabase
     .from("properties")
     .select(publicListingPropertySelect)
+    .not("status", "in", `(${hiddenPublicStatuses.join(",")})`)
     .order("updated_at", { ascending: false });
 
   const properties = await propertiesQuery;
@@ -363,12 +371,14 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
     return {
       data: {
         version: STATE_VERSION,
-        listings: defaultState.listings.map((listing) => ({
-          ...listing,
-          description: "",
-          images: sanitizePublicImages(listing.images.slice(0, 4)),
-          videos: [],
-        })),
+        listings: defaultState.listings
+          .filter((listing) => isPublicListingStatus(listing.status))
+          .map((listing) => ({
+            ...listing,
+            description: "",
+            images: sanitizePublicImages(listing.images.slice(0, 4)),
+            videos: [],
+          })),
       },
       source: "fallback",
     };
@@ -389,12 +399,14 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
     return {
       data: {
         version: STATE_VERSION,
-        listings: defaultState.listings.map((listing) => ({
-          ...listing,
-          description: "",
-          images: sanitizePublicImages(listing.images.slice(0, 4)),
-          videos: [],
-        })),
+        listings: defaultState.listings
+          .filter((listing) => isPublicListingStatus(listing.status))
+          .map((listing) => ({
+            ...listing,
+            description: "",
+            images: sanitizePublicImages(listing.images.slice(0, 4)),
+            videos: [],
+          })),
       },
       source: "fallback",
     };
@@ -427,12 +439,15 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
 export const readPublicHomeListings = async (): Promise<PublicReadResult> => {
   const supabase = getSupabaseServerClient();
   if (!supabase || !isSupabaseConfigured()) {
-    const fallbackListings = defaultState.listings.slice(0, 9).map((listing) => ({
-      ...listing,
-      description: "",
-      images: sanitizePublicImages(listing.images.slice(0, 2)),
-      videos: [],
-    }));
+    const fallbackListings = defaultState.listings
+      .filter((listing) => isPublicListingStatus(listing.status))
+      .slice(0, 9)
+      .map((listing) => ({
+        ...listing,
+        description: "",
+        images: sanitizePublicImages(listing.images.slice(0, 2)),
+        videos: [],
+      }));
     return {
       data: {
         version: STATE_VERSION,
@@ -453,14 +468,19 @@ export const readPublicHomeListings = async (): Promise<PublicReadResult> => {
       .from("properties")
       .select(publicListingPropertySelect)
       .contains("attributes", { pinned_home: ["true"] })
+      .not("status", "in", `(${hiddenPublicStatuses.join(",")})`)
       .order("updated_at", { ascending: false })
       .limit(6),
     supabase
       .from("properties")
       .select(publicListingPropertySelect)
+      .not("status", "in", `(${hiddenPublicStatuses.join(",")})`)
       .order("updated_at", { ascending: false })
       .limit(9),
-    supabase.from("properties").select("id", { count: "exact", head: true }),
+    supabase
+      .from("properties")
+      .select("id", { count: "exact", head: true })
+      .not("status", "in", `(${hiddenPublicStatuses.join(",")})`),
     supabase
       .from("properties")
       .select("id", { count: "exact", head: true })
@@ -568,6 +588,10 @@ export const readPublicProperty = async (
   }
 
   const row = property.data;
+  if (!isPublicListingStatus(row.status)) {
+    return { data: { listing: null }, source: "supabase" };
+  }
+
   return {
     data: {
       listing: {

@@ -61,6 +61,16 @@ const rgbToHex = (r: number, g: number, b: number) =>
     .map((value) => value.toString(16).padStart(2, "0"))
     .join("")}`;
 
+const mixHex = (from: string, to: string, amount: number) => {
+  const a = hexToRgb(from);
+  const b = hexToRgb(to);
+  return rgbToHex(
+    a.r + (b.r - a.r) * amount,
+    a.g + (b.g - a.g) * amount,
+    a.b + (b.b - a.b) * amount
+  );
+};
+
 const luminance = (hex: string) => {
   const { r, g, b } = hexToRgb(hex);
   const [rs, gs, bs] = [r, g, b].map((value) => {
@@ -134,7 +144,10 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
   const isDefault =
     primary.toLowerCase() === designTokens.primary &&
     secondary.toLowerCase() === designTokens.secondary &&
-    accent.toLowerCase() === designTokens.accent;
+    accent.toLowerCase() === designTokens.accent &&
+    neutral.toLowerCase() === designTokens.neutral &&
+    dark.toLowerCase() === designTokens.dark &&
+    surface.toLowerCase() === designTokens.surface;
 
   if (isDefault) {
     return {
@@ -163,6 +176,20 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
 
   const onPrimary = luminance(primary) > 0.65 ? "#1b1b1c" : "#ffffff";
   const onSecondary = luminance(secondary) > 0.65 ? "#1b1b1c" : "#ffffff";
+  const surfaceLum = luminance(surface);
+  const onSurface = surfaceLum > 0.58 ? dark : "#ffffff";
+  const onSurfaceVariant =
+    surfaceLum > 0.58 ? mixHex(onSurface, surface, 0.28) : mixHex(onSurface, surface, 0.34);
+  const surfaceToneTarget = surfaceLum > 0.58 ? "#1b1b1c" : "#ffffff";
+  const surfaceLowest = surface;
+  const surfaceLow = mixHex(surface, surfaceToneTarget, 0.035);
+  const surfaceContainer = mixHex(surface, surfaceToneTarget, 0.065);
+  const surfaceHigh = mixHex(surface, surfaceToneTarget, 0.105);
+  const surfaceHighest = mixHex(surface, surfaceToneTarget, 0.145);
+  const surfaceDim = mixHex(surface, surfaceToneTarget, 0.18);
+  const surfaceBright = mixHex(surface, surfaceLum > 0.58 ? "#ffffff" : "#ffffff", 0.04);
+  const surfaceVariant = mixHex(surface, surfaceToneTarget, 0.12);
+  const outlineVariant = mixHex(surface, onSurface, surfaceLum > 0.58 ? 0.18 : 0.24);
   const { r: pr, g: pg, b: pb } = hexToRgb(primary);
   const { r: sr, g: sg, b: sb } = hexToRgb(secondary);
   const baseL = rgbToHsl(pr / 255, pg / 255, pb / 255).l;
@@ -196,6 +223,10 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
     "--accent-4": neutral,
     "--brand-dark": dark,
     "--brand-surface": surface,
+    "--background": surface,
+    "--foreground": onSurface,
+    "--surface": surface,
+    "--surface-strong": surfaceHigh,
     "--color-primary": primary,
     "--color-primary-container": primaryContainer,
     "--color-primary-fixed": primaryFixed,
@@ -204,6 +235,20 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
     "--color-secondary-container": secondaryContainer,
     "--color-secondary-fixed": secondaryFixed,
     "--color-secondary-fixed-dim": secondaryFixedDim,
+    "--color-background": surface,
+    "--color-on-background": onSurface,
+    "--color-surface": surface,
+    "--color-surface-bright": surfaceBright,
+    "--color-surface-container-lowest": surfaceLowest,
+    "--color-surface-container-low": surfaceLow,
+    "--color-surface-container": surfaceContainer,
+    "--color-surface-container-high": surfaceHigh,
+    "--color-surface-container-highest": surfaceHighest,
+    "--color-surface-dim": surfaceDim,
+    "--color-surface-variant": surfaceVariant,
+    "--color-on-surface": onSurface,
+    "--color-on-surface-variant": onSurfaceVariant,
+    "--color-outline-variant": outlineVariant,
     "--color-on-primary": onPrimary,
     "--color-on-primary-container": onPrimaryContainer,
     "--color-on-primary-fixed": onPrimaryFixed,
@@ -212,3 +257,14 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
     "--color-on-secondary-fixed": onSecondaryFixed,
   } as CSSProperties;
 };
+
+export const buildHomeThemeStyles = (theme: ThemeSettings): CSSProperties =>
+  buildThemeStyles({
+    ...theme,
+    primary: theme.homePrimary || theme.primary,
+    secondary: theme.homeSecondary || theme.secondary,
+    accent: theme.homeAccent || theme.accent,
+    dark: theme.homeDark || theme.dark,
+    neutral: theme.homeNeutral || theme.neutral,
+    surface: theme.homeSurface || theme.surface,
+  });

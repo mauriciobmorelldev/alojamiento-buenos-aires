@@ -14,7 +14,6 @@ import { formatPrice, getListingComparablePriceInArs } from "@/lib/pricing";
 import { InlineRealEstateLoader } from "@/components/inmo/RealEstateStatus";
 
 type PropertyTypeFilter = "all" | PropertyType;
-type PropertyStatusFilter = "all" | "disponible" | "no-disponible";
 type OperationFilter = "all" | "venta" | "alquiler";
 
 const typeFilters: Array<{ id: PropertyTypeFilter; label: string }> = [
@@ -23,12 +22,6 @@ const typeFilters: Array<{ id: PropertyTypeFilter; label: string }> = [
   { id: "temporario", label: propertyTypeLabels.temporario },
   { id: "pozo", label: propertyTypeLabels.pozo },
   { id: "listo", label: propertyTypeLabels.listo },
-];
-
-const statusFilters: Array<{ id: PropertyStatusFilter; label: string }> = [
-  { id: "all", label: "Todos" },
-  { id: "disponible", label: "Disponible" },
-  { id: "no-disponible", label: "No disponible" },
 ];
 
 const getCoverImage = (images: string[], coverIndex: number) => {
@@ -60,7 +53,6 @@ export default function ResultsStitch() {
 
   const [query, setQuery] = useState("");
   const [type, setType] = useState<PropertyTypeFilter>("all");
-  const [status, setStatus] = useState<PropertyStatusFilter>("all");
   const [operation, setOperation] = useState<OperationFilter>("all");
   const [minRooms, setMinRooms] = useState("all");
   const [sort, setSort] = useState("featured");
@@ -102,12 +94,6 @@ export default function ResultsStitch() {
     if (type !== "all") {
       items = items.filter((item) => item.type === type);
     }
-    if (status === "disponible") {
-      items = items.filter((item) => item.status === status);
-    }
-    if (status === "no-disponible") {
-      items = items.filter((item) => item.status !== "disponible");
-    }
     if (operation === "venta") {
       items = items.filter((item) => item.priceUnit === "venta");
     }
@@ -141,13 +127,12 @@ export default function ResultsStitch() {
       );
     }
     return items;
-  }, [attributeFilters, filterGroups, listings, minRooms, operation, query, sort, status, theme, type]);
+  }, [attributeFilters, filterGroups, listings, minRooms, operation, query, sort, theme, type]);
 
   const activeFilterCount = [
     query.trim() ? 1 : 0,
     operation !== "all" ? 1 : 0,
     type !== "all" ? 1 : 0,
-    status !== "all" ? 1 : 0,
     minRooms !== "all" ? 1 : 0,
     ...Object.values(attributeFilters).map((items) => items.length),
   ].reduce((acc, value) => acc + value, 0);
@@ -156,7 +141,6 @@ export default function ResultsStitch() {
     setQuery("");
     setOperation("all");
     setType("all");
-    setStatus("all");
     setMinRooms("all");
     setAttributeFilters({});
     setSort("featured");
@@ -222,36 +206,6 @@ export default function ResultsStitch() {
                 key={filter.id}
                 type="button"
                 onClick={() => setType(filter.id)}
-                className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
-                  isActive
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-outline-variant/25 bg-surface-container-lowest text-on-surface-variant hover:border-primary/50 hover:text-primary"
-                }`}
-              >
-                <span className="font-label">
-                  {filter.label}
-                </span>
-                {isActive ? (
-                  <span className="h-2 w-2 rounded-full bg-primary" />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant font-label">
-          Estado
-        </label>
-        <div className="grid gap-2">
-          {statusFilters.map((filter) => {
-            const isActive = status === filter.id;
-            return (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={() => setStatus(filter.id)}
                 className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
                   isActive
                     ? "border-primary bg-primary/10 text-primary"

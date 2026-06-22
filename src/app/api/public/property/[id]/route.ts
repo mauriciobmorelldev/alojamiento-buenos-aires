@@ -10,7 +10,7 @@ export async function GET(
     const startedAt = Date.now();
     const { id } = await params;
     const cached = await readThroughCache(
-      `public:property:${id}:v2`,
+      `public:property:${id}:v3`,
       5 * 1000,
       () => readPublicProperty(id)
     );

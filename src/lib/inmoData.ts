@@ -1,5 +1,11 @@
 export type PropertyType = "tradicional" | "temporario" | "pozo" | "listo";
-export type PropertyStatus = "disponible" | "pausado" | "reservado" | "vendido";
+export type PropertyStatus =
+  | "disponible"
+  | "tasacion"
+  | "pausado"
+  | "reservado"
+  | "vendido"
+  | "no_disponible";
 export type PriceUnit = "venta" | "mensual" | "noche";
 export type PriceCurrency = "ARS" | "USD";
 export type FilterMode = "single" | "multi";
@@ -28,6 +34,12 @@ export type ThemeSettings = {
   dark?: string;
   neutral?: string;
   surface?: string;
+  homePrimary?: string;
+  homeSecondary?: string;
+  homeAccent?: string;
+  homeDark?: string;
+  homeNeutral?: string;
+  homeSurface?: string;
   logo?: string;
   heroImage?: string;
   whatsappPhone?: string;
@@ -323,9 +335,11 @@ export const propertyTypeLabels: Record<PropertyType, string> = {
 
 export const statusLabels: Record<PropertyStatus, string> = {
   disponible: "Disponible",
+  tasacion: "Tasación",
   pausado: "Pausado",
   reservado: "Reservado",
   vendido: "Vendido",
+  no_disponible: "No disponible",
 };
 
 export const priceUnitLabels: Record<PriceUnit, string> = {

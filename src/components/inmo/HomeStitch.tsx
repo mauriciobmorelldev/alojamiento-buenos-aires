@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { useInmoStore } from "@/lib/inmoStore";
-import { buildThemeStyles } from "@/lib/theme";
+import { buildHomeThemeStyles } from "@/lib/theme";
 import { formatPrice } from "@/lib/pricing";
 import { propertyTypeLabels } from "@/lib/inmoData";
 import FrontHeader from "@/components/inmo/FrontHeader";
@@ -35,6 +35,9 @@ const hasFeature = (attributes: Record<string, string[]>, keywords: string[]) =>
 
 const isPinnedHome = (attributes: Record<string, string[]>) =>
   attributes.pinned_home?.includes("true");
+
+const isPubliclyVisibleListing = (item: { status: string }) =>
+  item.status !== "tasacion" && item.status !== "no_disponible";
 
 const sanitizePublicHref = (href?: string) =>
   href === "/acceso" || href === "/registro" || href === "/mi-cuenta"
@@ -135,11 +138,15 @@ export default function HomeStitch() {
   const heroImageY = useTransform(scrollYProgress, [0, 0.45], [0, 90]);
   const heroImageScale = useTransform(scrollYProgress, [0, 0.45], [1.05, 1.15]);
 
-  const pinnedHomeListings = listings.filter((item) => isPinnedHome(item.attributes));
+  const publicListings = useMemo(
+    () => listings.filter(isPubliclyVisibleListing),
+    [listings]
+  );
+  const pinnedHomeListings = publicListings.filter((item) => isPinnedHome(item.attributes));
   const featuredListings = (
     pinnedHomeListings.length
       ? pinnedHomeListings
-      : listings.filter((item) => item.status === "disponible")
+      : publicListings.filter((item) => item.status === "disponible")
   ).slice(0, 6);
 
   const heroImage = useMemo(() => {
@@ -182,16 +189,16 @@ export default function HomeStitch() {
   const isCollaboratorListing = (createdByAdminId?: string) =>
     Boolean(createdByAdminId && collaboratorAdminIds.has(createdByAdminId));
 
-  const availableCount = listings.filter((item) => item.status === "disponible").length;
+  const availableCount = publicListings.filter((item) => item.status === "disponible").length;
 
-  const recentListings = useMemo(() => [...listings].slice(-3).reverse(), [listings]);
+  const recentListings = useMemo(() => [...publicListings].slice(-3).reverse(), [publicListings]);
   const primaryHref = sanitizePublicHref(homeContent.primaryCtaHref);
   const secondaryHref = sanitizePublicHref(homeContent.secondaryCtaHref);
   const secondaryLabel = /cliente|cuenta|acceso/i.test(homeContent.secondaryCtaLabel)
     ? "Consultar ahora"
     : homeContent.secondaryCtaLabel;
 
-  const themeStyles = buildThemeStyles(theme);
+  const themeStyles = buildHomeThemeStyles(theme);
 
   return (
     <div

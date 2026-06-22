@@ -56,6 +56,9 @@ const resolveAttributes = (
     }))
     .filter((group) => group.values.length > 0);
 
+const isHiddenPublicStatus = (status: string) =>
+  status === "tasacion" || status === "no_disponible";
+
 const fallbackImages = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDDAgcQ1jH-fIHqf_1_ZpyWhB5OgV3FjRjRnpql6lTJVWDtzGO6uOOup5LqkSCn2KKr5FZT69TKFGv9opxa-EtnkAhHAFONQKnnGSxg-kpoXjvTZd2_zb_M0iY4cdZDsbE31W35JVc6NtFBpzRAIJ3fzBoiXjTRbt76CbQqkPo_uMsnGWzj1yfw1KLkJl-CTvkOXdNQwFmLYckq3fv_U2TWQex40VRDPn80Z1xtb0tEJczaLIblLpxrFYmY9rVwD_c7FEWmHPHXIg",
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDI0K-3EhAsC26dD0_BayXjOCzeNuH20nxavwc4HLYyK1W8lmuyKoiNzSfyrjyS-T-oTiWd1HAvTSQG4R1JQrUZSjvWhWhLPKIErJI1sx8gjlWrwQumL4CKJ1-SJnVea2epp1jyuZ-pbSSiN09GVnDH2NouRR0pr7_1cvzrxCLdkp33_zUYVry2zh716dnQRPQansaLiUNHVZxz8kvq-qEq35qC1ciJztFsnuiUcECmtlHSgSDt4b9Fgu9NaPipKH8mp-uWLNphw",
@@ -277,7 +280,12 @@ export default function DetallePropiedadPage() {
   } = state;
   const propertySummary = listings.find((item) => item.id === propertyId);
   const [propertyDetail, setPropertyDetail] = useState<Listing | null>(null);
-  const property = propertyDetail?.id === propertyId ? propertyDetail : propertySummary;
+  const [propertyNotFound, setPropertyNotFound] = useState(false);
+  const rawProperty = propertyDetail?.id === propertyId ? propertyDetail : propertySummary;
+  const property =
+    rawProperty && !propertyNotFound && !isHiddenPublicStatus(rawProperty.status)
+      ? rawProperty
+      : undefined;
   const [activeImage, setActiveImage] = useState(0);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -300,6 +308,7 @@ export default function DetallePropiedadPage() {
 
     const controller = new AbortController();
     setPropertyDetail(null);
+    setPropertyNotFound(false);
     setIsPropertyDetailLoading(true);
 
     const fetchPropertyDetail = async () => {
@@ -307,9 +316,16 @@ export default function DetallePropiedadPage() {
         const response = await fetch(`/api/public/property/${encodeURIComponent(propertyId)}`, {
           signal: controller.signal,
         });
-        if (!response.ok) return;
+        if (!response.ok) {
+          setPropertyNotFound(true);
+          return;
+        }
         const data = (await response.json()) as { listing?: Listing };
-        if (data.listing) setPropertyDetail(data.listing);
+        if (data.listing) {
+          setPropertyDetail(data.listing);
+        } else {
+          setPropertyNotFound(true);
+        }
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
         console.warn("No se pudo cargar la ficha completa", error);

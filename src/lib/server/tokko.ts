@@ -35,6 +35,9 @@ const firstString = (...values: unknown[]): string => {
     if (value && typeof value === "object" && !Array.isArray(value)) {
       const record = value as Record<string, unknown>;
       const nested = firstString(
+        record.id,
+        record.code,
+        record.name,
         record["es-AR"],
         record.es,
         record.es_ar,
@@ -105,19 +108,24 @@ const normalizeCurrency = (value: unknown): PriceCurrency => {
   return currency.includes("ARS") || currency.includes("PES") ? "ARS" : "USD";
 };
 
-const normalizeStatus = (value: unknown): PropertyStatus => {
-  if (typeof value === "number") {
-    if (value === 3) return "reservado";
-    if (value === 4) return "vendido";
-    return "disponible";
+const normalizeStatus = (...values: unknown[]): PropertyStatus => {
+  const rawStatus = firstString(...values);
+  const numericStatus = Number(rawStatus);
+  if (Number.isFinite(numericStatus)) {
+    if (numericStatus === 1) return "tasacion";
+    if (numericStatus === 2) return "disponible";
+    if (numericStatus === 3) return "reservado";
+    if (numericStatus === 4) return "no_disponible";
   }
-  const status = firstString(value).toLowerCase();
-  if (status === "3") return "reservado";
-  if (status === "4") return "vendido";
-  if (status === "1" || status === "2") return "disponible";
+  const status = rawStatus.toLowerCase();
+  if (status.includes("cotizar") || status.includes("tasacion") || status.includes("tasación")) {
+    return "tasacion";
+  }
+  if (status.includes("no disponible") || status.includes("inactivo") || status.includes("inactive")) {
+    return "no_disponible";
+  }
   if (status.includes("vend") || status.includes("alquil")) return "vendido";
   if (status.includes("reserv")) return "reservado";
-  if (status.includes("no disponible")) return "vendido";
   if (status.includes("paus") || status.includes("suspend")) return "pausado";
   return "disponible";
 };
@@ -242,6 +250,22 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
     extractAttributeValue(item, "roofed_surface")
   );
   const description = extractDescription(item);
+  const normalizedStatus = normalizeStatus(
+    item.status,
+    item.status_id,
+    item.status_code,
+    item.status_name,
+    item.availability,
+    item.publication_status
+  );
+  const tokkoStatus = firstString(
+    item.status,
+    item.status_id,
+    item.status_code,
+    item.status_name,
+    item.availability,
+    item.publication_status
+  );
 
   return {
     id: `tokko-${id}`,
@@ -249,7 +273,7 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
       firstString(item.publication_title, item.title, item.name, item.address) ||
       "Propiedad importada",
     type: operation.label.toLowerCase().includes("tempor") ? "temporario" : "tradicional",
-    status: normalizeStatus(item.status),
+    status: normalizedStatus,
     price: operation.price,
     priceUnit: normalizePriceUnit(operation.label),
     currency: operation.currency,
@@ -276,6 +300,7 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
       ...(firstString(item.resource_uri) ? { resource_uri: [firstString(item.resource_uri)] } : {}),
       ...(firstString(item.public_url) ? { public_url: [firstString(item.public_url)] } : {}),
       ...(firstString(item.last_modification) ? { last_modification: [firstString(item.last_modification)] } : {}),
+      ...(tokkoStatus ? { tokko_status: [tokkoStatus] } : {}),
     },
   };
 };
