@@ -1329,6 +1329,10 @@ export const deleteObsoleteTokkoListings = async (keepIds: string[]) => {
     const chunk = obsoleteIds.slice(index, index + 100);
     if (chunk.length) {
       assertSupabaseOk(
+        await supabase.from("property_images").delete().in("property_id", chunk),
+        "delete obsolete tokko property_images"
+      );
+      assertSupabaseOk(
         await supabase.from("properties").delete().in("id", chunk),
         "delete obsolete tokko properties"
       );
