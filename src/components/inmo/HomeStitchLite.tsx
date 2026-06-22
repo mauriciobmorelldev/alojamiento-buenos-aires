@@ -471,12 +471,11 @@ export default function HomeStitchLite({
                   {[...activePartnerLogos, ...activePartnerLogos].map((logo, index) => {
                     const content = (
                       <div className="logo-marquee__item">
-                        <PublicImage
+                        <img
                           src={logo.image}
                           alt={logo.name}
-                          width={220}
-                          height={110}
-                          sizes="(max-width: 640px) 128px, 220px"
+                          loading="lazy"
+                          decoding="async"
                           className="logo-marquee__image"
                         />
                       </div>

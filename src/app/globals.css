@@ -358,11 +358,12 @@ textarea:disabled,
 
 .logo-marquee__item {
   display: flex;
-  height: clamp(4.5rem, 9vw, 6.75rem);
-  width: clamp(8rem, 16vw, 13rem);
+  height: clamp(6rem, 11vw, 8.25rem);
+  width: clamp(10rem, 18vw, 15rem);
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  padding: 0.45rem;
   opacity: 0.72;
   filter: grayscale(1) saturate(0) contrast(1.08);
   transition:
@@ -379,9 +380,12 @@ textarea:disabled,
 
 .logo-marquee__image {
   display: block;
+  width: auto;
+  height: auto;
   max-height: 100%;
   max-width: 100%;
   object-fit: contain;
+  object-position: center;
 }
 
 @keyframes logoMarquee {

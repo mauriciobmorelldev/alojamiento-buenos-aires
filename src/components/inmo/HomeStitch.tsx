@@ -520,8 +520,6 @@ export default function HomeStitch() {
                         <img
                           src={logo.image}
                           alt={logo.name}
-                          width={220}
-                          height={110}
                           loading="lazy"
                           decoding="async"
                           className="logo-marquee__image"
