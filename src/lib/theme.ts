@@ -158,6 +158,8 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
 
   if (isDefault) {
     return {
+      backgroundColor: designTokens.background,
+      color: designTokens.dark,
       "--accent": designTokens.primary,
       "--accent-2": designTokens.secondary,
       "--accent-3": designTokens.accent,
@@ -237,6 +239,8 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
     luminance(secondaryContainer) > 0.55 ? "#1b1b1c" : "#ffffff";
 
   return {
+    backgroundColor: background,
+    color: onBackground,
     "--accent": primary,
     "--accent-2": secondary,
     "--accent-3": accent,
