@@ -14,6 +14,88 @@ const MAX_STORAGE_BYTES = 1_500_000;
 
 const isBrowser = typeof window !== "undefined";
 let inMemoryState: InmoState | null = null;
+type RemoteStateResult = {
+  data: Partial<InmoState>;
+  source: "supabase" | "fallback" | null;
+};
+const remoteStateCache = new Map<
+  string,
+  { expiresAt: number; result: RemoteStateResult }
+>();
+const remoteStateInflight = new Map<string, Promise<RemoteStateResult | null>>();
+
+const clearRemoteStateCache = () => {
+  remoteStateCache.clear();
+  remoteStateInflight.clear();
+};
+
+const trimAdminPayloadForMode = (
+  data: Partial<InmoState>,
+  mode: "home" | "catalog" | "branding" | "dashboard" | "properties" | "leads" | "settings"
+) => {
+  if (mode === "settings" || mode === "branding") {
+    const {
+      listings,
+      leads,
+      leadEvents,
+      propertyFavorites,
+      propertyMetrics,
+      tokkoSyncLogs,
+      clientUsers,
+      clientContracts,
+      ...rest
+    } = data;
+    void listings;
+    void leads;
+    void leadEvents;
+    void propertyFavorites;
+    void propertyMetrics;
+    void tokkoSyncLogs;
+    void clientUsers;
+    void clientContracts;
+    return rest;
+  }
+
+  if (mode === "properties") {
+    const {
+      leads,
+      leadEvents,
+      propertyFavorites,
+      propertyMetrics,
+      tokkoSyncLogs,
+      clientUsers,
+      clientContracts,
+      ...rest
+    } = data;
+    void leads;
+    void leadEvents;
+    void propertyFavorites;
+    void propertyMetrics;
+    void tokkoSyncLogs;
+    void clientUsers;
+    void clientContracts;
+    return rest;
+  }
+
+  if (mode === "leads") {
+    const {
+      propertyFavorites,
+      propertyMetrics,
+      tokkoSyncLogs,
+      clientUsers,
+      clientContracts,
+      ...rest
+    } = data;
+    void propertyFavorites;
+    void propertyMetrics;
+    void tokkoSyncLogs;
+    void clientUsers;
+    void clientContracts;
+    return rest;
+  }
+
+  return data;
+};
 
 const safeParse = (value: string | null) => {
   if (!value) return null;
@@ -71,30 +153,26 @@ const fetchRemoteState = async (
     | "leads"
     | "settings" = "home"
 ) => {
+  const cacheKey = `${scope}:${mode}`;
+  const cached = remoteStateCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.result;
+  const inflight = remoteStateInflight.get(cacheKey);
+  if (inflight) return inflight;
+
+  const request = (async (): Promise<RemoteStateResult | null> => {
   try {
     if (scope === "public") {
       const publicMode = mode === "catalog" ? "catalog" : "home";
-      const [shellResponse, listingsResponse] = await Promise.all([
-        fetch(`/api/public/shell?mode=${publicMode}`, { cache: "no-store" }),
-        fetch(`/api/public/listings?mode=${publicMode}`, { cache: "no-store" }),
-      ]);
-      if (!shellResponse.ok || !listingsResponse.ok) return null;
-      const shell = (await shellResponse.json()) as Partial<InmoState>;
-      const listings = (await listingsResponse.json()) as Partial<InmoState>;
+      const response = await fetch(`/api/public/state?mode=${publicMode}`, {
+        cache: "no-store",
+      });
+      if (!response.ok) return null;
       return {
-        data: {
-          ...shell,
-          ...listings,
-          homeContent: {
-            ...(shell.homeContent ?? {}),
-            ...(listings.homeContent ?? {}),
-          },
-        } as Partial<InmoState>,
-        source:
-          shellResponse.headers.get("x-inmo-state-source") === "supabase" ||
-          listingsResponse.headers.get("x-inmo-state-source") === "supabase"
-            ? "supabase"
-            : "fallback",
+        data: (await response.json()) as Partial<InmoState>,
+        source: response.headers.get("x-inmo-state-source") as
+          | "supabase"
+          | "fallback"
+          | null,
       };
     }
 
@@ -112,7 +190,7 @@ const fetchRemoteState = async (
         source?: "supabase" | "fallback";
       };
       return {
-        data: payload.data ?? {},
+        data: trimAdminPayloadForMode(payload.data ?? {}, mode),
         source: payload.source ?? "fallback",
       };
     }
@@ -126,14 +204,28 @@ const fetchRemoteState = async (
       },
     });
     if (!response.ok) return null;
+    const data = (await response.json()) as Partial<InmoState>;
     return {
-      data: (await response.json()) as Partial<InmoState>,
+      data: trimAdminPayloadForMode(data, mode),
       source: response.headers.get("x-inmo-state-source") as "supabase" | "fallback" | null,
     };
   } catch (error) {
     console.warn("No se pudo cargar estado remoto, usando fallback local", error);
     return null;
   }
+  })();
+
+  remoteStateInflight.set(cacheKey, request);
+  const result = await request.finally(() => {
+    remoteStateInflight.delete(cacheKey);
+  });
+  if (result?.source === "supabase") {
+    remoteStateCache.set(cacheKey, {
+      result,
+      expiresAt: Date.now() + (scope === "admin" ? 3_000 : 5_000),
+    });
+  }
+  return result;
 };
 
 const persistRemoteState = async (state: InmoState) => {
@@ -181,6 +273,7 @@ export const loadState = (): InmoState => {
 export const saveState = (state: InmoState, options?: { silent?: boolean }) => {
   if (!isBrowser) return;
   inMemoryState = state;
+  clearRemoteStateCache();
   writeStorage(JSON.stringify(state));
   void persistRemoteState(state);
 
@@ -252,10 +345,16 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
         return;
       }
       if (scope === "admin") {
-        setIsReady(false);
+        const current = inMemoryState;
+        if (current) {
+          setState(current);
+          setIsReady(true);
+        } else {
+          setIsReady(false);
+        }
         const remote = await fetchRemoteState(scope, mode);
         if (remote?.source === "supabase") {
-          const mergedRemote = mergeState(defaultState, remote.data);
+          const mergedRemote = mergeState(inMemoryState ?? defaultState, remote.data);
           inMemoryState = mergedRemote;
           setState(mergedRemote);
           setIsReady(true);
@@ -266,7 +365,12 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
         setIsReady(true);
         return;
       }
-      setIsReady(false);
+      if (inMemoryState) {
+        setState(inMemoryState);
+        setIsReady(true);
+      } else {
+        setIsReady(false);
+      }
       const remote = await fetchRemoteState(scope, mode);
       if (!remote || remote.source === "fallback") {
         setState(defaultState);
@@ -306,6 +410,7 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
           typeof updater === "function" ? updater(prev) : updater;
         if (options?.persist === false) {
           inMemoryState = nextState;
+          clearRemoteStateCache();
           writeStorage(JSON.stringify(nextState));
           const notify = () =>
             window.dispatchEvent(

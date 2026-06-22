@@ -113,6 +113,18 @@ from admin_otp_challenges;
 -- 10) Compactacion logica. ANALYZE actualiza estadisticas del planner.
 -- VACUUM recupera espacio interno para reutilizar; no siempre baja el numero
 -- de storage del proyecto inmediatamente si hubo TOAST/bloat muy grande.
+-- Indices recomendados para acelerar catalogo/admin si todavia no existen.
+create index if not exists idx_properties_updated_at_desc on properties(updated_at desc);
+create index if not exists idx_properties_attributes_gin on properties using gin(attributes);
+create index if not exists idx_properties_status_updated_at_desc on properties(status, updated_at desc);
+create index if not exists idx_property_images_property_sort_order on property_images(property_id, sort_order);
+analyze platform_settings;
+analyze properties;
+analyze property_images;
+analyze agents;
+analyze profiles;
+analyze leads;
+analyze property_metrics;
 -- vacuum (analyze) platform_settings;
 -- vacuum (analyze) properties;
 -- vacuum (analyze) property_images;
