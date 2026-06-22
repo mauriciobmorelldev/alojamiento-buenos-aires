@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import { getAvailability } from "@/lib/availability";
 import { propertyTypeLabels, type InmoState } from "@/lib/inmoData";
@@ -145,6 +145,7 @@ export default function HomeStitchLite({
   const { state } = useInmoStore(initialState);
   const { listings, agents, theme, homeContent, adminUsers } = state;
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+  const bannerTouchStartX = useRef<number | null>(null);
 
   const themeStyles = useMemo(() => buildThemeStyles(theme), [theme]);
   const activeBanners = useMemo(
@@ -193,7 +194,9 @@ export default function HomeStitchLite({
     return () => window.clearInterval(interval);
   }, [activeBanners.length]);
 
-  const activeBanner = activeBanners[activeBannerIndex % activeBanners.length];
+  const safeActiveBannerIndex = activeBanners.length
+    ? activeBannerIndex % activeBanners.length
+    : 0;
   const heroImage = theme.heroImage || "";
   const primaryHref = sanitizePublicHref(homeContent.primaryCtaHref);
   const secondaryHref = sanitizePublicHref(homeContent.secondaryCtaHref);
@@ -204,6 +207,32 @@ export default function HomeStitchLite({
   const availableCount =
     homeContent.publicInventoryAvailable ??
     listings.filter((item) => item.status === "disponible").length;
+  const goToPreviousBanner = () => {
+    if (activeBanners.length <= 1) return;
+    setActiveBannerIndex(
+      (current) => (current - 1 + activeBanners.length) % activeBanners.length
+    );
+  };
+  const goToNextBanner = () => {
+    if (activeBanners.length <= 1) return;
+    setActiveBannerIndex((current) => (current + 1) % activeBanners.length);
+  };
+  const handleBannerTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    bannerTouchStartX.current = event.touches[0]?.clientX ?? null;
+  };
+  const handleBannerTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const startX = bannerTouchStartX.current;
+    bannerTouchStartX.current = null;
+    if (startX === null || activeBanners.length <= 1) return;
+    const endX = event.changedTouches[0]?.clientX ?? startX;
+    const deltaX = endX - startX;
+    if (Math.abs(deltaX) < 44) return;
+    if (deltaX > 0) {
+      goToPreviousBanner();
+    } else {
+      goToNextBanner();
+    }
+  };
 
   return (
     <div
@@ -310,56 +339,100 @@ export default function HomeStitchLite({
           </div>
         </section>
 
-        {activeBanners.length > 1 ? (
+        {activeBanners.length ? (
           <section className="mx-auto max-w-screen-2xl px-4 pb-8 pt-5 sm:-mt-10 sm:px-6 sm:pt-0 lg:px-8">
-            <div className="relative overflow-hidden rounded-[2rem] bg-primary text-on-primary pro-card">
-              <Link
-                href={activeBanner?.ctaHref || "/propiedades"}
-                {...propertyModuleLinkProps(activeBanner?.ctaHref || "/propiedades")}
-                className="group relative block overflow-hidden"
+            <div
+              className="banner-carousel relative overflow-hidden rounded-[2rem] bg-primary text-on-primary pro-card"
+              onTouchStart={handleBannerTouchStart}
+              onTouchEnd={handleBannerTouchEnd}
+            >
+              <div
+                className="banner-carousel__track flex transition-transform duration-[850ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                style={{ transform: `translateX(-${safeActiveBannerIndex * 100}%)` }}
               >
-                <div className="relative min-h-[20rem] sm:min-h-[25rem]">
-                  {activeBanner?.image ? (
-                    <PublicImage
-                      src={activeBanner.image}
-                      alt={activeBanner.title}
-                      width={1440}
-                      height={810}
-                      sizes="100vw"
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 brand-gradient" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/78 to-primary/10" />
-                  <div className="relative flex min-h-[20rem] max-w-4xl flex-col justify-end p-7 sm:min-h-[25rem] sm:p-10">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-primary-fixed">
-                      Destacado
-                    </p>
-                    <h2 className="mt-4 max-w-3xl text-3xl font-headline font-bold text-on-primary sm:text-5xl">
-                      {activeBanner?.title}
-                    </h2>
-                    <p className="mt-3 max-w-2xl text-sm leading-7 text-on-primary/84 sm:text-base">
-                      {activeBanner?.subtitle}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-              <div className="absolute bottom-5 right-5 flex items-center gap-2 rounded-full bg-surface-container-lowest/12 p-2 backdrop-blur">
                 {activeBanners.map((banner, index) => (
-                  <button
-                    key={`dot-${banner.id}`}
-                    type="button"
-                    onClick={() => setActiveBannerIndex(index)}
-                    className={`h-2.5 rounded-full transition-all ${
-                      activeBannerIndex % activeBanners.length === index
-                        ? "w-8 bg-primary-fixed"
-                        : "w-2.5 bg-on-primary/45 hover:bg-on-primary/75"
-                    }`}
-                    aria-label={`Ver banner ${index + 1}`}
-                  />
+                  <Link
+                    key={banner.id}
+                    href={banner.ctaHref || "/propiedades"}
+                    {...propertyModuleLinkProps(banner.ctaHref || "/propiedades")}
+                    className="banner-carousel__slide group relative block min-w-full overflow-hidden"
+                    aria-hidden={safeActiveBannerIndex !== index}
+                    tabIndex={safeActiveBannerIndex === index ? 0 : -1}
+                  >
+                    <div className="relative min-h-[20rem] sm:min-h-[25rem]">
+                      {banner.image ? (
+                        <PublicImage
+                          src={banner.image}
+                          alt={banner.title}
+                          width={1440}
+                          height={810}
+                          sizes="100vw"
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045]"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 brand-gradient" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/78 to-primary/10" />
+                      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-primary/72 to-transparent" />
+                      <div className="banner-carousel__content relative flex min-h-[20rem] max-w-4xl flex-col justify-end p-7 sm:min-h-[25rem] sm:p-10">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-primary-fixed">
+                          Destacado
+                        </p>
+                        <h2 className="mt-4 max-w-3xl text-3xl font-headline font-bold text-on-primary sm:text-5xl">
+                          {banner.title}
+                        </h2>
+                        <p className="mt-3 max-w-2xl text-sm leading-7 text-on-primary/84 sm:text-base">
+                          {banner.subtitle}
+                        </p>
+                        <span className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary shadow-[0_18px_40px_-24px_rgba(255,243,194,0.9)]">
+                          {banner.ctaLabel || "Ver más"}
+                          <span className="material-symbols-outlined text-base">arrow_forward</span>
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
+
+              {activeBanners.length > 1 ? (
+                <>
+                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3 sm:bottom-5 sm:left-auto sm:right-5 sm:justify-end">
+                    <div className="flex items-center gap-2 rounded-full bg-surface-container-lowest/14 p-2 backdrop-blur-md">
+                      {activeBanners.map((banner, index) => (
+                        <button
+                          key={`dot-${banner.id}`}
+                          type="button"
+                          onClick={() => setActiveBannerIndex(index)}
+                          className={`h-2.5 rounded-full transition-all ${
+                            safeActiveBannerIndex === index
+                              ? "w-8 bg-primary-fixed"
+                              : "w-2.5 bg-on-primary/45 hover:bg-on-primary/75"
+                          }`}
+                          aria-label={`Ver banner ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={goToPreviousBanner}
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-container-lowest/18 text-on-primary backdrop-blur-md transition hover:bg-surface-container-lowest/28"
+                        aria-label="Banner anterior"
+                      >
+                        <span className="material-symbols-outlined">chevron_left</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={goToNextBanner}
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-fixed text-primary shadow-[0_18px_40px_-24px_rgba(255,243,194,0.9)] transition hover:-translate-y-0.5"
+                        aria-label="Banner siguiente"
+                      >
+                        <span className="material-symbols-outlined">chevron_right</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : null}
             </div>
           </section>
         ) : null}
@@ -397,14 +470,14 @@ export default function HomeStitchLite({
                 <div className="logo-marquee__track">
                   {[...activePartnerLogos, ...activePartnerLogos].map((logo, index) => {
                     const content = (
-                      <div className="flex h-24 w-44 shrink-0 items-center justify-center rounded-2xl border border-outline-variant/20 bg-surface-container-low px-5">
+                      <div className="logo-marquee__item">
                         <PublicImage
                           src={logo.image}
                           alt={logo.name}
-                          width={176}
-                          height={56}
-                          sizes="176px"
-                          className="max-h-14 max-w-full object-contain"
+                          width={220}
+                          height={110}
+                          sizes="(max-width: 640px) 128px, 220px"
+                          className="logo-marquee__image"
                         />
                       </div>
                     );

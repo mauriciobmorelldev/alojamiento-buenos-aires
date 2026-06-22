@@ -516,15 +516,15 @@ export default function HomeStitch() {
                 <div className="logo-marquee__track">
                   {[...activePartnerLogos, ...activePartnerLogos].map((logo, index) => {
                     const content = (
-                      <div className="flex h-24 w-44 shrink-0 items-center justify-center rounded-2xl border border-outline-variant/20 bg-surface-container-low px-5">
+                      <div className="logo-marquee__item">
                         <img
                           src={logo.image}
                           alt={logo.name}
-                          width={176}
-                          height={56}
+                          width={220}
+                          height={110}
                           loading="lazy"
                           decoding="async"
-                          className="max-h-14 max-w-full object-contain"
+                          className="logo-marquee__image"
                         />
                       </div>
                     );
