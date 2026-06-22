@@ -108,25 +108,71 @@ const normalizeCurrency = (value: unknown): PriceCurrency => {
   return currency.includes("ARS") || currency.includes("PES") ? "ARS" : "USD";
 };
 
+const collectStatusValues = (...values: unknown[]): string[] => {
+  const collected: string[] = [];
+  const visit = (value: unknown, depth = 0) => {
+    if (depth > 3 || value == null) return;
+    if (typeof value === "string" && value.trim()) {
+      collected.push(value.trim());
+      return;
+    }
+    if (typeof value === "number" && Number.isFinite(value)) {
+      collected.push(String(value));
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item) => visit(item, depth + 1));
+      return;
+    }
+    if (typeof value === "object") {
+      const record = value as Record<string, unknown>;
+      [
+        "id",
+        "code",
+        "status",
+        "name",
+        "label",
+        "value",
+        "text",
+        "description",
+        "es",
+        "es_ar",
+        "es-AR",
+      ].forEach((key) => visit(record[key], depth + 1));
+    }
+  };
+  values.forEach((value) => visit(value));
+  return [...new Set(collected)];
+};
+
 const normalizeStatus = (...values: unknown[]): PropertyStatus => {
-  const rawStatus = firstString(...values);
-  const numericStatus = Number(rawStatus);
-  if (Number.isFinite(numericStatus)) {
-    if (numericStatus === 1) return "tasacion";
-    if (numericStatus === 2) return "disponible";
-    if (numericStatus === 3) return "reservado";
-    if (numericStatus === 4) return "no_disponible";
-  }
-  const status = rawStatus.toLowerCase();
-  if (status.includes("cotizar") || status.includes("tasacion") || status.includes("tasación")) {
+  const candidates = collectStatusValues(...values);
+  const normalized = candidates.map((value) =>
+    value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+  );
+  const numericStatuses = normalized
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value));
+
+  const hasText = (...needles: string[]) =>
+    normalized.some((value) => needles.some((needle) => value.includes(needle)));
+
+  if (numericStatuses.includes(1) || hasText("cotizar", "tasacion", "tasar")) {
     return "tasacion";
   }
-  if (status.includes("no disponible") || status.includes("inactivo") || status.includes("inactive")) {
+  if (
+    numericStatuses.includes(4) ||
+    hasText("no disponible", "indisponible", "inactivo", "inactive")
+  ) {
     return "no_disponible";
   }
-  if (status.includes("vend") || status.includes("alquil")) return "vendido";
-  if (status.includes("reserv")) return "reservado";
-  if (status.includes("paus") || status.includes("suspend")) return "pausado";
+  if (numericStatuses.includes(3) || hasText("reserv")) return "reservado";
+  if (hasText("paus", "suspend")) return "pausado";
+  if (hasText("vend", "alquilad")) return "vendido";
   return "disponible";
 };
 
@@ -255,17 +301,33 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
     item.status_id,
     item.status_code,
     item.status_name,
+    item.property_status,
+    item.property_status_id,
+    item.publication_status_id,
+    item.web_status,
     item.availability,
-    item.publication_status
+    item.publication_status,
+    extractAttributeValue(item, "status"),
+    extractAttributeValue(item, "property_status"),
+    extractAttributeValue(item, "publication_status"),
+    extractAttributeValue(item, "availability")
   );
-  const tokkoStatus = firstString(
+  const tokkoStatus = collectStatusValues(
     item.status,
     item.status_id,
     item.status_code,
     item.status_name,
+    item.property_status,
+    item.property_status_id,
+    item.publication_status_id,
+    item.web_status,
     item.availability,
-    item.publication_status
-  );
+    item.publication_status,
+    extractAttributeValue(item, "status"),
+    extractAttributeValue(item, "property_status"),
+    extractAttributeValue(item, "publication_status"),
+    extractAttributeValue(item, "availability")
+  ).join(" | ");
 
   return {
     id: `tokko-${id}`,
