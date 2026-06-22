@@ -529,11 +529,11 @@ export default function AdminBrandingPage() {
     if (!files?.length) return;
     try {
       const url = await uploadOptimizedImage(files[0], `banner-${bannerId}`, {
-        maxSize: 1600,
-        quality: 0.76,
+        maxSize: 2400,
+        quality: 0.86,
       });
       updateBanner(bannerId, "image", url);
-      setFormNotice("Banner subido a Storage.");
+      setFormNotice("Banner subido a Storage en alta definición.");
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "No se pudo subir el banner.");
     }
@@ -2365,6 +2365,9 @@ export default function AdminBrandingPage() {
                       onChange={(event) => handleBannerUpload(banner.id, event.target.files)}
                       className="text-sm"
                     />
+                    <span className="text-[11px] normal-case tracking-normal text-on-surface-variant">
+                      Recomendado: 2400 x 1350 px o más, formato horizontal.
+                    </span>
                   </label>
                 </div>
 

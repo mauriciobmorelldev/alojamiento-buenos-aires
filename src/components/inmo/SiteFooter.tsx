@@ -70,7 +70,30 @@ export default function SiteFooter() {
 
   if (!footer?.active) return null;
 
-  const sections = (footer.sections ?? []).filter(
+  const rawSections = footer.sections ?? [];
+  const hasWorkWithUsLink = rawSections.some((section) =>
+    section.links.some((link) => normalizeHref(link.href) === "/trabaja-con-nosotros")
+  );
+  const sectionsWithWorkWithUs = hasWorkWithUsLink
+    ? rawSections
+    : rawSections.map((section, index) =>
+        index === 0
+          ? {
+              ...section,
+              links: [
+                ...section.links,
+                {
+                  id: "footer-trabaja",
+                  label: "Trabaja con nosotros",
+                  href: "/trabaja-con-nosotros",
+                  active: true,
+                },
+              ],
+            }
+          : section
+      );
+
+  const sections = sectionsWithWorkWithUs.filter(
     (section) => section.active && section.title.trim()
   );
   const socialLinks = (footer.socialLinks ?? []).filter(

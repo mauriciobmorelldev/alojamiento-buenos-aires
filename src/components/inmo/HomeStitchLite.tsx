@@ -375,9 +375,11 @@ export default function HomeStitchLite({
                         <PublicImage
                           src={banner.image}
                           alt={banner.title}
-                          width={1440}
-                          height={810}
-                          sizes="100vw"
+                          width={1920}
+                          height={1080}
+                          quality={86}
+                          responsiveWidths={[640, 960, 1280, 1600, 1920, 2400]}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1536px) 96vw, 1536px"
                           className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045]"
                         />
                       ) : (

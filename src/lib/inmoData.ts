@@ -435,6 +435,12 @@ export const defaultState: InmoState = {
         href: "/propiedades",
         active: true,
       },
+      {
+        id: "menu-trabaja",
+        label: "Trabaja con nosotros",
+        href: "/trabaja-con-nosotros",
+        active: true,
+      },
     ],
     visitForm: {
       title: "Solicitud de visita o reserva",
@@ -596,6 +602,12 @@ export const defaultState: InmoState = {
               href: "/buenos-aires",
               active: true,
             },
+            {
+              id: "footer-trabaja",
+              label: "Trabaja con nosotros",
+              href: "/trabaja-con-nosotros",
+              active: true,
+            },
           ],
         },
         {
@@ -712,6 +724,58 @@ export const defaultState: InmoState = {
           title: "Cómo usamos las cookies",
           body:
             "Las cookies técnicas permiten que el sitio funcione correctamente. Las cookies de medición nos ayudan a entender el uso general de la web para mejorar la experiencia. Podés configurar o bloquear cookies desde tu navegador.",
+        },
+      ],
+    },
+    {
+      id: "page-trabaja",
+      title: "Trabaja con nosotros",
+      slug: "trabaja-con-nosotros",
+      excerpt:
+        "Sumate a una red inmobiliaria con foco en atención clara, propiedades verificadas y acompañamiento comercial.",
+      active: true,
+      blocks: [
+        {
+          id: "page-trabaja-hero",
+          type: "hero",
+          title: "Trabaja con nosotros",
+          subtitle:
+            "Buscamos colaboradores, asesores y aliados comerciales que quieran crecer con una plataforma pensada para ordenar oportunidades inmobiliarias.",
+          ctaLabel: "Enviar consulta",
+          ctaHref: "/propiedades",
+        },
+        {
+          id: "page-trabaja-text",
+          type: "text",
+          title: "Qué buscamos",
+          subtitle: "Perfiles comerciales, productores y aliados con mirada profesional.",
+          body:
+            "En Connexa valoramos la atención cuidada, el seguimiento claro y la capacidad de acompañar a cada cliente con información precisa. Si trabajás en el rubro, tenés cartera de propiedades o querés sumarte como colaborador, podemos evaluar una modalidad de trabajo conjunta.",
+        },
+        {
+          id: "page-trabaja-cards",
+          type: "cards",
+          title: "Formas de colaborar",
+          items: [
+            {
+              id: "page-trabaja-card-1",
+              title: "Carga de propiedades",
+              text: "Publicá inmuebles con fichas claras, imágenes, videos y seguimiento desde el panel.",
+              icon: "real_estate_agent",
+            },
+            {
+              id: "page-trabaja-card-2",
+              title: "Gestión comercial",
+              text: "Recibí consultas y acompañá visitas, reservas y conversaciones con clientes.",
+              icon: "support_agent",
+            },
+            {
+              id: "page-trabaja-card-3",
+              title: "Alianzas",
+              text: "Sumá servicios, beneficios o propuestas complementarias para clientes inmobiliarios.",
+              icon: "handshake",
+            },
+          ],
         },
       ],
     },

@@ -82,6 +82,28 @@ const ensureBuenosAiresMenuItem = (
   return [...nextItems, item];
 };
 
+const ensureWorkWithUsMenuItem = (
+  items: Array<{ id: string; label: string; href: string; active: boolean }>
+) => {
+  if (
+    items.some(
+      (item) => normalizeMenuHref(item.href) === "/trabaja-con-nosotros"
+    )
+  ) {
+    return items;
+  }
+
+  return [
+    ...items,
+    {
+      id: "menu-trabaja",
+      label: "Trabaja con nosotros",
+      href: "/trabaja-con-nosotros",
+      active: true,
+    },
+  ];
+};
+
 export default function FrontHeader({
   active = "home",
   showSearch = false,
@@ -96,20 +118,22 @@ export default function FrontHeader({
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const menuItems = useMemo(
     () =>
-      ensureBuenosAiresMenuItem(
-        homeContent.menuItems?.length
-          ? homeContent.menuItems
-          : [
-              { id: "menu-inicio", label: "Inicio", href: "/", active: true },
-              {
-                id: "menu-propiedades",
-                label: "Propiedades",
-                href: "/propiedades",
-                active: true,
-              },
-            ],
-        homeContent.buenosAires?.menuLabel?.trim() || "Buenos Aires",
-        homeContent.buenosAires?.active !== false
+      ensureWorkWithUsMenuItem(
+        ensureBuenosAiresMenuItem(
+          homeContent.menuItems?.length
+            ? homeContent.menuItems
+            : [
+                { id: "menu-inicio", label: "Inicio", href: "/", active: true },
+                {
+                  id: "menu-propiedades",
+                  label: "Propiedades",
+                  href: "/propiedades",
+                  active: true,
+                },
+              ],
+          homeContent.buenosAires?.menuLabel?.trim() || "Buenos Aires",
+          homeContent.buenosAires?.active !== false
+        )
       )
         .filter((item) => item.active && item.label.trim() && item.href.trim())
         .map((item) => ({ ...item, href: normalizeMenuHref(item.href) })),
