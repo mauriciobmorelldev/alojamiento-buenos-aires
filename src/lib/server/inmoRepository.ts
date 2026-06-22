@@ -185,6 +185,11 @@ const sanitizeHomeContent = (value: unknown) => {
   return homeContent as InmoState["homeContent"];
 };
 
+const sanitizeFooterOnlyHomeContent = (value: unknown): InmoState["homeContent"] => ({
+  ...defaultState.homeContent,
+  footer: sanitizeHomeContent(value).footer,
+});
+
 const sanitizeCustomPages = (pages: InmoState["customPages"]) =>
   pages.map((page) => ({
     ...page,
@@ -239,7 +244,9 @@ export const readPublicShell = async (
           ? getCatalogTheme(defaultState.theme)
           : sanitizePublicTheme(defaultState.theme),
         ...(isCatalogMode
-          ? {}
+          ? {
+              homeContent: sanitizeFooterOnlyHomeContent(defaultState.homeContent),
+            }
           : {
               homeContent: sanitizeHomeContent(defaultState.homeContent),
               customPages: sanitizeCustomPages(defaultState.customPages),
@@ -302,7 +309,9 @@ export const readPublicShell = async (
         settings.error ? defaultState.theme : settingsData?.theme ?? defaultState.theme
       ),
       ...(isCatalogMode
-        ? {}
+        ? {
+            homeContent: sanitizeFooterOnlyHomeContent(settingsData?.home_content),
+          }
         : {
             theme: sanitizePublicTheme(
               settings.error ? defaultState.theme : settingsData?.theme ?? defaultState.theme

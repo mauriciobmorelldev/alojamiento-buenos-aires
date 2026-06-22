@@ -8,7 +8,7 @@ export const revalidate = 10;
 
 export default async function HomePage() {
   const [{ value: shell }, { value: listings }] = await Promise.all([
-    readThroughCache("page:home:shell:v2", 5 * 1000, () => readPublicShell("home")),
+    readThroughCache("page:home:shell:v3", 5 * 1000, () => readPublicShell("home")),
     readThroughCache("page:home:listings:v2", 5 * 1000, readPublicHomeListings),
   ]);
   const initialState = mergeState({ ...defaultState, listings: [] }, {

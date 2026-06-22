@@ -33,12 +33,14 @@ export type ThemeSettings = {
   accent?: string;
   dark?: string;
   neutral?: string;
+  background?: string;
   surface?: string;
   homePrimary?: string;
   homeSecondary?: string;
   homeAccent?: string;
   homeDark?: string;
   homeNeutral?: string;
+  homeBackground?: string;
   homeSurface?: string;
   logo?: string;
   heroImage?: string;
@@ -392,6 +394,7 @@ export const defaultState: InmoState = {
     accent: "#fff3c2",
     dark: "#2e2e2e",
     neutral: "#e6c88f",
+    background: "#ffffff",
     surface: "#ffffff",
     heroImage: "",
     whatsappPhone: "5491123456789",

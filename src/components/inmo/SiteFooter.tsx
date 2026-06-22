@@ -7,7 +7,7 @@ import { buildThemeStyles } from "@/lib/theme";
 
 const normalizeHref = (href: string) => {
   const value = href.trim();
-  if (!value) return "/";
+  if (!value) return "#";
   if (
     value.startsWith("/") ||
     value.startsWith("#") ||
@@ -38,7 +38,7 @@ export default function SiteFooter() {
     (section) => section.active && section.title.trim()
   );
   const socialLinks = (footer.socialLinks ?? []).filter(
-    (link) => link.active && link.href.trim() && link.label.trim()
+    (link) => link.active && link.label.trim()
   );
   const cookiesHref = normalizeHref(footer.cookiesHref || "/cookies");
 

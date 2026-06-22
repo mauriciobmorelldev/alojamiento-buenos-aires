@@ -121,12 +121,14 @@ export default function AdminBrandingPage() {
       accent: themeForm.accent?.trim(),
       dark: themeForm.dark?.trim(),
       neutral: themeForm.neutral?.trim(),
+      background: themeForm.background?.trim(),
       surface: themeForm.surface?.trim(),
       homePrimary: themeForm.homePrimary?.trim(),
       homeSecondary: themeForm.homeSecondary?.trim(),
       homeAccent: themeForm.homeAccent?.trim(),
       homeDark: themeForm.homeDark?.trim(),
       homeNeutral: themeForm.homeNeutral?.trim(),
+      homeBackground: themeForm.homeBackground?.trim(),
       homeSurface: themeForm.homeSurface?.trim(),
       logo: themeForm.logo,
       heroImage: themeForm.heroImage,
@@ -1088,6 +1090,7 @@ export default function AdminBrandingPage() {
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {[
+                ["background", "Background"],
                 ["accent", "Crema principal"],
                 ["neutral", "Dorado secundario"],
                 ["dark", "Texto oscuro"],
@@ -1132,6 +1135,7 @@ export default function AdminBrandingPage() {
                       homeAccent: "",
                       homeNeutral: "",
                       homeDark: "",
+                      homeBackground: "",
                       homeSurface: "",
                     }))
                   }
@@ -1148,6 +1152,7 @@ export default function AdminBrandingPage() {
                   ["homeAccent", "Acento home"],
                   ["homeNeutral", "Neutral home"],
                   ["homeDark", "Texto home"],
+                  ["homeBackground", "Background home"],
                   ["homeSurface", "Superficie home"],
                 ].map(([key, label]) => (
                   <label

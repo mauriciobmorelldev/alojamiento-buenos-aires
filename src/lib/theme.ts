@@ -7,6 +7,7 @@ const fallbackTheme = {
   accent: "#fff3c2",
   dark: "#2e2e2e",
   neutral: "#e6c88f",
+  background: "#ffffff",
   surface: "#ffffff",
 };
 
@@ -16,6 +17,7 @@ const designTokens = {
   accent: "#fff3c2",
   dark: "#2e2e2e",
   neutral: "#e6c88f",
+  background: "#ffffff",
   surface: "#ffffff",
   primaryContainer: "#132844",
   primaryFixed: "#fff3c2",
@@ -140,6 +142,7 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
   const accent = normalizeHex(theme.accent, fallbackTheme.accent);
   const neutral = normalizeHex(theme.neutral, fallbackTheme.neutral);
   const dark = normalizeHex(theme.dark, fallbackTheme.dark);
+  const background = normalizeHex(theme.background, fallbackTheme.background);
   const surface = normalizeHex(theme.surface, fallbackTheme.surface);
   const isDefault =
     primary.toLowerCase() === designTokens.primary &&
@@ -147,7 +150,11 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
     accent.toLowerCase() === designTokens.accent &&
     neutral.toLowerCase() === designTokens.neutral &&
     dark.toLowerCase() === designTokens.dark &&
+    background.toLowerCase() === designTokens.background &&
     surface.toLowerCase() === designTokens.surface;
+
+  const backgroundLum = luminance(background);
+  const onBackground = backgroundLum > 0.58 ? dark : "#ffffff";
 
   if (isDefault) {
     return {
@@ -157,6 +164,8 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
       "--accent-4": designTokens.neutral,
       "--brand-dark": designTokens.dark,
       "--brand-surface": designTokens.surface,
+      "--background": designTokens.background,
+      "--foreground": designTokens.dark,
       "--color-primary": designTokens.primary,
       "--color-primary-container": designTokens.primaryContainer,
       "--color-primary-fixed": designTokens.primaryFixed,
@@ -165,6 +174,17 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
       "--color-secondary-container": designTokens.secondaryContainer,
       "--color-secondary-fixed": designTokens.secondaryFixed,
       "--color-secondary-fixed-dim": designTokens.secondaryFixedDim,
+      "--color-background": designTokens.background,
+      "--color-on-background": designTokens.dark,
+      "--color-surface": designTokens.surface,
+      "--color-surface-container-lowest": designTokens.surface,
+      "--color-surface-container-low": "#fafafa",
+      "--color-surface-container": "#f5f5f5",
+      "--color-surface-container-high": "#eeeeee",
+      "--color-surface-container-highest": "#e8e8e8",
+      "--color-on-surface": designTokens.dark,
+      "--color-on-surface-variant": "#5f6368",
+      "--color-outline-variant": "#d6d9de",
       "--color-on-primary": designTokens.onPrimary,
       "--color-on-primary-container": designTokens.onPrimaryContainer,
       "--color-on-primary-fixed": designTokens.onPrimaryFixed,
@@ -223,8 +243,8 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
     "--accent-4": neutral,
     "--brand-dark": dark,
     "--brand-surface": surface,
-    "--background": surface,
-    "--foreground": onSurface,
+    "--background": background,
+    "--foreground": onBackground,
     "--surface": surface,
     "--surface-strong": surfaceHigh,
     "--color-primary": primary,
@@ -235,8 +255,8 @@ export const buildThemeStyles = (theme: ThemeSettings): CSSProperties => {
     "--color-secondary-container": secondaryContainer,
     "--color-secondary-fixed": secondaryFixed,
     "--color-secondary-fixed-dim": secondaryFixedDim,
-    "--color-background": surface,
-    "--color-on-background": onSurface,
+    "--color-background": background,
+    "--color-on-background": onBackground,
     "--color-surface": surface,
     "--color-surface-bright": surfaceBright,
     "--color-surface-container-lowest": surfaceLowest,
@@ -266,5 +286,6 @@ export const buildHomeThemeStyles = (theme: ThemeSettings): CSSProperties =>
     accent: theme.homeAccent || theme.accent,
     dark: theme.homeDark || theme.dark,
     neutral: theme.homeNeutral || theme.neutral,
+    background: theme.homeBackground || theme.background,
     surface: theme.homeSurface || theme.surface,
   });
