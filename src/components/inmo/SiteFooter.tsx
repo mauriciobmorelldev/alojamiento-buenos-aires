@@ -5,6 +5,42 @@ import { useMemo } from "react";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
 
+const socialIconPaths: Record<string, string> = {
+  instagram:
+    "M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm5.25-2.4a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3Z",
+  tiktok:
+    "M16.6 3c.35 2.32 1.68 3.7 3.9 3.95v3.02a7.28 7.28 0 0 1-3.84-1.18v5.93c0 4-2.63 6.28-6.07 6.28A5.78 5.78 0 0 1 4.7 15.2a5.7 5.7 0 0 1 6.74-5.62v3.18a2.77 2.77 0 0 0-1.04-.2 2.61 2.61 0 0 0-2.62 2.64 2.64 2.64 0 0 0 2.75 2.67c1.6 0 2.83-.91 2.83-3.18V3h3.24Z",
+  linkedin:
+    "M6.94 8.9H3.65V21h3.29V8.9ZM5.3 3a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8Zm15.7 11.06c0-3.25-1.74-5.35-4.57-5.35-2.1 0-3.04 1.15-3.56 1.96V8.9H9.72V21h3.28v-6.72c0-1.77.34-3.48 2.53-3.48 2.15 0 2.18 2.01 2.18 3.59V21H21v-6.94Z",
+  facebook:
+    "M14 8.3V6.6c0-.82.32-1.6 1.67-1.6H18V2.15C17.6 2.1 16.22 2 14.62 2 11.28 2 9 4.04 9 7.78V8.3H6v3.5h3V22h4.15V11.8h3.22L17 8.3h-3Z",
+  youtube:
+    "M21.58 7.19a2.75 2.75 0 0 0-1.94-1.95C17.93 4.78 12 4.78 12 4.78s-5.93 0-7.64.46a2.75 2.75 0 0 0-1.94 1.95A28.8 28.8 0 0 0 2 12a28.8 28.8 0 0 0 .42 4.81 2.75 2.75 0 0 0 1.94 1.95c1.71.46 7.64.46 7.64.46s5.93 0 7.64-.46a2.75 2.75 0 0 0 1.94-1.95A28.8 28.8 0 0 0 22 12a28.8 28.8 0 0 0-.42-4.81ZM10 15.27V8.73L15.45 12 10 15.27Z",
+  whatsapp:
+    "M12.04 2a9.82 9.82 0 0 0-8.51 14.75L2.45 22l5.38-1.04A9.8 9.8 0 1 0 12.04 2Zm0 2a7.8 7.8 0 0 1 0 15.6 7.72 7.72 0 0 1-3.73-.95l-.34-.18-2.72.53.54-2.65-.2-.35A7.8 7.8 0 0 1 12.04 4Zm-3.35 3.85c-.17 0-.43.06-.66.31-.23.25-.87.85-.87 2.06s.9 2.4 1.02 2.57c.13.17 1.73 2.77 4.31 3.78 2.15.85 2.6.68 3.06.64.47-.04 1.5-.61 1.71-1.2.21-.6.21-1.1.15-1.21-.06-.11-.23-.17-.48-.3-.26-.13-1.5-.74-1.73-.82-.23-.09-.4-.13-.57.13-.17.25-.66.82-.8.99-.15.17-.3.19-.55.06-.25-.13-1.08-.4-2.06-1.27-.76-.68-1.27-1.51-1.42-1.76-.15-.26-.02-.4.11-.53.12-.12.26-.3.38-.45.13-.15.17-.25.26-.42.08-.17.04-.32-.02-.45-.06-.13-.57-1.37-.78-1.88-.2-.49-.41-.42-.57-.43Z",
+  x:
+    "M16.74 3h3.07l-6.7 7.66L21 21h-6.18l-4.84-6.33L4.44 21H1.36l7.17-8.2L1 3h6.34l4.38 5.79L16.74 3Zm-1.08 16.18h1.7L6.42 4.72H4.6l11.06 14.46Z",
+  twitter:
+    "M16.74 3h3.07l-6.7 7.66L21 21h-6.18l-4.84-6.33L4.44 21H1.36l7.17-8.2L1 3h6.34l4.38 5.79L16.74 3Zm-1.08 16.18h1.7L6.42 4.72H4.6l11.06 14.46Z",
+};
+
+const normalizeIconName = (value: string) =>
+  value.toLowerCase().trim().replace(/\s+/g, "_");
+
+const SocialIcon = ({ icon }: { icon: string }) => {
+  const normalized = normalizeIconName(icon);
+  const path = socialIconPaths[normalized];
+  if (path) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-current">
+        <path d={path} />
+      </svg>
+    );
+  }
+
+  return <span className="material-symbols-outlined text-[20px]">{icon || "link"}</span>;
+};
+
 const normalizeHref = (href: string) => {
   const value = href.trim();
   if (!value) return "#";
@@ -71,9 +107,7 @@ export default function SiteFooter() {
                     className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-on-primary/15 bg-on-primary/8 text-on-primary transition hover:-translate-y-0.5 hover:bg-primary-fixed hover:text-primary"
                     aria-label={item.label}
                   >
-                    <span className="material-symbols-outlined text-[20px]">
-                      {item.icon || "link"}
-                    </span>
+                    <SocialIcon icon={item.icon} />
                   </Link>
                 );
               })}

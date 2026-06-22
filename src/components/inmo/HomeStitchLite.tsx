@@ -250,7 +250,7 @@ export default function HomeStitchLite({
       <FrontHeader active="home" />
 
       <main className="pt-16 sm:pt-20">
-        <section className="relative flex min-h-[calc(100svh-4rem)] w-full items-center overflow-hidden bg-primary py-8 sm:min-h-[720px] sm:py-16">
+        <section className="relative flex min-h-[calc(100svh-4rem)] w-full items-center overflow-hidden bg-background py-8 sm:min-h-[720px] sm:py-16">
           <div className="absolute inset-0 z-0">
             {heroImage ? (
               <PublicImage

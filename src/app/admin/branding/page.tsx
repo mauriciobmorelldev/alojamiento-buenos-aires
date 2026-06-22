@@ -2662,7 +2662,7 @@ export default function AdminBrandingPage() {
                       className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
                       value={link.icon}
                       onChange={(event) => updateSocialLink(link.id, "icon", event.target.value)}
-                      placeholder="photo_camera"
+                      placeholder="instagram, tiktok, linkedin, whatsapp, facebook, youtube, x"
                     />
                   </label>
                   <div className="flex flex-wrap items-center gap-3 md:justify-end">
