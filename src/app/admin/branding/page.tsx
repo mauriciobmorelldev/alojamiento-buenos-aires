@@ -15,6 +15,8 @@ import type {
   CustomPageBlockType,
   HomeContent,
   ThemeSettings,
+  WorkWithUsField,
+  WorkWithUsFieldType,
 } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { readAdminSession } from "@/lib/session";
@@ -38,6 +40,7 @@ export default function AdminBrandingPage() {
     | "ba"
     | "banners"
     | "logos"
+    | "work"
     | "footer"
   >(
     "identity"
@@ -288,6 +291,35 @@ export default function AdminBrandingPage() {
             typeof value === "string" ? value.trim() : value,
           ])
       ) as HomeContent["visitForm"],
+      workWithUs: {
+        ...homeForm.workWithUs,
+        active: Boolean(homeForm.workWithUs.active),
+        eyebrow: homeForm.workWithUs.eyebrow.trim(),
+        title: homeForm.workWithUs.title.trim(),
+        subtitle: homeForm.workWithUs.subtitle.trim(),
+        introTitle: homeForm.workWithUs.introTitle.trim(),
+        introText: homeForm.workWithUs.introText.trim(),
+        formTitle: homeForm.workWithUs.formTitle.trim(),
+        formSubtitle: homeForm.workWithUs.formSubtitle.trim(),
+        submitLabel: homeForm.workWithUs.submitLabel.trim(),
+        successMessage: homeForm.workWithUs.successMessage.trim(),
+        allowCvUpload: Boolean(homeForm.workWithUs.allowCvUpload),
+        destinationType: homeForm.workWithUs.destinationType,
+        destinationEmail: homeForm.workWithUs.destinationEmail.trim(),
+        destinationWhatsapp: homeForm.workWithUs.destinationWhatsapp.replace(/[^\d]/g, ""),
+        whatsappMessage: homeForm.workWithUs.whatsappMessage.trim(),
+        fields: homeForm.workWithUs.fields
+          .map((field) => ({
+            ...field,
+            label: field.label.trim(),
+            placeholder: field.placeholder?.trim() ?? "",
+            type: field.type,
+            active: Boolean(field.active),
+            required: Boolean(field.required),
+            options: (field.options ?? []).map((option) => option.trim()).filter(Boolean),
+          }))
+          .filter((field) => field.label),
+      },
     };
     const nextCustomPages = pageForms
         .map((page) => ({
@@ -312,6 +344,26 @@ export default function AdminBrandingPage() {
           })),
         }))
         .filter((page) => page.title && page.slug);
+
+    if (
+      activeTab === "work" &&
+      (nextHomeContent.workWithUs.destinationType === "email" ||
+        nextHomeContent.workWithUs.destinationType === "both") &&
+      !nextHomeContent.workWithUs.destinationEmail
+    ) {
+      setFormError("Agregá un email destino o cambiá el destino a WhatsApp.");
+      return;
+    }
+
+    if (
+      activeTab === "work" &&
+      (nextHomeContent.workWithUs.destinationType === "whatsapp" ||
+        nextHomeContent.workWithUs.destinationType === "both") &&
+      !nextHomeContent.workWithUs.destinationWhatsapp
+    ) {
+      setFormError("Agregá un WhatsApp destino o cambiá el destino a Email.");
+      return;
+    }
 
     if (hasEmbeddedMedia({ home: nextHomeContent, pages: nextCustomPages })) {
       setFormError("Hay imágenes embebidas en base64. Volvé a subirlas desde el botón de archivo para guardarlas en Storage.");
@@ -341,6 +393,8 @@ export default function AdminBrandingPage() {
           ? "Página Buenos Aires actualizada."
         : activeTab === "footer"
           ? "Footer actualizado."
+        : activeTab === "work"
+          ? "Trabaja con nosotros actualizado."
         : activeTab === "logos"
             ? "Logos actualizados."
           : "Home editable actualizada."
@@ -376,6 +430,66 @@ export default function AdminBrandingPage() {
       visitForm: {
         ...prev.visitForm,
         [key]: value,
+      },
+    }));
+  };
+
+  const updateWorkWithUsField = <K extends keyof HomeContent["workWithUs"]>(
+    key: K,
+    value: HomeContent["workWithUs"][K]
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      workWithUs: {
+        ...prev.workWithUs,
+        [key]: value,
+      },
+    }));
+  };
+
+  const updateWorkField = (
+    fieldId: string,
+    key: keyof WorkWithUsField,
+    value: string | boolean | string[]
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      workWithUs: {
+        ...prev.workWithUs,
+        fields: prev.workWithUs.fields.map((field) =>
+          field.id === fieldId ? { ...field, [key]: value } : field
+        ),
+      },
+    }));
+  };
+
+  const addWorkField = () => {
+    setHomeForm((prev) => ({
+      ...prev,
+      workWithUs: {
+        ...prev.workWithUs,
+        fields: [
+          ...prev.workWithUs.fields,
+          {
+            id: createId(),
+            label: "Nuevo campo",
+            type: "text",
+            required: false,
+            active: true,
+            placeholder: "",
+            options: [],
+          },
+        ],
+      },
+    }));
+  };
+
+  const removeWorkField = (fieldId: string) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      workWithUs: {
+        ...prev.workWithUs,
+        fields: prev.workWithUs.fields.filter((field) => field.id !== fieldId),
       },
     }));
   };
@@ -997,6 +1111,7 @@ export default function AdminBrandingPage() {
           ["form", "Formulario", "dynamic_form"],
           ["sections", "Secciones", "dashboard_customize"],
           ["ba", "Buenos Aires", "travel_explore"],
+          ["work", "Trabaja", "badge"],
           ["banners", "Carrusel", "panorama"],
           ["logos", "Logos", "handshake"],
           ["footer", "Footer", "web_asset"],
@@ -1359,6 +1474,8 @@ export default function AdminBrandingPage() {
                   ? "Textos de secciones"
                 : activeTab === "ba"
                   ? "Página Buenos Aires"
+                : activeTab === "work"
+                  ? "Trabaja con nosotros"
                 : activeTab === "banners"
                   ? "Carrusel de banners"
                 : activeTab === "footer"
@@ -1378,6 +1495,8 @@ export default function AdminBrandingPage() {
                   ? "Ajustá los títulos y bajadas de los bloques principales de la home."
                 : activeTab === "ba"
                   ? "Administrá el contenido inmersivo de Buenos Aires: hero, video, datos rápidos, cards y llamados a la acción."
+                : activeTab === "work"
+                  ? "Administrá la página de postulaciones: textos, campos, CV y destino de consultas."
                 : activeTab === "banners"
                   ? "Creá banners que se muestran como carrusel en la home."
                 : activeTab === "footer"
@@ -1446,6 +1565,15 @@ export default function AdminBrandingPage() {
               className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
             >
               Agregar sección
+            </button>
+          ) : null}
+          {activeTab === "work" ? (
+            <button
+              type="button"
+              onClick={addWorkField}
+              className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
+            >
+              Agregar campo
             </button>
           ) : null}
         </div>
@@ -2302,6 +2430,262 @@ export default function AdminBrandingPage() {
           </div>
           ) : null}
 
+          {activeTab === "work" ? (
+          <div className="grid gap-6">
+            <div className="grid gap-4 rounded-3xl bg-surface-container-low p-5 lg:grid-cols-2">
+              <label className="flex items-center gap-3 rounded-2xl bg-surface-container-lowest px-4 py-3 text-xs font-semibold text-primary lg:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={homeForm.workWithUs.active}
+                  onChange={(event) => updateWorkWithUsField("active", event.target.checked)}
+                />
+                Mostrar página y formulario
+              </label>
+
+              {[
+                ["eyebrow", "Eyebrow"],
+                ["title", "Título principal"],
+                ["introTitle", "Título introducción"],
+                ["formTitle", "Título formulario"],
+                ["submitLabel", "Texto botón"],
+                ["successMessage", "Mensaje de éxito"],
+              ].map(([key, label]) => (
+                <label
+                  key={key}
+                  className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant"
+                >
+                  {label}
+                  <input
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                    value={String(homeForm.workWithUs[key as keyof HomeContent["workWithUs"]] ?? "")}
+                    onChange={(event) =>
+                      updateWorkWithUsField(
+                        key as keyof HomeContent["workWithUs"],
+                        event.target.value as HomeContent["workWithUs"][keyof HomeContent["workWithUs"]]
+                      )
+                    }
+                  />
+                </label>
+              ))}
+
+              {[
+                ["subtitle", "Subtítulo hero"],
+                ["introText", "Texto introducción"],
+                ["formSubtitle", "Bajada formulario"],
+              ].map(([key, label]) => (
+                <label
+                  key={key}
+                  className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant lg:col-span-2"
+                >
+                  {label}
+                  <textarea
+                    className="min-h-24 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                    value={String(homeForm.workWithUs[key as keyof HomeContent["workWithUs"]] ?? "")}
+                    onChange={(event) =>
+                      updateWorkWithUsField(
+                        key as keyof HomeContent["workWithUs"],
+                        event.target.value as HomeContent["workWithUs"][keyof HomeContent["workWithUs"]]
+                      )
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className="grid gap-4 rounded-3xl bg-surface-container-low p-5 lg:grid-cols-2">
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Destino de consulta
+                <select
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.workWithUs.destinationType}
+                  onChange={(event) =>
+                    updateWorkWithUsField(
+                      "destinationType",
+                      event.target.value as HomeContent["workWithUs"]["destinationType"]
+                    )
+                  }
+                >
+                  <option value="email">Email</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="both">Email y WhatsApp</option>
+                </select>
+              </label>
+
+              <label className="flex items-center gap-3 rounded-2xl bg-surface-container-lowest px-4 py-3 text-xs font-semibold text-primary">
+                <input
+                  type="checkbox"
+                  checked={homeForm.workWithUs.allowCvUpload}
+                  onChange={(event) =>
+                    updateWorkWithUsField("allowCvUpload", event.target.checked)
+                  }
+                />
+                Permitir seleccionar CV
+              </label>
+
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Email destino
+                <input
+                  type="email"
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  placeholder="rrhh@empresa.com"
+                  value={homeForm.workWithUs.destinationEmail}
+                  onChange={(event) =>
+                    updateWorkWithUsField("destinationEmail", event.target.value)
+                  }
+                />
+              </label>
+
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                WhatsApp destino
+                <input
+                  inputMode="tel"
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  placeholder="5491123456789"
+                  value={homeForm.workWithUs.destinationWhatsapp}
+                  onChange={(event) =>
+                    updateWorkWithUsField("destinationWhatsapp", event.target.value)
+                  }
+                />
+              </label>
+
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant lg:col-span-2">
+                Mensaje inicial WhatsApp
+                <textarea
+                  className="min-h-24 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.workWithUs.whatsappMessage}
+                  onChange={(event) =>
+                    updateWorkWithUsField("whatsappMessage", event.target.value)
+                  }
+                />
+              </label>
+
+              <p className="rounded-2xl bg-surface-container-lowest p-4 text-xs leading-5 text-on-surface-variant lg:col-span-2">
+                Si el CV está activo, se sube a un bucket privado con límite de 3 MB y llega como link temporal al email o al mensaje de WhatsApp.
+              </p>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h4 className="text-sm font-bold uppercase tracking-[0.28em] text-primary">
+                  Campos del formulario
+                </h4>
+                <button
+                  type="button"
+                  onClick={addWorkField}
+                  className="rounded-full bg-surface-container-low px-4 py-2 text-xs font-bold text-primary transition hover:bg-primary-fixed"
+                >
+                  Agregar campo
+                </button>
+              </div>
+
+              {homeForm.workWithUs.fields.map((field, index) => (
+                <motion.div
+                  key={field.id}
+                  layout
+                  initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 170, damping: 22, delay: index * 0.02 }}
+                  className="grid gap-4 rounded-3xl bg-surface-container-low p-5"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span className="rounded-full bg-primary-fixed px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                      Campo {index + 1}
+                    </span>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-primary">
+                        <input
+                          type="checkbox"
+                          checked={field.active}
+                          onChange={(event) =>
+                            updateWorkField(field.id, "active", event.target.checked)
+                          }
+                        />
+                        Visible
+                      </label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-primary">
+                        <input
+                          type="checkbox"
+                          checked={field.required}
+                          onChange={(event) =>
+                            updateWorkField(field.id, "required", event.target.checked)
+                          }
+                        />
+                        Obligatorio
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => removeWorkField(field.id)}
+                        className="rounded-full px-3 py-2 text-xs font-bold uppercase tracking-widest text-error hover:bg-error-container"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                      Label
+                      <input
+                        className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                        value={field.label}
+                        onChange={(event) =>
+                          updateWorkField(field.id, "label", event.target.value)
+                        }
+                      />
+                    </label>
+                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                      Tipo
+                      <select
+                        className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                        value={field.type}
+                        onChange={(event) =>
+                          updateWorkField(
+                            field.id,
+                            "type",
+                            event.target.value as WorkWithUsFieldType
+                          )
+                        }
+                      >
+                        <option value="text">Texto</option>
+                        <option value="email">Email</option>
+                        <option value="tel">Teléfono</option>
+                        <option value="textarea">Texto largo</option>
+                        <option value="select">Dropdown</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                      Placeholder
+                      <input
+                        className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                        value={field.placeholder ?? ""}
+                        onChange={(event) =>
+                          updateWorkField(field.id, "placeholder", event.target.value)
+                        }
+                      />
+                    </label>
+                    {field.type === "select" ? (
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                        Opciones, una por línea
+                        <textarea
+                          className="min-h-28 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={(field.options ?? []).join("\n")}
+                          onChange={(event) =>
+                            updateWorkField(
+                              field.id,
+                              "options",
+                              event.target.value.split("\n")
+                            )
+                          }
+                        />
+                      </label>
+                    ) : null}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+          ) : null}
+
           {activeTab === "banners" ? (
           <div className="grid gap-4">
             {homeForm.banners.map((banner, index) => (
@@ -2701,6 +3085,8 @@ export default function AdminBrandingPage() {
                 ? "Guardar formulario"
               : activeTab === "ba"
                 ? "Guardar Buenos Aires"
+              : activeTab === "work"
+                ? "Guardar Trabaja"
               : activeTab === "footer"
                 ? "Guardar footer"
               : activeTab === "logos"

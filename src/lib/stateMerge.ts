@@ -133,6 +133,25 @@ export const mergeState = (
       ...base.homeContent.visitForm,
       ...(incoming.homeContent?.visitForm ?? {}),
     },
+    workWithUs: {
+      ...base.homeContent.workWithUs,
+      ...(incoming.homeContent?.workWithUs ?? {}),
+      fields: Array.isArray(incoming.homeContent?.workWithUs?.fields)
+        ? incoming.homeContent.workWithUs.fields.map((field) => ({
+            ...field,
+            type:
+              field.type === "email" ||
+              field.type === "tel" ||
+              field.type === "textarea" ||
+              field.type === "select"
+                ? field.type
+                : "text",
+            active: field.active ?? true,
+            required: field.required ?? false,
+            options: Array.isArray(field.options) ? field.options : [],
+          }))
+        : base.homeContent.workWithUs.fields,
+    },
     footer: {
       ...base.homeContent.footer,
       ...(incoming.homeContent?.footer ?? {}),

@@ -133,6 +133,37 @@ export type VisitFormContent = {
   successMessage: string;
 };
 
+export type WorkWithUsFieldType = "text" | "email" | "tel" | "textarea" | "select";
+
+export type WorkWithUsField = {
+  id: string;
+  label: string;
+  type: WorkWithUsFieldType;
+  required: boolean;
+  active: boolean;
+  placeholder?: string;
+  options?: string[];
+};
+
+export type WorkWithUsContent = {
+  active: boolean;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  introTitle: string;
+  introText: string;
+  formTitle: string;
+  formSubtitle: string;
+  submitLabel: string;
+  successMessage: string;
+  allowCvUpload: boolean;
+  destinationType: "email" | "whatsapp" | "both";
+  destinationEmail: string;
+  destinationWhatsapp: string;
+  whatsappMessage: string;
+  fields: WorkWithUsField[];
+};
+
 export type CustomPageBlockType = "hero" | "text" | "image" | "cta" | "cards";
 
 export type CustomPageBlock = {
@@ -215,6 +246,7 @@ export type HomeContent = {
   recentSubtitle: string;
   menuItems: HomeMenuItem[];
   visitForm: VisitFormContent;
+  workWithUs: WorkWithUsContent;
   partnersTitle: string;
   partnersSubtitle: string;
   partnerLogos: PartnerLogo[];
@@ -468,6 +500,75 @@ export const defaultState: InmoState = {
         "Entiendo que la documentación se solicita solo al avanzar con la reserva y que la inmobiliaria opera con Martilleros Públicos y asesoramiento legal.",
       submitLabel: "Enviar solicitud",
       successMessage: "Consulta enviada. Un asesor va a contactarte.",
+    },
+    workWithUs: {
+      active: true,
+      eyebrow: "Trabaja con nosotros",
+      title: "Sumate a una red inmobiliaria pensada para crecer con claridad.",
+      subtitle:
+        "Buscamos asesores, colaboradores y aliados comerciales con foco profesional, seguimiento cuidado y propiedades bien presentadas.",
+      introTitle: "Un espacio para perfiles comerciales, productores y aliados.",
+      introText:
+        "Si tenés experiencia en el rubro, cartera de propiedades, llegada a propietarios o querés desarrollar una unidad comercial inmobiliaria, queremos conocer tu perfil y evaluar una modalidad de colaboración.",
+      formTitle: "Contanos sobre vos",
+      formSubtitle:
+        "Completá los datos principales y te contactamos para coordinar una primera conversación.",
+      submitLabel: "Enviar postulación",
+      successMessage: "Postulación enviada. El equipo va a revisarla y contactarte.",
+      allowCvUpload: true,
+      destinationType: "email",
+      destinationEmail: "",
+      destinationWhatsapp: "",
+      whatsappMessage:
+        "Hola, quiero enviar mi postulación para trabajar con Connexa.",
+      fields: [
+        {
+          id: "work-name",
+          label: "Nombre y apellido",
+          type: "text",
+          required: true,
+          active: true,
+          placeholder: "Ej: Mauricio Morell",
+        },
+        {
+          id: "work-email",
+          label: "Email",
+          type: "email",
+          required: true,
+          active: true,
+          placeholder: "nombre@email.com",
+        },
+        {
+          id: "work-phone",
+          label: "Teléfono / WhatsApp",
+          type: "tel",
+          required: true,
+          active: true,
+          placeholder: "Ej: +54 9 11 1234 5678",
+        },
+        {
+          id: "work-profile",
+          label: "Perfil de interés",
+          type: "select",
+          required: true,
+          active: true,
+          options: [
+            "Asesor comercial",
+            "Colaborador con propiedades",
+            "Productor inmobiliario",
+            "Alianza estratégica",
+            "Administración / operaciones",
+          ],
+        },
+        {
+          id: "work-experience",
+          label: "Experiencia o zona de trabajo",
+          type: "textarea",
+          required: false,
+          active: true,
+          placeholder: "Contanos brevemente tu experiencia, zona o cartera.",
+        },
+      ],
     },
     partnerLogos: [],
     banners: [

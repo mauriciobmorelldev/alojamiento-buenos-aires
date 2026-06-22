@@ -163,7 +163,11 @@ const fetchRemoteState = async (
   try {
     if (scope === "public") {
       const publicMode = mode === "catalog" ? "catalog" : "home";
-      const response = await fetch(`/api/public/state?mode=${publicMode}`, {
+      const endpoint =
+        mode === "catalog"
+          ? `/api/public/shell?mode=${publicMode}`
+          : `/api/public/state?mode=${publicMode}`;
+      const response = await fetch(endpoint, {
         cache: "no-store",
       });
       if (!response.ok) return null;

@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useInmoStore } from "@/lib/inmoStore";
 import {
   propertyTypeLabels,
   type FilterGroup,
+  type Listing,
   type PropertyType,
 } from "@/lib/inmoData";
 import { buildThemeStyles } from "@/lib/theme";
 import { getAvailability } from "@/lib/availability";
-import { formatPrice, getListingComparablePriceInArs } from "@/lib/pricing";
+import { formatPrice } from "@/lib/pricing";
 import { InlineRealEstateLoader } from "@/components/inmo/RealEstateStatus";
 import SiteFooter from "@/components/inmo/SiteFooter";
 
@@ -50,7 +51,7 @@ const toggleAttributeSelection = (
 
 export default function ResultsStitch() {
   const { state, isReady } = useInmoStore();
-  const { listings, filterGroups, theme, adminUsers } = state;
+  const { filterGroups, theme, adminUsers } = state;
 
   const [query, setQuery] = useState("");
   const [type, setType] = useState<PropertyTypeFilter>("all");
@@ -58,9 +59,20 @@ export default function ResultsStitch() {
   const [minRooms, setMinRooms] = useState("all");
   const [sort, setSort] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [catalogListings, setCatalogListings] = useState<Listing[]>([]);
+  const [isCatalogLoading, setIsCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState("");
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 12,
+    total: 0,
+    totalPages: 1,
+  });
   const [attributeFilters, setAttributeFilters] = useState<
     Record<string, string[]>
   >({});
+  const didMountFiltersRef = useRef(false);
 
   const themeStyles = buildThemeStyles(theme);
   const collaboratorAdminIds = new Set(
@@ -72,6 +84,10 @@ export default function ResultsStitch() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const incoming = params.get("operacion");
+    const incomingPage = Number(params.get("page") ?? 1);
+    if (Number.isFinite(incomingPage) && incomingPage > 1) {
+      setPage(Math.floor(incomingPage));
+    }
     if (incoming === "venta" || incoming === "alquiler") {
       const applyOperation = () => setOperation(incoming);
       if (typeof queueMicrotask === "function") {
@@ -82,53 +98,83 @@ export default function ResultsStitch() {
     }
   }, []);
 
-  const filteredListings = useMemo(() => {
-    let items = [...listings];
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      items = items.filter(
-        (item) =>
-          item.title.toLowerCase().includes(q) ||
-          item.neighborhood.toLowerCase().includes(q)
-      );
+  useEffect(() => {
+    if (!didMountFiltersRef.current) {
+      didMountFiltersRef.current = true;
+      return;
     }
-    if (type !== "all") {
-      items = items.filter((item) => item.type === type);
-    }
-    if (operation === "venta") {
-      items = items.filter((item) => item.priceUnit === "venta");
-    }
-    if (operation === "alquiler") {
-      items = items.filter((item) => item.priceUnit === "mensual" || item.priceUnit === "noche");
-    }
-    if (minRooms !== "all") {
-      const rooms = Number(minRooms);
-      items = items.filter((item) => item.rooms >= rooms);
-    }
-    items = items.filter((item) =>
-      filterGroups.every((group) => {
-        const selected = attributeFilters[group.id] ?? [];
-        if (!selected.length) return true;
-        const values = item.attributes[group.id] ?? [];
-        return selected.every((option) => values.includes(option));
-      })
-    );
-    if (sort === "price-asc") {
-      items.sort(
-        (a, b) =>
-          getListingComparablePriceInArs(a, theme) -
-          getListingComparablePriceInArs(b, theme)
-      );
-    }
-    if (sort === "price-desc") {
-      items.sort(
-        (a, b) =>
-          getListingComparablePriceInArs(b, theme) -
-          getListingComparablePriceInArs(a, theme)
-      );
-    }
-    return items;
-  }, [attributeFilters, filterGroups, listings, minRooms, operation, query, sort, theme, type]);
+    setPage(1);
+  }, [attributeFilters, minRooms, operation, query, sort, type]);
+
+  useEffect(() => {
+    if (!isReady) return;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      setIsCatalogLoading(true);
+      setCatalogError("");
+      try {
+        const params = new URLSearchParams({
+          mode: "catalog",
+          page: String(page),
+          pageSize: String(pagination.pageSize),
+          q: query.trim(),
+          type,
+          operation,
+          minRooms,
+          sort,
+        });
+        const activeAttributes = Object.fromEntries(
+          Object.entries(attributeFilters).filter(([, values]) => values.length)
+        );
+        if (Object.keys(activeAttributes).length) {
+          params.set("attributes", JSON.stringify(activeAttributes));
+        }
+        const response = await fetch(`/api/public/listings?${params.toString()}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const payload = (await response.json()) as {
+          listings?: Listing[];
+          pagination?: typeof pagination;
+          error?: string;
+        };
+        if (!response.ok) {
+          throw new Error(payload.error ?? "No se pudo cargar el catálogo.");
+        }
+        setCatalogListings(payload.listings ?? []);
+        setPagination((prev) => payload.pagination ?? prev);
+
+        const nextUrl = new URL(window.location.href);
+        if (page > 1) {
+          nextUrl.searchParams.set("page", String(page));
+        } else {
+          nextUrl.searchParams.delete("page");
+        }
+        window.history.replaceState(null, "", `${nextUrl.pathname}${nextUrl.search}`);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setCatalogListings([]);
+        setCatalogError(error instanceof Error ? error.message : "No se pudo cargar el catálogo.");
+      } finally {
+        if (!controller.signal.aborted) setIsCatalogLoading(false);
+      }
+    }, query.trim() ? 260 : 0);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    attributeFilters,
+    isReady,
+    minRooms,
+    operation,
+    page,
+    pagination.pageSize,
+    query,
+    sort,
+    type,
+  ]);
 
   const activeFilterCount = [
     query.trim() ? 1 : 0,
@@ -315,7 +361,9 @@ export default function ResultsStitch() {
                   Propiedades Disponibles
                 </h1>
                 <p className="mt-2 font-label text-on-surface-variant">
-                  Mostrando {filteredListings.length} propiedades en catálogo
+                  {isCatalogLoading
+                    ? "Cargando propiedades..."
+                    : `Mostrando ${catalogListings.length} de ${pagination.total} propiedades`}
                 </p>
               </div>
               <div className="grid gap-3 sm:flex sm:items-center sm:space-x-4">
@@ -363,12 +411,21 @@ export default function ResultsStitch() {
               </div>
             </div>
 
-            {!isReady ? (
+            {!isReady || isCatalogLoading ? (
               <InlineRealEstateLoader
                 title="Cargando propiedades"
                 message="Estamos consultando el catálogo disponible."
               />
-            ) : filteredListings.length === 0 ? (
+            ) : catalogError ? (
+              <div className="rounded-2xl bg-surface-container-lowest p-8 text-center editorial-shadow">
+                <p className="text-xs uppercase tracking-widest text-error">
+                  Error
+                </p>
+                <h3 className="mt-3 text-2xl font-headline font-semibold text-primary">
+                  {catalogError}
+                </h3>
+              </div>
+            ) : catalogListings.length === 0 ? (
               <div className="rounded-2xl bg-surface-container-lowest p-8 text-center editorial-shadow">
                 <p className="text-xs uppercase tracking-widest text-on-surface-variant">
                   Sin resultados
@@ -378,8 +435,9 @@ export default function ResultsStitch() {
                 </h3>
               </div>
             ) : (
+              <>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-10">
-                {filteredListings.map((item, index) => {
+                {catalogListings.map((item, index) => {
                   const cover = getCoverImage(item.images, item.coverIndex);
                   const availability = getAvailability(item.status);
                   const isFromCollaborator = isCollaboratorListing(item.createdByAdminId);
@@ -445,6 +503,63 @@ export default function ResultsStitch() {
                   );
                 })}
               </div>
+              {pagination.totalPages > 1 ? (
+                <nav className="mt-10 flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    disabled={pagination.page <= 1}
+                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-outline-variant/30 bg-surface-container-lowest px-4 py-2 text-sm font-bold text-primary transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    <span className="material-symbols-outlined text-base">chevron_left</span>
+                    Anterior
+                  </button>
+                  {Array.from({ length: pagination.totalPages })
+                    .map((_, index) => index + 1)
+                    .filter(
+                      (itemPage) =>
+                        itemPage === 1 ||
+                        itemPage === pagination.totalPages ||
+                        Math.abs(itemPage - pagination.page) <= 1
+                    )
+                    .map((itemPage, index, pages) => {
+                      const previousPage = pages[index - 1];
+                      const showGap = previousPage && itemPage - previousPage > 1;
+                      return (
+                        <span key={itemPage} className="inline-flex items-center gap-2">
+                          {showGap ? (
+                            <span className="px-1 text-sm font-bold text-on-surface-variant">
+                              ...
+                            </span>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => setPage(itemPage)}
+                            className={`flex h-11 min-w-11 items-center justify-center rounded-full px-3 text-sm font-black transition ${
+                              pagination.page === itemPage
+                                ? "bg-primary text-on-primary"
+                                : "bg-surface-container-lowest text-primary hover:bg-primary-fixed"
+                            }`}
+                          >
+                            {itemPage}
+                          </button>
+                        </span>
+                      );
+                    })}
+                  <button
+                    type="button"
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() =>
+                      setPage((prev) => Math.min(pagination.totalPages, prev + 1))
+                    }
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-outline-variant/30 bg-surface-container-lowest px-4 py-2 text-sm font-bold text-primary transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    Siguiente
+                    <span className="material-symbols-outlined text-base">chevron_right</span>
+                  </button>
+                </nav>
+              ) : null}
+              </>
             )}
           </div>
         </div>
@@ -487,7 +602,7 @@ export default function ResultsStitch() {
                 onClick={() => setShowFilters(false)}
                 className="w-full rounded-2xl bg-primary py-4 text-sm font-bold uppercase tracking-widest text-on-primary"
               >
-                Ver {filteredListings.length} resultados
+                Ver {pagination.total} resultados
               </button>
             </div>
           </div>

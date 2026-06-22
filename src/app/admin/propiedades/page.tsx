@@ -94,6 +94,7 @@ export default function AdminPropertiesPage() {
   const [highlightForm, setHighlightForm] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCleaningTokko, setIsCleaningTokko] = useState(false);
   const [isVideoUploading, setIsVideoUploading] = useState(false);
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [successNotice, setSuccessNotice] = useState("");
@@ -128,10 +129,18 @@ export default function AdminPropertiesPage() {
   const availableCount = visibleListings.filter((item) => item.status === "disponible").length;
   const reservedCount = visibleListings.filter((item) => item.status === "reservado").length;
   const soldCount = visibleListings.filter((item) => item.status === "vendido").length;
+  const isTokkoListing = (listing: Listing) =>
+    listing.id.startsWith("tokko-") || Boolean(getTokkoSku(listing));
+  const tokkoInventoryCount = visibleListings.filter(isTokkoListing).length;
+  const manualInventoryCount = visibleListings.length - tokkoInventoryCount;
+  const hiddenFromFrontCount = visibleListings.filter(
+    (item) => item.status === "tasacion" || item.status === "no_disponible"
+  ).length;
+  const publicInventoryCount = visibleListings.length - hiddenFromFrontCount;
   const normalizedQuery = inventoryQuery.trim().toLowerCase();
   const filteredInventory = visibleListings.filter((listing) => {
     const tokkoSku = getTokkoSku(listing);
-    const isTokko = listing.id.startsWith("tokko-") || Boolean(tokkoSku);
+    const isTokko = isTokkoListing(listing);
     const matchesQuery =
       !normalizedQuery ||
       [
@@ -382,6 +391,49 @@ export default function AdminPropertiesPage() {
     }));
   };
 
+  const handleCleanTokkoListings = async () => {
+    if (!authedAdmin || !isOwner || isCleaningTokko) return;
+    const confirmed = window.confirm(
+      `Se van a eliminar ${tokkoInventoryCount} propiedades importadas desde Tokko. Las propiedades manuales no se tocan. ¿Continuamos?`
+    );
+    if (!confirmed) return;
+
+    setIsCleaningTokko(true);
+    setFormError("");
+    try {
+      const response = await fetch("/api/tokko/cleanup", {
+        method: "DELETE",
+        headers: { "x-admin-id": authedAdmin.id },
+      });
+      const result = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+        deletedCount?: number;
+      } | null;
+      if (!response.ok || !result?.ok) {
+        throw new Error(result?.error ?? "No se pudieron limpiar las propiedades Tokko.");
+      }
+
+      updateState((prev) => ({
+        ...prev,
+        listings: prev.listings.filter((listing) => !isTokkoListing(listing)),
+      }));
+      setInventorySource("all");
+      setInventoryPage(1);
+      setSuccessNotice(
+        `Se eliminaron ${result.deletedCount ?? tokkoInventoryCount} propiedades importadas desde Tokko.`
+      );
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "No se pudieron limpiar las propiedades Tokko."
+      );
+    } finally {
+      setIsCleaningTokko(false);
+    }
+  };
+
   const handleListingImageUpload = async (files: FileList | null) => {
     if (!files?.length) return;
     if (!authedAdmin) {
@@ -514,17 +566,29 @@ export default function AdminPropertiesPage() {
             {isCollaborator ? "Cargar un inmueble propio" : "Administrar inventario"}
           </h3>
         </div>
-        <button
-          type="button"
-          onClick={openNewListingForm}
-          className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-widest text-on-primary transition hover:-translate-y-0.5"
-          style={{ color: "var(--color-on-primary)" }}
-        >
-          {isCollaborator ? "Nuevo inmueble" : "Nueva propiedad"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {isOwner && tokkoInventoryCount > 0 ? (
+            <button
+              type="button"
+              onClick={handleCleanTokkoListings}
+              disabled={isCleaningTokko}
+              className="inline-flex items-center justify-center rounded-full border border-error/25 px-5 py-3 text-xs font-semibold uppercase tracking-widest text-error transition hover:bg-error-container disabled:cursor-wait disabled:opacity-60"
+            >
+              {isCleaningTokko ? "Limpiando Tokko..." : "Limpiar Tokko"}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={openNewListingForm}
+            className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-widest text-on-primary transition hover:-translate-y-0.5"
+            style={{ color: "var(--color-on-primary)" }}
+          >
+            {isCollaborator ? "Nuevo inmueble" : "Nueva propiedad"}
+          </button>
+        </div>
       </section>
 
-      <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-5">
         <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4">
           <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Totales</p>
           <p className="mt-2 text-3xl font-bold text-primary">{visibleListings.length}</p>
@@ -541,7 +605,34 @@ export default function AdminPropertiesPage() {
           <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Vendidas</p>
           <p className="mt-2 text-3xl font-bold text-primary">{soldCount}</p>
         </div>
+        <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4">
+          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Ocultas front</p>
+          <p className="mt-2 text-3xl font-bold text-primary">{hiddenFromFrontCount}</p>
+        </div>
       </section>
+
+      {isOwner ? (
+        <section className="mt-4 grid gap-3 rounded-3xl bg-surface-container-low p-4 md:grid-cols-3">
+          <div className="rounded-2xl bg-surface-container-lowest p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+              Manuales
+            </p>
+            <p className="mt-2 text-2xl font-extrabold text-primary">{manualInventoryCount}</p>
+          </div>
+          <div className="rounded-2xl bg-surface-container-lowest p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+              Tokko
+            </p>
+            <p className="mt-2 text-2xl font-extrabold text-primary">{tokkoInventoryCount}</p>
+          </div>
+          <div className="rounded-2xl bg-surface-container-lowest p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+              Visibles en front
+            </p>
+            <p className="mt-2 text-2xl font-extrabold text-primary">{publicInventoryCount}</p>
+          </div>
+        </section>
+      ) : null}
 
       {isFormOpen ? (
         <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-background/80 px-4 py-6 backdrop-blur-md md:py-10">

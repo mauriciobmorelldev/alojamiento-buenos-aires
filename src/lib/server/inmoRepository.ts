@@ -34,6 +34,26 @@ type ReadInmoStateOptions = {
 
 type PublicReadResult = RepositoryResult<Partial<InmoState>>;
 type PublicShellMode = "home" | "catalog";
+export type PublicListingsPageOptions = {
+  page?: number;
+  pageSize?: number;
+  query?: string;
+  type?: string;
+  operation?: string;
+  minRooms?: number;
+  sort?: string;
+  attributes?: Record<string, string[]>;
+};
+export type PublicListingsPageResult = PublicReadResult & {
+  data: Partial<InmoState> & {
+    pagination: {
+      page: number;
+      pageSize: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+};
 type PublicPropertyRow = {
   id: string;
   title: string;
@@ -63,6 +83,58 @@ const hiddenPublicStatuses: PropertyStatus[] = ["tasacion", "no_disponible"];
 
 const isPublicListingStatus = (status: string | null | undefined) =>
   !hiddenPublicStatuses.includes(status as PropertyStatus);
+
+const clampPublicPage = (value: number | undefined) =>
+  Number.isFinite(value) && Number(value) > 0 ? Math.floor(Number(value)) : 1;
+
+const clampPublicPageSize = (value: number | undefined) => {
+  const pageSize = Number.isFinite(value) && Number(value) > 0 ? Math.floor(Number(value)) : 12;
+  return Math.min(Math.max(pageSize, 1), 24);
+};
+
+const escapeIlike = (value: string) =>
+  value.replace(/[%_]/g, "\\$&").replace(/[(),]/g, " ").trim();
+
+const filterFallbackListings = (
+  listings: Listing[],
+  options: PublicListingsPageOptions
+) => {
+  let items = listings.filter((listing) => isPublicListingStatus(listing.status));
+  const query = options.query?.trim().toLowerCase();
+  if (query) {
+    items = items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(query) ||
+        item.neighborhood.toLowerCase().includes(query)
+    );
+  }
+  if (options.type && options.type !== "all") {
+    items = items.filter((item) => item.type === options.type);
+  }
+  if (options.operation === "venta") {
+    items = items.filter((item) => item.priceUnit === "venta");
+  }
+  if (options.operation === "alquiler") {
+    items = items.filter((item) => item.priceUnit === "mensual" || item.priceUnit === "noche");
+  }
+  if (options.minRooms) {
+    items = items.filter((item) => item.rooms >= Number(options.minRooms));
+  }
+  Object.entries(options.attributes ?? {}).forEach(([groupId, selected]) => {
+    const active = selected.filter(Boolean);
+    if (!active.length) return;
+    items = items.filter((item) => {
+      const values = item.attributes[groupId] ?? [];
+      return active.every((option) => values.includes(option));
+    });
+  });
+  if (options.sort === "price-asc") {
+    items = [...items].sort((a, b) => Number(a.price ?? 0) - Number(b.price ?? 0));
+  } else if (options.sort === "price-desc") {
+    items = [...items].sort((a, b) => Number(b.price ?? 0) - Number(a.price ?? 0));
+  }
+  return items;
+};
 
 const ensureArray = <T>(value: T[] | null) => value ?? [];
 
@@ -440,6 +512,131 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
         ensureArray(properties.data) as PublicPropertyRow[],
         imagesByProperty
       ),
+    },
+    source: "supabase",
+  };
+};
+
+export const readPublicListingsPage = async (
+  options: PublicListingsPageOptions = {}
+): Promise<PublicListingsPageResult> => {
+  const page = clampPublicPage(options.page);
+  const pageSize = clampPublicPageSize(options.pageSize);
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const buildPagination = (total: number) => ({
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  });
+
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseConfigured()) {
+    const filtered = filterFallbackListings(defaultState.listings, options);
+    const pageRows = filtered.slice(from, from + pageSize).map((listing) => ({
+      ...listing,
+      description: "",
+      images: sanitizePublicImages(listing.images.slice(0, 4)),
+      videos: [],
+    }));
+    return {
+      data: {
+        version: STATE_VERSION,
+        listings: pageRows,
+        pagination: buildPagination(filtered.length),
+      },
+      source: "fallback",
+    };
+  }
+
+  let propertiesQuery = supabase
+    .from("properties")
+    .select(publicListingPropertySelect, { count: "exact" })
+    .not("status", "in", `(${hiddenPublicStatuses.join(",")})`);
+
+  const query = escapeIlike(options.query ?? "");
+  if (query) {
+    propertiesQuery = propertiesQuery.or(
+      `title.ilike.%${query}%,neighborhood.ilike.%${query}%`
+    );
+  }
+
+  if (options.type && options.type !== "all") {
+    propertiesQuery = propertiesQuery.eq("type", options.type);
+  }
+
+  if (options.operation === "venta") {
+    propertiesQuery = propertiesQuery.eq("price_unit", "venta");
+  } else if (options.operation === "alquiler") {
+    propertiesQuery = propertiesQuery.in("price_unit", ["mensual", "noche"]);
+  }
+
+  if (options.minRooms) {
+    propertiesQuery = propertiesQuery.gte("rooms", options.minRooms);
+  }
+
+  Object.entries(options.attributes ?? {}).forEach(([groupId, selected]) => {
+    const active = selected.filter(Boolean);
+    if (!active.length) return;
+    propertiesQuery = propertiesQuery.contains("attributes", { [groupId]: active });
+  });
+
+  if (options.sort === "price-asc") {
+    propertiesQuery = propertiesQuery.order("price", { ascending: true });
+  } else if (options.sort === "price-desc") {
+    propertiesQuery = propertiesQuery.order("price", { ascending: false });
+  } else {
+    propertiesQuery = propertiesQuery.order("updated_at", { ascending: false });
+  }
+
+  const properties = await propertiesQuery.range(from, to);
+
+  if (properties.error) {
+    console.warn("Supabase public paginated properties read failed", properties.error.message);
+    return {
+      data: {
+        version: STATE_VERSION,
+        listings: [],
+        pagination: buildPagination(0),
+      },
+      source: "fallback",
+    };
+  }
+
+  const rows = ensureArray(properties.data) as PublicPropertyRow[];
+  const propertyIds = rows.map((property) => property.id);
+  const propertyImages = propertyIds.length
+    ? await supabase
+        .from("property_images")
+        .select("property_id,url,sort_order")
+        .in("property_id", propertyIds)
+        .lte("sort_order", 3)
+        .order("sort_order")
+    : { data: [], error: null };
+
+  if (propertyImages.error) {
+    console.warn("Supabase public paginated property_images read failed", propertyImages.error.message);
+  }
+
+  const imagesByProperty = new Map<string, string[]>();
+  const propertyImageRows = (propertyImages.data ?? []) as Array<{
+    property_id: string;
+    url: string;
+  }>;
+  propertyImageRows.forEach((image) => {
+    const list = imagesByProperty.get(image.property_id) ?? [];
+    if (list.length >= 4) return;
+    list.push(image.url);
+    imagesByProperty.set(image.property_id, list);
+  });
+
+  return {
+    data: {
+      version: STATE_VERSION,
+      listings: mapPublicListingRows(rows, imagesByProperty),
+      pagination: buildPagination(properties.count ?? rows.length),
     },
     source: "supabase",
   };
@@ -1140,6 +1337,39 @@ export const deleteObsoleteTokkoListings = async (keepIds: string[]) => {
 
   if (obsoleteIds.length) clearResponseCache();
   return { source: "supabase" as const, deletedCount: obsoleteIds.length };
+};
+
+export const deleteAllTokkoListings = async () => {
+  const supabase = getSupabaseWriteClient();
+  if (!supabase || !isSupabaseWriteConfigured()) {
+    return { source: "fallback" as const };
+  }
+
+  const existing = await supabase
+    .from("properties")
+    .select("id")
+    .like("id", "tokko-%");
+  assertSupabaseOk(existing, "select tokko properties");
+
+  const ids = ensureArray(existing.data)
+    .map((property) => property.id)
+    .filter((id): id is string => typeof id === "string");
+
+  for (let index = 0; index < ids.length; index += 100) {
+    const chunk = ids.slice(index, index + 100);
+    if (!chunk.length) continue;
+    assertSupabaseOk(
+      await supabase.from("property_images").delete().in("property_id", chunk),
+      "delete tokko property_images"
+    );
+    assertSupabaseOk(
+      await supabase.from("properties").delete().in("id", chunk),
+      "delete tokko properties"
+    );
+  }
+
+  if (ids.length) clearResponseCache();
+  return { source: "supabase" as const, deletedCount: ids.length };
 };
 
 export const deleteListing = async (propertyId: string) => {
