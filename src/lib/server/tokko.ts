@@ -28,6 +28,15 @@ const asRecord = (value: unknown): Record<string, unknown> =>
 
 const asArray = (value: unknown): unknown[] => Array.isArray(value) ? value : [];
 
+const readField = (record: Record<string, unknown>, key: string) => {
+  if (key in record) return record[key];
+  const normalizedKey = key.toLowerCase().replace(/[_-]/g, "");
+  const match = Object.keys(record).find(
+    (current) => current.toLowerCase().replace(/[_-]/g, "") === normalizedKey
+  );
+  return match ? record[match] : undefined;
+};
+
 const firstString = (...values: unknown[]): string => {
   for (const value of values) {
     if (typeof value === "string" && value.trim()) return value.trim();
@@ -138,7 +147,7 @@ const collectStatusValues = (...values: unknown[]): string[] => {
         "es",
         "es_ar",
         "es-AR",
-      ].forEach((key) => visit(record[key], depth + 1));
+      ].forEach((key) => visit(readField(record, key), depth + 1));
     }
   };
   values.forEach((value) => visit(value));
@@ -221,12 +230,47 @@ const extractOperation = (item: TokkoRemoteProperty) => {
 };
 
 const extractAttributeValue = (item: TokkoRemoteProperty, code: string) => {
-  const attributes = asArray(item.attributes);
+  const attributes = asArray(readField(item, "attributes"));
   const match = attributes
     .map((attribute) => asRecord(attribute))
-    .find((attribute) => firstString(attribute.code).toLowerCase() === code.toLowerCase());
-  return match?.value;
+    .find((attribute) => {
+      const keys = [
+        firstString(readField(attribute, "code")),
+        firstString(readField(attribute, "name")),
+        firstString(readField(attribute, "label")),
+        firstString(readField(attribute, "id")),
+      ].map((value) => value.toLowerCase().replace(/[_\s-]/g, ""));
+      return keys.includes(code.toLowerCase().replace(/[_\s-]/g, ""));
+    });
+  return match ? readField(match, "value") : undefined;
 };
+
+const extractStatusValues = (item: TokkoRemoteProperty) => [
+  readField(item, "status"),
+  readField(item, "status_id"),
+  readField(item, "status_code"),
+  readField(item, "status_name"),
+  readField(item, "status_choice"),
+  readField(item, "status_choices"),
+  readField(item, "property_status"),
+  readField(item, "property_status_id"),
+  readField(item, "property_status_choice"),
+  readField(item, "publication_status"),
+  readField(item, "publication_status_id"),
+  readField(item, "publication_status_choice"),
+  readField(item, "web_status"),
+  readField(item, "availability"),
+  extractAttributeValue(item, "status"),
+  extractAttributeValue(item, "status_choice"),
+  extractAttributeValue(item, "status_choices"),
+  extractAttributeValue(item, "statuschoices"),
+  extractAttributeValue(item, "STATUS_CHOICES"),
+  extractAttributeValue(item, "property_status"),
+  extractAttributeValue(item, "property_status_choice"),
+  extractAttributeValue(item, "publication_status"),
+  extractAttributeValue(item, "publication_status_choice"),
+  extractAttributeValue(item, "availability"),
+];
 
 const extractDescription = (item: TokkoRemoteProperty) => {
   const direct = firstString(
@@ -296,38 +340,9 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
     extractAttributeValue(item, "roofed_surface")
   );
   const description = extractDescription(item);
-  const normalizedStatus = normalizeStatus(
-    item.status,
-    item.status_id,
-    item.status_code,
-    item.status_name,
-    item.property_status,
-    item.property_status_id,
-    item.publication_status_id,
-    item.web_status,
-    item.availability,
-    item.publication_status,
-    extractAttributeValue(item, "status"),
-    extractAttributeValue(item, "property_status"),
-    extractAttributeValue(item, "publication_status"),
-    extractAttributeValue(item, "availability")
-  );
-  const tokkoStatus = collectStatusValues(
-    item.status,
-    item.status_id,
-    item.status_code,
-    item.status_name,
-    item.property_status,
-    item.property_status_id,
-    item.publication_status_id,
-    item.web_status,
-    item.availability,
-    item.publication_status,
-    extractAttributeValue(item, "status"),
-    extractAttributeValue(item, "property_status"),
-    extractAttributeValue(item, "publication_status"),
-    extractAttributeValue(item, "availability")
-  ).join(" | ");
+  const statusValues = extractStatusValues(item);
+  const normalizedStatus = normalizeStatus(...statusValues);
+  const tokkoStatus = collectStatusValues(...statusValues).join(" | ");
 
   return {
     id: `tokko-${id}`,
@@ -611,11 +626,23 @@ export const auditTokkoDescriptions = async () => {
   const normalized = objects.map(normalizeTokkoProperty);
   const withDescription = normalized.filter((property) => property.description.trim());
   const withoutDescription = normalized.filter((property) => !property.description.trim());
+  const statusCounts = normalized.reduce<Record<string, number>>((acc, property) => {
+    acc[property.status] = (acc[property.status] ?? 0) + 1;
+    return acc;
+  }, {});
+  const statusSamples = normalized.slice(0, 30).map((property) => ({
+    id: property.id,
+    title: property.title,
+    status: property.status,
+    tokkoStatus: property.attributes.tokko_status?.[0] ?? "",
+  }));
 
   return {
     total: normalized.length,
     withDescription: withDescription.length,
     withoutDescription: withoutDescription.length,
+    statusCounts,
+    statusSamples,
     samplesWithDescription: withDescription.slice(0, 5).map((property) => ({
       id: property.id,
       title: property.title,
@@ -683,6 +710,16 @@ export const syncTokkoProperties = async (state: InmoState): Promise<InmoState> 
     const localWithoutImported = state.listings.filter(
       (property) => !property.id.startsWith("tokko-") && !importedIds.has(property.id)
     );
+    const statusCounts = importedWithLocalFlags.reduce<Record<string, number>>(
+      (acc, property) => {
+        acc[property.status] = (acc[property.status] ?? 0) + 1;
+        return acc;
+      },
+      {}
+    );
+    const statusSummary = Object.entries(statusCounts)
+      .map(([status, count]) => `${status}: ${count}`)
+      .join(" · ");
 
     return {
       ...state,
@@ -690,7 +727,7 @@ export const syncTokkoProperties = async (state: InmoState): Promise<InmoState> 
       tokkoSyncLogs: [
         createLog({
           status: "success",
-          message: "Sincronización Tokko completada.",
+          message: `Sincronización Tokko completada. Estados: ${statusSummary || "sin datos"}.`,
           importedCount: importedWithLocalFlags.length,
           startedAt,
         }),
