@@ -38,6 +38,7 @@ export default function AdminBrandingPage() {
     | "ba"
     | "banners"
     | "logos"
+    | "footer"
   >(
     "identity"
   );
@@ -252,6 +253,33 @@ export default function AdminBrandingPage() {
           }))
           .filter((logo) => logo.name || logo.image),
       menuItems: normalizedMenuItems,
+      footer: {
+        ...homeForm.footer,
+        sections: homeForm.footer.sections
+          .map((section) => ({
+            ...section,
+            title: section.title.trim(),
+            active: Boolean(section.active),
+            links: section.links
+              .map((link) => ({
+                ...link,
+                label: link.label.trim(),
+                href: normalizeMenuHref(link.href),
+                active: Boolean(link.active),
+              }))
+              .filter((link) => link.label),
+          }))
+          .filter((section) => section.title || section.links.length),
+        socialLinks: homeForm.footer.socialLinks
+          .map((link) => ({
+            ...link,
+            label: link.label.trim(),
+            href: link.href.trim(),
+            icon: link.icon.trim() || "link",
+            active: Boolean(link.active),
+          }))
+          .filter((link) => link.label || link.href),
+      },
       visitForm: Object.fromEntries(
           Object.entries(homeForm.visitForm).map(([key, value]) => [
             key,
@@ -309,6 +337,8 @@ export default function AdminBrandingPage() {
           ? "Formulario actualizado."
         : activeTab === "ba"
           ? "Página Buenos Aires actualizada."
+        : activeTab === "footer"
+          ? "Footer actualizado."
         : activeTab === "logos"
             ? "Logos actualizados."
           : "Home editable actualizada."
@@ -569,6 +599,178 @@ export default function AdminBrandingPage() {
     }));
   };
 
+  const updateFooterField = <K extends keyof HomeContent["footer"]>(
+    key: K,
+    value: HomeContent["footer"][K]
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        [key]: value,
+      },
+    }));
+  };
+
+  const updateFooterSection = (
+    sectionId: string,
+    key: "title" | "active",
+    value: string | boolean
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        sections: prev.footer.sections.map((section) =>
+          section.id === sectionId ? { ...section, [key]: value } : section
+        ),
+      },
+    }));
+  };
+
+  const addFooterSection = () => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        sections: [
+          ...prev.footer.sections,
+          {
+            id: createId(),
+            title: "Nueva sección",
+            active: true,
+            links: [
+              {
+                id: createId(),
+                label: "Nuevo link",
+                href: "/propiedades",
+                active: true,
+              },
+            ],
+          },
+        ],
+      },
+    }));
+  };
+
+  const removeFooterSection = (sectionId: string) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        sections: prev.footer.sections.filter((section) => section.id !== sectionId),
+      },
+    }));
+  };
+
+  const updateFooterLink = (
+    sectionId: string,
+    linkId: string,
+    key: keyof HomeContent["footer"]["sections"][number]["links"][number],
+    value: string | boolean
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        sections: prev.footer.sections.map((section) =>
+          section.id === sectionId
+            ? {
+                ...section,
+                links: section.links.map((link) =>
+                  link.id === linkId ? { ...link, [key]: value } : link
+                ),
+              }
+            : section
+        ),
+      },
+    }));
+  };
+
+  const addFooterLink = (sectionId: string) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        sections: prev.footer.sections.map((section) =>
+          section.id === sectionId
+            ? {
+                ...section,
+                links: [
+                  ...section.links,
+                  {
+                    id: createId(),
+                    label: "Nuevo link",
+                    href: "/propiedades",
+                    active: true,
+                  },
+                ],
+              }
+            : section
+        ),
+      },
+    }));
+  };
+
+  const removeFooterLink = (sectionId: string, linkId: string) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        sections: prev.footer.sections.map((section) =>
+          section.id === sectionId
+            ? { ...section, links: section.links.filter((link) => link.id !== linkId) }
+            : section
+        ),
+      },
+    }));
+  };
+
+  const updateSocialLink = (
+    linkId: string,
+    key: keyof HomeContent["footer"]["socialLinks"][number],
+    value: string | boolean
+  ) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        socialLinks: prev.footer.socialLinks.map((link) =>
+          link.id === linkId ? { ...link, [key]: value } : link
+        ),
+      },
+    }));
+  };
+
+  const addSocialLink = () => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        socialLinks: [
+          ...prev.footer.socialLinks,
+          {
+            id: createId(),
+            label: "Nueva red",
+            href: "",
+            icon: "link",
+            active: true,
+          },
+        ],
+      },
+    }));
+  };
+
+  const removeSocialLink = (linkId: string) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        socialLinks: prev.footer.socialLinks.filter((link) => link.id !== linkId),
+      },
+    }));
+  };
+
   const addPage = () => {
     const id = createId();
     setPageForms((prev) => [
@@ -795,6 +997,7 @@ export default function AdminBrandingPage() {
           ["ba", "Buenos Aires", "travel_explore"],
           ["banners", "Carrusel", "panorama"],
           ["logos", "Logos", "handshake"],
+          ["footer", "Footer", "web_asset"],
         ].map(([id, label, icon]) => (
           <motion.button
             key={id}
@@ -1153,6 +1356,8 @@ export default function AdminBrandingPage() {
                   ? "Página Buenos Aires"
                 : activeTab === "banners"
                   ? "Carrusel de banners"
+                : activeTab === "footer"
+                  ? "Footer del sitio"
                   : "Logos de aliados"}
             </h3>
             <p className="mt-2 max-w-2xl text-xs text-on-surface-variant">
@@ -1170,6 +1375,8 @@ export default function AdminBrandingPage() {
                   ? "Administrá el contenido inmersivo de Buenos Aires: hero, video, datos rápidos, cards y llamados a la acción."
                 : activeTab === "banners"
                   ? "Creá banners que se muestran como carrusel en la home."
+                : activeTab === "footer"
+                  ? "Administrá secciones del pie, cookies, legales y redes sociales."
                   : "Cargá logos de marcas, estudios o aliados para mostrarlos en un carrusel infinito."}
             </p>
           </div>
@@ -1208,6 +1415,24 @@ export default function AdminBrandingPage() {
             >
               Agregar logo
             </button>
+          ) : null}
+          {activeTab === "footer" ? (
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={addFooterSection}
+                className="rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
+              >
+                Agregar sección
+              </button>
+              <button
+                type="button"
+                onClick={addSocialLink}
+                className="rounded-full bg-surface-container-low px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
+              >
+                Agregar red
+              </button>
+            </div>
           ) : null}
           {activeTab === "ba" ? (
             <button
@@ -2242,6 +2467,222 @@ export default function AdminBrandingPage() {
           </div>
           ) : null}
 
+          {activeTab === "footer" ? (
+          <div className="grid gap-5">
+            <div className="grid gap-4 rounded-3xl bg-surface-container-low p-5 md:grid-cols-2">
+              <label className="flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-3 text-xs font-semibold text-primary md:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={homeForm.footer.active}
+                  onChange={(event) => updateFooterField("active", event.target.checked)}
+                />
+                Mostrar footer en el sitio
+              </label>
+              {[
+                ["eyebrow", "Eyebrow"],
+                ["title", "Título"],
+                ["cookiesLabel", "Texto link cookies"],
+                ["cookiesHref", "Link cookies"],
+              ].map(([key, label]) => (
+                <label
+                  key={key}
+                  className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant"
+                >
+                  {label}
+                  <input
+                    className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                    value={String(homeForm.footer[key as keyof HomeContent["footer"]] ?? "")}
+                    onChange={(event) =>
+                      updateFooterField(
+                        key as keyof HomeContent["footer"],
+                        event.target.value as HomeContent["footer"][keyof HomeContent["footer"]]
+                      )
+                    }
+                  />
+                </label>
+              ))}
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                Descripción
+                <textarea
+                  className="min-h-24 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.footer.description}
+                  onChange={(event) => updateFooterField("description", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                Texto legal
+                <input
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.footer.legalText}
+                  onChange={(event) => updateFooterField("legalText", event.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-4">
+              <h4 className="text-sm font-bold uppercase tracking-[0.28em] text-primary">
+                Secciones del footer
+              </h4>
+              {homeForm.footer.sections.map((section, index) => (
+                <motion.div
+                  key={section.id}
+                  layout
+                  initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 170, damping: 22, delay: index * 0.02 }}
+                  className="grid gap-4 rounded-3xl bg-surface-container-low p-5"
+                >
+                  <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                      Título sección
+                      <input
+                        className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                        value={section.title}
+                        onChange={(event) => updateFooterSection(section.id, "title", event.target.value)}
+                      />
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      <label className="flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-3 text-xs font-semibold text-primary">
+                        <input
+                          type="checkbox"
+                          checked={section.active}
+                          onChange={(event) =>
+                            updateFooterSection(section.id, "active", event.target.checked)
+                          }
+                        />
+                        Visible
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => addFooterLink(section.id)}
+                        className="rounded-full bg-primary-fixed px-4 py-3 text-xs font-bold uppercase tracking-widest text-primary"
+                      >
+                        Agregar link
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeFooterSection(section.id)}
+                        className="rounded-full px-4 py-3 text-xs font-bold uppercase tracking-widest text-error transition hover:bg-error-container"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3">
+                    {section.links.map((link) => (
+                      <div
+                        key={link.id}
+                        className="grid gap-3 rounded-2xl bg-surface-container-lowest p-4 md:grid-cols-[1fr_1fr_auto]"
+                      >
+                        <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                          Texto link
+                          <input
+                            className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                            value={link.label}
+                            onChange={(event) =>
+                              updateFooterLink(section.id, link.id, "label", event.target.value)
+                            }
+                          />
+                        </label>
+                        <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                          URL
+                          <input
+                            className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                            value={link.href}
+                            onChange={(event) =>
+                              updateFooterLink(section.id, link.id, "href", event.target.value)
+                            }
+                          />
+                        </label>
+                        <div className="flex flex-wrap items-center gap-3 md:justify-end">
+                          <label className="flex items-center gap-2 text-xs font-semibold text-primary">
+                            <input
+                              type="checkbox"
+                              checked={link.active}
+                              onChange={(event) =>
+                                updateFooterLink(section.id, link.id, "active", event.target.checked)
+                              }
+                            />
+                            Visible
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => removeFooterLink(section.id, link.id)}
+                            className="rounded-full px-3 py-2 text-xs font-bold uppercase tracking-widest text-error"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="grid gap-4">
+              <h4 className="text-sm font-bold uppercase tracking-[0.28em] text-primary">
+                Redes sociales
+              </h4>
+              {homeForm.footer.socialLinks.map((link, index) => (
+                <motion.div
+                  key={link.id}
+                  layout
+                  initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 170, damping: 22, delay: index * 0.02 }}
+                  className="grid gap-3 rounded-3xl bg-surface-container-low p-5 md:grid-cols-[1fr_1fr_1fr_auto]"
+                >
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    Red
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={link.label}
+                      onChange={(event) => updateSocialLink(link.id, "label", event.target.value)}
+                    />
+                  </label>
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    Link
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={link.href}
+                      onChange={(event) => updateSocialLink(link.id, "href", event.target.value)}
+                      placeholder="https://..."
+                    />
+                  </label>
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    Icono Material
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={link.icon}
+                      onChange={(event) => updateSocialLink(link.id, "icon", event.target.value)}
+                      placeholder="photo_camera"
+                    />
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3 md:justify-end">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-primary">
+                      <input
+                        type="checkbox"
+                        checked={link.active}
+                        onChange={(event) => updateSocialLink(link.id, "active", event.target.checked)}
+                      />
+                      Visible
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => removeSocialLink(link.id)}
+                      className="rounded-full px-3 py-2 text-xs font-bold uppercase tracking-widest text-error"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+          ) : null}
+
           <button
             type="submit"
             className="w-fit rounded-full bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-widest text-on-primary"
@@ -2252,6 +2693,8 @@ export default function AdminBrandingPage() {
                 ? "Guardar formulario"
               : activeTab === "ba"
                 ? "Guardar Buenos Aires"
+              : activeTab === "footer"
+                ? "Guardar footer"
               : activeTab === "logos"
                 ? "Guardar logos"
                 : "Guardar home"}

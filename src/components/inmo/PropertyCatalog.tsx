@@ -13,6 +13,7 @@ import FrontHeader from "@/components/inmo/FrontHeader";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice, getListingComparablePriceInArs } from "@/lib/pricing";
 import { InlineRealEstateLoader } from "@/components/inmo/RealEstateStatus";
+import SiteFooter from "@/components/inmo/SiteFooter";
 
 type PropertyCatalogProps = {
   showHero?: boolean;
@@ -355,6 +356,7 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
           </div>
         )}
       </section>
+      <SiteFooter />
     </div>
   );
 }

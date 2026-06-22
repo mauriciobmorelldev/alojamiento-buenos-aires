@@ -12,6 +12,7 @@ import { buildThemeStyles } from "@/lib/theme";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice, getListingComparablePriceInArs } from "@/lib/pricing";
 import { InlineRealEstateLoader } from "@/components/inmo/RealEstateStatus";
+import SiteFooter from "@/components/inmo/SiteFooter";
 
 type PropertyTypeFilter = "all" | PropertyType;
 type OperationFilter = "all" | "venta" | "alquiler";
@@ -492,6 +493,7 @@ export default function ResultsStitch() {
           </div>
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import FrontHeader from "@/components/inmo/FrontHeader";
+import SiteFooter from "@/components/inmo/SiteFooter";
 import { getAvailability } from "@/lib/availability";
 import { propertyTypeLabels, type InmoState } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
@@ -690,6 +691,7 @@ export default function HomeStitchLite({
           </div>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

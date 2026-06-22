@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import FrontHeader from "@/components/inmo/FrontHeader";
+import SiteFooter from "@/components/inmo/SiteFooter";
 import { useInmoStore } from "@/lib/inmoStore";
 import {
   getOptimizedPublicImageSrcSet,
@@ -539,6 +540,7 @@ export default function BuenosAiresPage() {
           </motion.div>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

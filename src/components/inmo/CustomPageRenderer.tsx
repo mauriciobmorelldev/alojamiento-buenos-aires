@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import FrontHeader from "@/components/inmo/FrontHeader";
+import SiteFooter from "@/components/inmo/SiteFooter";
 import type { CustomPage, CustomPageBlock } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
@@ -185,6 +186,7 @@ export default function CustomPageRenderer({ slug, fallback }: CustomPageRendere
           </section>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

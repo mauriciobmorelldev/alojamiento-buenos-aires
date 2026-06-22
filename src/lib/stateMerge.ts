@@ -133,6 +133,28 @@ export const mergeState = (
       ...base.homeContent.visitForm,
       ...(incoming.homeContent?.visitForm ?? {}),
     },
+    footer: {
+      ...base.homeContent.footer,
+      ...(incoming.homeContent?.footer ?? {}),
+      sections: Array.isArray(incoming.homeContent?.footer?.sections)
+        ? incoming.homeContent.footer.sections.map((section) => ({
+            ...section,
+            active: section.active ?? true,
+            links: Array.isArray(section.links)
+              ? section.links.map((link) => ({
+                  ...link,
+                  active: link.active ?? true,
+                }))
+              : [],
+          }))
+        : base.homeContent.footer.sections,
+      socialLinks: Array.isArray(incoming.homeContent?.footer?.socialLinks)
+        ? incoming.homeContent.footer.socialLinks.map((link) => ({
+            ...link,
+            active: link.active ?? true,
+          }))
+        : base.homeContent.footer.socialLinks,
+    },
     buenosAires: mergedBuenosAires,
     partnerLogos: Array.isArray(incoming.homeContent?.partnerLogos)
       ? incoming.homeContent.partnerLogos.map((logo) => ({

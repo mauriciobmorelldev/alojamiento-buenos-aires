@@ -18,6 +18,7 @@ import { generatePropertyPdf } from "@/lib/propertyPdf";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice } from "@/lib/pricing";
 import { RealEstateMessage } from "@/components/inmo/RealEstateStatus";
+import SiteFooter from "@/components/inmo/SiteFooter";
 import { isLocalVideoReference, parseVideoUrl } from "@/lib/video";
 
 function PropertyLeadFormFallback() {
@@ -710,6 +711,7 @@ export default function DetallePropiedadPage() {
           </div>
         </section>
       </main>
+      <SiteFooter />
 
       {isViewerOpen ? (
         <div

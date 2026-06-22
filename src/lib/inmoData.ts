@@ -159,6 +159,40 @@ export type CustomPage = {
   blocks: CustomPageBlock[];
 };
 
+export type FooterLink = {
+  id: string;
+  label: string;
+  href: string;
+  active: boolean;
+};
+
+export type FooterSection = {
+  id: string;
+  title: string;
+  links: FooterLink[];
+  active: boolean;
+};
+
+export type SocialLink = {
+  id: string;
+  label: string;
+  href: string;
+  icon: string;
+  active: boolean;
+};
+
+export type FooterContent = {
+  active: boolean;
+  eyebrow: string;
+  title: string;
+  description: string;
+  legalText: string;
+  cookiesLabel: string;
+  cookiesHref: string;
+  sections: FooterSection[];
+  socialLinks: SocialLink[];
+};
+
 export type HomeContent = {
   eyebrow: string;
   title: string;
@@ -184,6 +218,7 @@ export type HomeContent = {
   partnerLogos: PartnerLogo[];
   banners: HomeBanner[];
   buenosAires: BuenosAiresContent;
+  footer: FooterContent;
 };
 
 export type AdminRole = "owner" | "colaborador";
@@ -530,6 +565,70 @@ export const defaultState: InmoState = {
       finalCtaLabel: "Explorar propiedades",
       finalCtaHref: "/propiedades",
     },
+    footer: {
+      active: true,
+      eyebrow: "Connexa Real Estate",
+      title: "Tu próximo lugar empieza con una consulta clara.",
+      description:
+        "Explorá propiedades, coordiná visitas y recibí acompañamiento comercial en cada paso.",
+      legalText: "© Connexa Real Estate. Todos los derechos reservados.",
+      cookiesLabel: "Política de cookies",
+      cookiesHref: "/cookies",
+      sections: [
+        {
+          id: "footer-secciones",
+          title: "Secciones",
+          active: true,
+          links: [
+            { id: "footer-inicio", label: "Inicio", href: "/", active: true },
+            {
+              id: "footer-propiedades",
+              label: "Propiedades",
+              href: "/propiedades",
+              active: true,
+            },
+            {
+              id: "footer-buenos-aires",
+              label: "Buenos Aires",
+              href: "/buenos-aires",
+              active: true,
+            },
+          ],
+        },
+        {
+          id: "footer-legales",
+          title: "Información",
+          active: true,
+          links: [
+            { id: "footer-contacto", label: "Contacto", href: "/propiedades", active: true },
+            { id: "footer-cookies", label: "Cookies", href: "/cookies", active: true },
+          ],
+        },
+      ],
+      socialLinks: [
+        {
+          id: "social-instagram",
+          label: "Instagram",
+          href: "",
+          icon: "photo_camera",
+          active: false,
+        },
+        {
+          id: "social-linkedin",
+          label: "LinkedIn",
+          href: "",
+          icon: "business_center",
+          active: false,
+        },
+        {
+          id: "social-whatsapp",
+          label: "WhatsApp",
+          href: "",
+          icon: "chat",
+          active: false,
+        },
+      ],
+    },
   },
   adminUsers: [
     {
@@ -587,6 +686,29 @@ export const defaultState: InmoState = {
           type: "hero",
           title: "Zonas más consultadas",
           subtitle: "Barrios con mayor presencia en el inventario activo.",
+        },
+      ],
+    },
+    {
+      id: "page-cookies",
+      title: "Política de cookies",
+      slug: "cookies",
+      excerpt: "Información sobre el uso de cookies técnicas y de medición en el sitio.",
+      active: true,
+      blocks: [
+        {
+          id: "page-cookies-hero",
+          type: "hero",
+          title: "Política de cookies",
+          subtitle:
+            "Usamos cookies para mejorar la navegación, medir el rendimiento del sitio y recordar preferencias básicas.",
+        },
+        {
+          id: "page-cookies-text",
+          type: "text",
+          title: "Cómo usamos las cookies",
+          body:
+            "Las cookies técnicas permiten que el sitio funcione correctamente. Las cookies de medición nos ayudan a entender el uso general de la web para mejorar la experiencia. Podés configurar o bloquear cookies desde tu navegador.",
         },
       ],
     },
