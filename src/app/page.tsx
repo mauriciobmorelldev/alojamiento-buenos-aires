@@ -1,15 +1,15 @@
 import HomeStitchLite from "@/components/inmo/HomeStitchLite";
 import { defaultState } from "@/lib/inmoData";
-import { readThroughCache } from "@/lib/server/responseCache";
+import { PUBLIC_CACHE_TTL, readThroughCache } from "@/lib/server/responseCache";
 import { readPublicHomeListings, readPublicShell } from "@/lib/server/inmoRepository";
 import { mergeState } from "@/lib/stateMerge";
 
-export const revalidate = 10;
+export const revalidate = 60;
 
 export default async function HomePage() {
   const [{ value: shell }, { value: listings }] = await Promise.all([
-    readThroughCache("page:home:shell:v3", 5 * 1000, () => readPublicShell("home")),
-    readThroughCache("page:home:listings:v2", 5 * 1000, readPublicHomeListings),
+    readThroughCache("page:home:shell:v3", PUBLIC_CACHE_TTL.shell, () => readPublicShell("home")),
+    readThroughCache("page:home:listings:v2", PUBLIC_CACHE_TTL.homeListings, readPublicHomeListings),
   ]);
   const initialState = mergeState({ ...defaultState, listings: [] }, {
     ...shell.data,

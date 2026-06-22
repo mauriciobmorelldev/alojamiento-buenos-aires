@@ -9,7 +9,11 @@ import {
   writeInmoState,
 } from "@/lib/server/inmoRepository";
 import { deleteRemovedStateMedia } from "@/lib/server/mediaStorage";
-import { readThroughCache } from "@/lib/server/responseCache";
+import {
+  PUBLIC_CACHE_CONTROL,
+  PUBLIC_CACHE_TTL,
+  readThroughCache,
+} from "@/lib/server/responseCache";
 import { mergeState } from "@/lib/stateMerge";
 
 export async function GET(request: Request) {
@@ -22,12 +26,12 @@ export async function GET(request: Request) {
     if (scope !== "admin") {
       const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
       const [shell, listings] = await Promise.all([
-        readThroughCache(`public:shell:${mode}:compat:v1`, 5 * 1000, () =>
+        readThroughCache(`public:shell:${mode}:compat:v1`, PUBLIC_CACHE_TTL.shell, () =>
           readPublicShell(mode)
         ),
         readThroughCache(
           `public:listings:${mode}:compat:v1`,
-          5 * 1000,
+          mode === "home" ? PUBLIC_CACHE_TTL.homeListings : PUBLIC_CACHE_TTL.catalogListings,
           mode === "home" ? readPublicHomeListings : readPublicListings
         ),
       ]);
@@ -55,7 +59,7 @@ export async function GET(request: Request) {
             "x-inmo-cache":
               shell.hit && listings.hit ? "hit" : shell.hit || listings.hit ? "partial" : "miss",
             "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-            "Cache-Control": "no-store",
+            "Cache-Control": PUBLIC_CACHE_CONTROL.shell,
             "X-Robots-Tag": "noindex, nofollow, noarchive",
           },
         }

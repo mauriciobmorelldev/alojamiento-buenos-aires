@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { readPublicProperty } from "@/lib/server/inmoRepository";
-import { readThroughCache } from "@/lib/server/responseCache";
+import {
+  PUBLIC_CACHE_CONTROL,
+  PUBLIC_CACHE_TTL,
+  readThroughCache,
+} from "@/lib/server/responseCache";
 
 export async function GET(
   _request: Request,
@@ -11,7 +15,7 @@ export async function GET(
     const { id } = await params;
     const cached = await readThroughCache(
       `public:property:${id}:v3`,
-      5 * 1000,
+      PUBLIC_CACHE_TTL.property,
       () => readPublicProperty(id)
     );
     const result = cached.value;
@@ -22,7 +26,7 @@ export async function GET(
         {
           status: 404,
           headers: {
-            "Cache-Control": "public, max-age=5, s-maxage=15",
+            "Cache-Control": PUBLIC_CACHE_CONTROL.notFound,
           },
         }
       );
@@ -34,7 +38,7 @@ export async function GET(
         "x-inmo-state-scope": "public-property",
         "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=5, s-maxage=15, stale-while-revalidate=30",
+        "Cache-Control": PUBLIC_CACHE_CONTROL.property,
       },
     });
   } catch (error) {

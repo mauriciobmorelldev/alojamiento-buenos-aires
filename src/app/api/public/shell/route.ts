@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { readPublicShell } from "@/lib/server/inmoRepository";
-import { readThroughCache } from "@/lib/server/responseCache";
+import {
+  PUBLIC_CACHE_CONTROL,
+  PUBLIC_CACHE_TTL,
+  readThroughCache,
+} from "@/lib/server/responseCache";
 
 export async function GET(request: Request) {
   try {
@@ -9,7 +13,7 @@ export async function GET(request: Request) {
     const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
     const cached = await readThroughCache(
       `public:shell:${mode}:v2`,
-      5 * 1000,
+      PUBLIC_CACHE_TTL.shell,
       () => readPublicShell(mode)
     );
     const result = cached.value;
@@ -19,7 +23,7 @@ export async function GET(request: Request) {
         "x-inmo-state-scope": `public-shell-${mode}`,
         "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=5, s-maxage=15, stale-while-revalidate=30",
+        "Cache-Control": PUBLIC_CACHE_CONTROL.shell,
       },
     });
   } catch (error) {

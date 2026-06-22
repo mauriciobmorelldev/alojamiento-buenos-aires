@@ -5,6 +5,21 @@ type CacheEntry<T> = {
 
 const cache = new Map<string, CacheEntry<unknown>>();
 
+export const PUBLIC_CACHE_TTL = {
+  shell: 120_000,
+  homeListings: 60_000,
+  catalogListings: 60_000,
+  property: 120_000,
+};
+
+export const PUBLIC_CACHE_CONTROL = {
+  shell: "public, max-age=60, s-maxage=120, stale-while-revalidate=300",
+  homeListings: "public, max-age=30, s-maxage=60, stale-while-revalidate=180",
+  catalogListings: "public, max-age=30, s-maxage=60, stale-while-revalidate=180",
+  property: "public, max-age=60, s-maxage=120, stale-while-revalidate=300",
+  notFound: "public, max-age=30, s-maxage=60",
+};
+
 export const readThroughCache = async <T>(
   key: string,
   ttlMs: number,

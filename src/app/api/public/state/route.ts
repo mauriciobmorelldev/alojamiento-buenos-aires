@@ -5,7 +5,11 @@ import {
   readPublicListings,
   readPublicShell,
 } from "@/lib/server/inmoRepository";
-import { readThroughCache } from "@/lib/server/responseCache";
+import {
+  PUBLIC_CACHE_CONTROL,
+  PUBLIC_CACHE_TTL,
+  readThroughCache,
+} from "@/lib/server/responseCache";
 import { mergeState } from "@/lib/stateMerge";
 
 export async function GET(request: Request) {
@@ -14,12 +18,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
     const [shell, listings] = await Promise.all([
-      readThroughCache(`public:state:shell:${mode}:v3`, 5 * 1000, () =>
+      readThroughCache(`public:state:shell:${mode}:v3`, PUBLIC_CACHE_TTL.shell, () =>
         readPublicShell(mode)
       ),
       readThroughCache(
         `public:state:listings:${mode}:v2`,
-        5 * 1000,
+        mode === "home" ? PUBLIC_CACHE_TTL.homeListings : PUBLIC_CACHE_TTL.catalogListings,
         mode === "home" ? readPublicHomeListings : readPublicListings
       ),
     ]);
@@ -43,7 +47,7 @@ export async function GET(request: Request) {
         "x-inmo-cache":
           shell.hit && listings.hit ? "hit" : shell.hit || listings.hit ? "partial" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=5, s-maxage=15, stale-while-revalidate=30",
+        "Cache-Control": PUBLIC_CACHE_CONTROL.shell,
       },
     });
   } catch (error) {

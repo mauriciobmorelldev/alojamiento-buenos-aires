@@ -1,15 +1,15 @@
 import WorkWithUsPage from "@/components/inmo/WorkWithUsPage";
 import { defaultState } from "@/lib/inmoData";
 import { readPublicShell } from "@/lib/server/inmoRepository";
-import { readThroughCache } from "@/lib/server/responseCache";
+import { PUBLIC_CACHE_TTL, readThroughCache } from "@/lib/server/responseCache";
 import { mergeState } from "@/lib/stateMerge";
 
-export const revalidate = 10;
+export const revalidate = 60;
 
 export default async function TrabajaConNosotrosPage() {
   const { value: shell } = await readThroughCache(
     "page:work-with-us:shell:v1",
-    5 * 1000,
+    PUBLIC_CACHE_TTL.shell,
     () => readPublicShell("home")
   );
   const initialState = mergeState({ ...defaultState, listings: [] }, shell.data);

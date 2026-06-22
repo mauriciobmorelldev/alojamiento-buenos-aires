@@ -4,7 +4,11 @@ import {
   readPublicListingsPage,
   type PublicListingsPageOptions,
 } from "@/lib/server/inmoRepository";
-import { readThroughCache } from "@/lib/server/responseCache";
+import {
+  PUBLIC_CACHE_CONTROL,
+  PUBLIC_CACHE_TTL,
+  readThroughCache,
+} from "@/lib/server/responseCache";
 
 const safeJsonAttributes = (value: string | null): Record<string, string[]> => {
   if (!value) return {};
@@ -46,7 +50,7 @@ export async function GET(request: Request) {
         : `public:listings:catalog:v6:${JSON.stringify(pageOptions)}`;
     const cached = await readThroughCache(
       cacheKey,
-      5 * 1000,
+      mode === "home" ? PUBLIC_CACHE_TTL.homeListings : PUBLIC_CACHE_TTL.catalogListings,
       mode === "home" ? readPublicHomeListings : () => readPublicListingsPage(pageOptions)
     );
     const result = cached.value;
@@ -56,7 +60,10 @@ export async function GET(request: Request) {
         "x-inmo-state-scope": `public-listings-${mode}`,
         "x-inmo-cache": cached.hit ? "hit" : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
-        "Cache-Control": "public, max-age=5, s-maxage=15, stale-while-revalidate=30",
+        "Cache-Control":
+          mode === "home"
+            ? PUBLIC_CACHE_CONTROL.homeListings
+            : PUBLIC_CACHE_CONTROL.catalogListings,
       },
     });
   } catch (error) {
