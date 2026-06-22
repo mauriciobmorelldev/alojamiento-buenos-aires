@@ -212,7 +212,8 @@ export default function HomeStitch() {
           initial="hidden"
           animate="visible"
           variants={staggerGroup}
-          className="relative flex min-h-[calc(100svh-4rem)] w-full items-center overflow-hidden bg-primary py-8 sm:min-h-[760px] sm:py-16"
+          className="relative flex min-h-[calc(100svh-4rem)] w-full items-center overflow-hidden bg-background py-8 sm:min-h-[760px] sm:py-16"
+          style={{ backgroundColor: "var(--color-background)" }}
         >
           <div className="absolute inset-0 z-0">
             <motion.img
@@ -226,7 +227,7 @@ export default function HomeStitch() {
               fetchPriority="high"
               decoding="async"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/72 to-primary/12" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/72 via-primary/42 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
           </div>
           <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8">

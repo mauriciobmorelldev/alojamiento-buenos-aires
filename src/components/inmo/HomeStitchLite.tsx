@@ -250,7 +250,10 @@ export default function HomeStitchLite({
       <FrontHeader active="home" />
 
       <main className="pt-16 sm:pt-20">
-        <section className="relative flex min-h-[calc(100svh-4rem)] w-full items-center overflow-hidden bg-background py-8 sm:min-h-[720px] sm:py-16">
+        <section
+          className="relative flex min-h-[calc(100svh-4rem)] w-full items-center overflow-hidden bg-background py-8 sm:min-h-[720px] sm:py-16"
+          style={{ backgroundColor: "var(--color-background)" }}
+        >
           <div className="absolute inset-0 z-0">
             {heroImage ? (
               <PublicImage
@@ -265,9 +268,9 @@ export default function HomeStitchLite({
                 sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, 1440px"
               />
             ) : (
-              <div className="h-full w-full brand-gradient" />
+              <div className="h-full w-full bg-background" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/76 to-primary/14" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/72 via-primary/42 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
           </div>
 
