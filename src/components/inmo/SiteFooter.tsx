@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { useInmoStore } from "@/lib/inmoStore";
-import { buildThemeStyles } from "@/lib/theme";
 
 const socialIconPaths: Record<string, string> = {
   instagram:
@@ -65,8 +64,30 @@ const linkProps = (href: string) =>
 export default function SiteFooter() {
   const { state } = useInmoStore();
   const { theme, homeContent } = state;
-  const themeStyles = useMemo(() => buildThemeStyles(theme), [theme]);
   const footer = homeContent.footer;
+
+  const footerStyles = useMemo(
+    () =>
+      ({
+        "--footer-bg": footer.backgroundColor || theme.primary || "#1b365d",
+        "--footer-text": footer.textColor || "#ffffff",
+        "--footer-accent": footer.accentColor || theme.accent || "#fff3c2",
+        "--footer-link": footer.linkColor || footer.textColor || "#ffffff",
+        "--footer-button-bg":
+          footer.buttonBackgroundColor || footer.accentColor || theme.accent || "#fff3c2",
+        "--footer-button-text": footer.buttonTextColor || theme.primary || "#1b365d",
+      }) as CSSProperties,
+    [
+      footer.accentColor,
+      footer.backgroundColor,
+      footer.buttonBackgroundColor,
+      footer.buttonTextColor,
+      footer.linkColor,
+      footer.textColor,
+      theme.accent,
+      theme.primary,
+    ]
+  );
 
   if (!footer?.active) return null;
 
@@ -103,18 +124,18 @@ export default function SiteFooter() {
 
   return (
     <footer
-      style={themeStyles}
-      className="border-t border-outline-variant/25 bg-primary text-on-primary"
+      style={footerStyles}
+      className="border-t border-white/10 bg-[var(--footer-bg)] text-[var(--footer-text)]"
     >
       <div className="mx-auto grid max-w-screen-2xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.05fr_1.5fr] lg:px-8 lg:py-16">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-fixed/85">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--footer-accent)]/85">
             {footer.eyebrow}
           </p>
           <h2 className="mt-4 max-w-xl text-3xl font-headline font-bold tracking-tight sm:text-4xl">
             {footer.title}
           </h2>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-on-primary/78">
+          <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--footer-text)]/78">
             {footer.description}
           </p>
 
@@ -127,7 +148,7 @@ export default function SiteFooter() {
                     key={item.id}
                     href={href}
                     {...linkProps(href)}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-on-primary/15 bg-on-primary/8 text-on-primary transition hover:-translate-y-0.5 hover:bg-primary-fixed hover:text-primary"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--footer-text)]/15 bg-[var(--footer-text)]/8 text-[var(--footer-link)] transition hover:-translate-y-0.5 hover:bg-[var(--footer-button-bg)] hover:text-[var(--footer-button-text)]"
                     aria-label={item.label}
                   >
                     <SocialIcon icon={item.icon} />
@@ -144,7 +165,7 @@ export default function SiteFooter() {
             if (!links.length) return null;
             return (
               <div key={section.id}>
-                <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-primary-fixed">
+                <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-[var(--footer-accent)]">
                   {section.title}
                 </h3>
                 <div className="mt-4 grid gap-3">
@@ -155,7 +176,7 @@ export default function SiteFooter() {
                         key={item.id}
                         href={href}
                         {...linkProps(href)}
-                        className="w-fit text-sm text-on-primary/76 transition hover:text-primary-fixed"
+                        className="w-fit text-sm text-[var(--footer-link)]/76 transition hover:text-[var(--footer-accent)]"
                       >
                         {item.label}
                       </Link>
@@ -167,16 +188,16 @@ export default function SiteFooter() {
           })}
 
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-primary-fixed">
+            <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-[var(--footer-accent)]">
               Cookies
             </h3>
-            <p className="mt-4 text-sm leading-6 text-on-primary/76">
+            <p className="mt-4 text-sm leading-6 text-[var(--footer-text)]/76">
               Usamos cookies técnicas y de medición para mejorar la experiencia del sitio.
             </p>
             <Link
               href={cookiesHref}
               {...linkProps(cookiesHref)}
-              className="mt-4 inline-flex w-fit rounded-full border border-on-primary/15 px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition hover:bg-primary-fixed hover:text-primary"
+              className="mt-4 inline-flex w-fit rounded-full border border-[var(--footer-text)]/15 px-4 py-2 text-xs font-bold uppercase tracking-widest text-[var(--footer-link)] transition hover:bg-[var(--footer-button-bg)] hover:text-[var(--footer-button-text)]"
             >
               {footer.cookiesLabel || "Ver cookies"}
             </Link>
@@ -184,8 +205,8 @@ export default function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t border-on-primary/10">
-        <div className="mx-auto flex max-w-screen-2xl flex-col gap-3 px-4 py-5 text-xs text-on-primary/62 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+      <div className="border-t border-[var(--footer-text)]/10">
+        <div className="mx-auto flex max-w-screen-2xl flex-col gap-3 px-4 py-5 text-xs text-[var(--footer-text)]/62 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <span>{footer.legalText}</span>
           <span>{theme.name || "Connexa"}</span>
         </div>

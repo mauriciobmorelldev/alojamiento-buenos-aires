@@ -260,6 +260,12 @@ export default function AdminBrandingPage() {
       menuItems: normalizedMenuItems,
       footer: {
         ...homeForm.footer,
+        backgroundColor: homeForm.footer.backgroundColor?.trim(),
+        textColor: homeForm.footer.textColor?.trim(),
+        accentColor: homeForm.footer.accentColor?.trim(),
+        linkColor: homeForm.footer.linkColor?.trim(),
+        buttonBackgroundColor: homeForm.footer.buttonBackgroundColor?.trim(),
+        buttonTextColor: homeForm.footer.buttonTextColor?.trim(),
         sections: homeForm.footer.sections
           .map((section) => ({
             ...section,
@@ -2870,6 +2876,45 @@ export default function AdminBrandingPage() {
                 />
                 Mostrar footer en el sitio
               </label>
+              {[
+                ["backgroundColor", "Color fondo"],
+                ["textColor", "Color texto"],
+                ["accentColor", "Color acento/títulos"],
+                ["linkColor", "Color links"],
+                ["buttonBackgroundColor", "Fondo botones/redes"],
+                ["buttonTextColor", "Texto botones/redes"],
+              ].map(([key, label]) => (
+                <label
+                  key={key}
+                  className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant"
+                >
+                  {label}
+                  <div className="grid grid-cols-[48px_1fr] gap-2">
+                    <input
+                      type="color"
+                      className="h-12 w-12 rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-1"
+                      value={String(homeForm.footer[key as keyof HomeContent["footer"]] || "#ffffff")}
+                      onChange={(event) =>
+                        updateFooterField(
+                          key as keyof HomeContent["footer"],
+                          event.target.value as HomeContent["footer"][keyof HomeContent["footer"]]
+                        )
+                      }
+                    />
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={String(homeForm.footer[key as keyof HomeContent["footer"]] ?? "")}
+                      onChange={(event) =>
+                        updateFooterField(
+                          key as keyof HomeContent["footer"],
+                          event.target.value as HomeContent["footer"][keyof HomeContent["footer"]]
+                        )
+                      }
+                      placeholder="#1b365d"
+                    />
+                  </div>
+                </label>
+              ))}
               {[
                 ["eyebrow", "Eyebrow"],
                 ["title", "Título"],

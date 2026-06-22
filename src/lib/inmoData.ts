@@ -216,6 +216,12 @@ export type SocialLink = {
 
 export type FooterContent = {
   active: boolean;
+  backgroundColor?: string;
+  textColor?: string;
+  accentColor?: string;
+  linkColor?: string;
+  buttonBackgroundColor?: string;
+  buttonTextColor?: string;
   eyebrow: string;
   title: string;
   description: string;
@@ -677,6 +683,12 @@ export const defaultState: InmoState = {
     },
     footer: {
       active: true,
+      backgroundColor: "#1b365d",
+      textColor: "#ffffff",
+      accentColor: "#fff3c2",
+      linkColor: "#ffffff",
+      buttonBackgroundColor: "#fff3c2",
+      buttonTextColor: "#1b365d",
       eyebrow: "Connexa Real Estate",
       title: "Tu próximo lugar empieza con una consulta clara.",
       description:
