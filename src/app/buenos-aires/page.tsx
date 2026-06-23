@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import SiteFooter from "@/components/inmo/SiteFooter";
 import { useInmoStore } from "@/lib/inmoStore";
@@ -22,41 +21,6 @@ const slugify = (value: string) =>
     .replace(/\p{Diacritic}/gu, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24, filter: "blur(10px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
-};
-
-const accordionTextVariants = {
-  collapsed: {
-    opacity: 0,
-    maxHeight: 0,
-    y: 8,
-    filter: "blur(6px)",
-  },
-  expanded: {
-    opacity: 1,
-    maxHeight: 132,
-    y: 0,
-    filter: "blur(0px)",
-  },
-};
-
-const accordionDetailVariants = {
-  collapsed: {
-    opacity: 0,
-    maxHeight: 0,
-    y: 12,
-    filter: "blur(8px)",
-  },
-  expanded: {
-    opacity: 1,
-    maxHeight: 280,
-    y: 0,
-    filter: "blur(0px)",
-  },
-};
 
 const preconnectVideoOrigin = (videoUrl: string) => {
   try {
@@ -251,13 +215,7 @@ export default function BuenosAiresPage() {
 
           <div className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-screen-2xl items-end px-6 pb-10 pt-20 lg:px-8 lg:pb-14">
             <div className="w-full">
-              <motion.div
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                transition={{ type: "spring", stiffness: 120, damping: 24 }}
-                className="max-w-5xl text-white"
-              >
+              <div className="max-w-5xl text-white animate-[fadeUp_0.7s_ease-out_both]">
                 <p className="text-xs font-bold uppercase tracking-[0.38em] text-primary-fixed">
                   {content.eyebrow}
                 </p>
@@ -283,24 +241,13 @@ export default function BuenosAiresPage() {
                     {content.secondaryCtaLabel}
                   </Link>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  hidden: {},
-                  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.14 } },
-                }}
-                className="-mx-6 mt-7 flex gap-2 overflow-x-auto px-6 pb-2 text-white [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:mt-12 sm:grid sm:gap-px sm:overflow-hidden sm:rounded-[1.6rem] sm:border sm:border-white/14 sm:bg-white/16 sm:p-0 sm:shadow-[0_35px_90px_-58px_rgba(0,0,0,0.8)] sm:backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4"
-              >
+              <div className="-mx-6 mt-7 flex gap-2 overflow-x-auto px-6 pb-2 text-white [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:mt-12 sm:grid sm:gap-px sm:overflow-hidden sm:rounded-[1.6rem] sm:border sm:border-white/14 sm:bg-white/16 sm:p-0 sm:shadow-[0_35px_90px_-58px_rgba(0,0,0,0.8)] sm:backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4">
                 {content.quickFacts.slice(0, 4).map((fact, index) => (
-                  <motion.div
+                  <div
                     key={fact}
-                    variants={fadeUp}
-                    whileHover={{ y: -6 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 22 }}
-                    className="group min-w-[13rem] rounded-2xl border border-white/12 bg-white/12 px-4 py-3 backdrop-blur-md transition hover:bg-white/16 sm:min-w-0 sm:rounded-none sm:border-0 sm:bg-white/8 sm:p-5 sm:backdrop-blur-0"
+                    className="group min-w-[13rem] rounded-2xl border border-white/12 bg-white/12 px-4 py-3 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/16 sm:min-w-0 sm:rounded-none sm:border-0 sm:bg-white/8 sm:p-5 sm:backdrop-blur-0"
                   >
                     <span className="text-[9px] font-black uppercase tracking-[0.24em] text-primary-fixed/85 sm:text-[10px] sm:tracking-[0.28em]">
                       0{index + 1}
@@ -308,23 +255,16 @@ export default function BuenosAiresPage() {
                     <p className="mt-2 text-xs font-bold leading-5 text-white/88 sm:mt-3 sm:text-sm sm:leading-6">
                       {fact}
                     </p>
-                  </motion.div>
+                  </div>
                 ))}
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
 
         <section id="guia-ba" className="relative bg-background py-16 sm:py-24">
           <div className="mx-auto max-w-screen-2xl px-6 lg:px-8">
-            <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-120px" }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-end"
-            >
+            <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-end">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.34em] text-primary">
                   {content.introEyebrow}
@@ -336,40 +276,25 @@ export default function BuenosAiresPage() {
               <p className="max-w-3xl text-lg leading-9 text-on-surface-variant">
                 {content.introText}
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
-              className="mt-14 flex flex-col gap-4 lg:h-[30rem] lg:flex-row"
-            >
+            <div className="mt-14 flex flex-col gap-4 lg:h-[30rem] lg:flex-row">
               {sections.map((section, index) => {
                 const isActive = activeAccordionIndex === index;
 
                 return (
-                  <motion.button
+                  <button
                     key={section.id}
                     type="button"
-                    variants={fadeUp}
-                    animate={
-                      isDesktopAccordion
-                        ? { flexGrow: isActive ? 2.35 : 0.78, height: "100%" }
-                        : { flexGrow: 0, height: isActive ? 520 : 132 }
-                    }
+                    style={{
+                      flexGrow: isDesktopAccordion ? (isActive ? 2.35 : 0.78) : 0,
+                      height: isDesktopAccordion ? "100%" : isActive ? 520 : 132,
+                    }}
                     onMouseEnter={() => setActiveAccordionIndex(index)}
                     onFocus={() => setActiveAccordionIndex(index)}
                     onClick={() => setActiveAccordionIndex(index)}
                     aria-expanded={isActive}
-                    whileHover={isDesktopAccordion ? { y: -6 } : undefined}
-                    transition={{
-                      type: "spring",
-                      stiffness: isDesktopAccordion ? 190 : 260,
-                      damping: isDesktopAccordion ? 34 : 32,
-                      mass: isDesktopAccordion ? 1 : 0.75,
-                    }}
-                    className="group relative overflow-hidden rounded-[1.75rem] bg-primary text-left text-white outline-none ring-primary-fixed/0 transition focus-visible:ring-4 lg:min-h-full lg:basis-0"
+                    className="group relative overflow-hidden rounded-[1.75rem] bg-primary text-left text-white outline-none ring-primary-fixed/0 transition-[height,flex-grow,transform] duration-500 ease-out focus-visible:ring-4 lg:min-h-full lg:basis-0 lg:hover:-translate-y-1"
                   >
                     {section.image ? (
                       <Image
@@ -404,29 +329,25 @@ export default function BuenosAiresPage() {
                       <span className="mt-2 inline-flex w-fit rounded-full border border-white/14 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/68 lg:hidden">
                         {isActive ? "Abierto" : "Tocar para abrir"}
                       </span>
-                      <motion.p
-                        variants={accordionTextVariants}
-                        initial="collapsed"
-                        animate={isActive ? "expanded" : "collapsed"}
-                        transition={{
-                          duration: isActive ? 0.34 : 0.16,
-                          delay: isActive ? 0.08 : 0,
-                          ease: [0.16, 1, 0.3, 1],
+                      <p
+                        style={{
+                          maxHeight: isActive ? 132 : 0,
+                          opacity: isActive ? 1 : 0,
+                          transform: isActive ? "translate3d(0,0,0)" : "translate3d(0,8px,0)",
+                          filter: isActive ? "blur(0)" : "blur(6px)",
                         }}
-                        className="mt-3 max-w-xl overflow-hidden text-sm font-semibold leading-6 text-white/82"
+                        className="mt-3 max-w-xl overflow-hidden text-sm font-semibold leading-6 text-white/82 transition-[max-height,opacity,transform,filter] duration-300 ease-out"
                       >
                         {section.text}
-                      </motion.p>
-                      <motion.div
-                        variants={accordionDetailVariants}
-                        initial="collapsed"
-                        animate={isActive ? "expanded" : "collapsed"}
-                        transition={{
-                          duration: isActive ? 0.36 : 0.14,
-                          delay: isActive ? 0.14 : 0,
-                          ease: [0.16, 1, 0.3, 1],
+                      </p>
+                      <div
+                        style={{
+                          maxHeight: isActive ? 280 : 0,
+                          opacity: isActive ? 1 : 0,
+                          transform: isActive ? "translate3d(0,0,0)" : "translate3d(0,12px,0)",
+                          filter: isActive ? "blur(0)" : "blur(8px)",
                         }}
-                        className="overflow-hidden"
+                        className="overflow-hidden transition-[max-height,opacity,transform,filter] duration-300 ease-out"
                       >
                         <p className="mt-4 max-w-xl text-sm leading-7 text-white/72">
                           {section.detail}
@@ -434,12 +355,12 @@ export default function BuenosAiresPage() {
                         <span className="mt-5 inline-flex rounded-full bg-primary-fixed px-4 py-2 text-[10px] font-black uppercase tracking-widest text-primary">
                           Ver capítulo
                         </span>
-                      </motion.div>
+                      </div>
                     </div>
-                  </motion.button>
+                  </button>
                 );
               })}
-            </motion.div>
+            </div>
           </div>
         </section>
 
@@ -447,19 +368,12 @@ export default function BuenosAiresPage() {
           <div className="absolute inset-x-0 top-0 h-px bg-primary-fixed/35" />
           <div className="mx-auto grid max-w-screen-2xl gap-20 px-6 lg:px-8">
             {sections.map((section, index) => (
-              <motion.article
+              <article
                 id={`ba-${slugify(section.title)}`}
                 key={section.id}
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-120px" }}
-                transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
                 className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center"
               >
-                <motion.div
-                  whileHover={{ scale: 0.99 }}
-                  transition={{ type: "spring", stiffness: 220, damping: 24 }}
+                <div
                   className={`relative min-h-[28rem] overflow-hidden rounded-[2rem] ${
                     index % 2 ? "lg:order-2" : ""
                   }`}
@@ -481,7 +395,7 @@ export default function BuenosAiresPage() {
                   <div className="absolute bottom-5 left-5 rounded-full border border-white/18 bg-white/12 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-white backdrop-blur">
                     Capítulo {String(index + 1).padStart(2, "0")}
                   </div>
-                </motion.div>
+                </div>
                 <div className="max-w-2xl">
                   <div className="flex items-start gap-4">
                     <span className="material-symbols-outlined rounded-2xl bg-primary-fixed p-3 text-3xl text-primary shadow-[0_22px_50px_-30px_rgba(255,243,194,0.8)]">
@@ -503,20 +417,13 @@ export default function BuenosAiresPage() {
                     {section.detail}
                   </p>
                 </div>
-              </motion.article>
+              </article>
             ))}
           </div>
         </section>
 
         <section className="bg-primary-fixed py-16 text-primary sm:py-20">
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto grid max-w-screen-2xl gap-8 px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-8"
-          >
+          <div className="mx-auto grid max-w-screen-2xl gap-8 px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-8">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.32em] text-primary/60">
                 {content.finalEyebrow}
@@ -537,7 +444,7 @@ export default function BuenosAiresPage() {
             >
               {content.finalCtaLabel}
             </Link>
-          </motion.div>
+          </div>
         </section>
       </main>
       <SiteFooter />

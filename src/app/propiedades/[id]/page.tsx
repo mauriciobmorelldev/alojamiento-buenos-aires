@@ -10,14 +10,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
 import { propertyTypeLabels, type FilterGroup, type Listing } from "@/lib/inmoData";
 import { generatePropertyPdf } from "@/lib/propertyPdf";
 import { getAvailability } from "@/lib/availability";
 import { formatPrice } from "@/lib/pricing";
-import { RealEstateMessage } from "@/components/inmo/RealEstateStatus";
+import { RealEstateLoader, RealEstateMessage } from "@/components/inmo/RealEstateStatus";
 import SiteFooter from "@/components/inmo/SiteFooter";
 import { isLocalVideoReference, parseVideoUrl } from "@/lib/video";
 
@@ -187,23 +186,10 @@ const PropertyDescription = ({
 };
 
 const BuildingHouseLoader = () => (
-  <div className="flex min-h-screen items-center justify-center bg-background px-8 text-primary">
-    <div className="text-center">
-      <div className="mx-auto h-56 w-56">
-        <DotLottieReact
-          src="https://lottie.host/fb1730d2-9648-4008-ba55-f8a989c5e15e/E9ZNH6CJo7.lottie"
-          loop
-          autoplay
-        />
-      </div>
-      <p className="mt-3 text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-        Construyendo ficha
-      </p>
-      <p className="mt-2 text-sm text-on-surface-variant">
-        Estamos preparando la propiedad.
-      </p>
-    </div>
-  </div>
+  <RealEstateLoader
+    title="Construyendo ficha"
+    message="Estamos preparando la propiedad."
+  />
 );
 
 const PropertyVideo = ({ url, title }: { url: string; title: string }) => {

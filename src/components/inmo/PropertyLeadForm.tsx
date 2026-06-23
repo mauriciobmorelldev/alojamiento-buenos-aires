@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import {
   useState,
   type FormEvent,
@@ -508,35 +507,27 @@ export default function PropertyLeadForm({
         </FloatingSelect>
       </div>
 
-      <AnimatePresence initial={false}>
-        {visitRequest.pets === "Si" ? (
-          <motion.div
-            key="pets-count"
-            initial={{ opacity: 0, y: -8, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: "auto" }}
-            exit={{ opacity: 0, y: -8, height: 0 }}
-            transition={{ type: "spring", stiffness: 220, damping: 24 }}
-          >
-            <FloatingInput
-              required
-              type="number"
-              inputMode="numeric"
-              min="1"
-              max="20"
-              label={visitForm.petsCountLabel}
-              value={visitRequest.petsCount}
-              onChange={(event) =>
-                setVisitRequest((prev) => ({
-                  ...prev,
-                  petsCount: formatIntegerInput(event.target.value, 2),
-                }))
-              }
-              error={petsCountError}
-              isValid={Boolean(visitRequest.petsCount && !petsCountError)}
-            />
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      {visitRequest.pets === "Si" ? (
+        <div className="animate-[fadeUp_0.28s_ease-out_both]">
+          <FloatingInput
+            required
+            type="number"
+            inputMode="numeric"
+            min="1"
+            max="20"
+            label={visitForm.petsCountLabel}
+            value={visitRequest.petsCount}
+            onChange={(event) =>
+              setVisitRequest((prev) => ({
+                ...prev,
+                petsCount: formatIntegerInput(event.target.value, 2),
+              }))
+            }
+            error={petsCountError}
+            isValid={Boolean(visitRequest.petsCount && !petsCountError)}
+          />
+        </div>
+      ) : null}
 
       <FloatingTextarea
         required

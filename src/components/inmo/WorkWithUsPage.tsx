@@ -2,7 +2,6 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { motion } from "motion/react";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import SiteFooter from "@/components/inmo/SiteFooter";
 import type { InmoState, WorkWithUsField } from "@/lib/inmoData";
@@ -176,12 +175,7 @@ export default function WorkWithUsPage({ initialState }: WorkWithUsPageProps) {
         <section className="relative overflow-hidden bg-primary text-on-primary">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,243,194,0.28),transparent_28%),linear-gradient(135deg,rgba(27,54,93,0.98),rgba(47,93,161,0.82))]" />
           <div className="relative mx-auto grid min-h-[520px] max-w-screen-2xl content-end gap-10 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:px-10 lg:py-20">
-            <motion.div
-              initial={{ opacity: 0, y: 28, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-3xl"
-            >
+            <div className="max-w-3xl animate-[fadeUp_0.65s_ease-out_both]">
               <p className="text-[10px] font-black uppercase tracking-[0.35em] text-primary-fixed">
                 {config.eyebrow}
               </p>
@@ -191,29 +185,19 @@ export default function WorkWithUsPage({ initialState }: WorkWithUsPageProps) {
               <p className="mt-6 max-w-2xl text-base leading-8 text-white/82 sm:text-lg">
                 {config.subtitle}
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 28, filter: "blur(10px)" }}
-              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-              transition={{ delay: 0.12, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="self-end rounded-[2rem] border border-white/14 bg-white/10 p-6 backdrop-blur-xl"
-            >
+            <div className="self-end rounded-[2rem] border border-white/14 bg-white/10 p-6 backdrop-blur-xl animate-[fadeUp_0.75s_ease-out_0.1s_both]">
               <h2 className="text-2xl font-headline font-bold text-primary-fixed">
                 {config.introTitle}
               </h2>
               <p className="mt-4 text-sm leading-7 text-white/82">{config.introText}</p>
-            </motion.div>
+            </div>
           </div>
         </section>
 
         <section className="mx-auto grid max-w-screen-xl gap-8 px-6 py-14 lg:grid-cols-[0.8fr_1.2fr] lg:px-10 lg:py-20">
-          <motion.aside
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            className="rounded-[2rem] bg-surface-container-low p-6 lg:sticky lg:top-28 lg:h-fit"
-          >
+          <aside className="rounded-[2rem] bg-surface-container-low p-6 lg:sticky lg:top-28 lg:h-fit">
             <p className="text-[10px] font-black uppercase tracking-[0.32em] text-primary">
               Postulación
             </p>
@@ -226,12 +210,9 @@ export default function WorkWithUsPage({ initialState }: WorkWithUsPageProps) {
             <div className="mt-6 rounded-2xl bg-surface-container-lowest p-4 text-xs leading-6 text-on-surface-variant">
               Revisamos cada postulación con foco en zonas, experiencia, disponibilidad y forma de colaboración.
             </div>
-          </motion.aside>
+          </aside>
 
-          <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
+          <form
             onSubmit={handleSubmit}
             className="grid gap-5 rounded-[2rem] bg-surface-container-lowest p-5 shadow-[0_34px_80px_-60px_rgba(27,54,93,0.55)] sm:p-7"
           >
@@ -326,9 +307,7 @@ export default function WorkWithUsPage({ initialState }: WorkWithUsPageProps) {
             </button>
 
             {statusMessage ? (
-              <motion.p
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
+              <p
                 className={`rounded-2xl p-4 text-sm font-semibold ${
                   status === "success"
                     ? "bg-emerald-50 text-emerald-700"
@@ -336,9 +315,9 @@ export default function WorkWithUsPage({ initialState }: WorkWithUsPageProps) {
                 }`}
               >
                 {statusMessage}
-              </motion.p>
+              </p>
             ) : null}
-          </motion.form>
+          </form>
         </section>
       </main>
       <SiteFooter />
