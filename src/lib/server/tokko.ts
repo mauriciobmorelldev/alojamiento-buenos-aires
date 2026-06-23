@@ -331,6 +331,20 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
   const tokkoSku = firstString(item.tokko_id, item.publication_id, item.reference_code, item.id, item.code);
   const id = firstString(item.id, item.reference_code, item.code, item.tokko_id, item.publication_id) || `${Date.now()}`;
   const operation = extractOperation(item);
+  const location = asRecord(item.location);
+  const address = firstString(
+    item.address,
+    item.operation_address,
+    item.full_address,
+    extractAttributeValue(item, "address")
+  );
+  const operationLocation = firstString(
+    item.operation_location,
+    location.full_location,
+    location.short_location,
+    location.name,
+    item.location
+  );
   const surface = firstNumber(
     item.total_surface,
     item.surface,
@@ -374,6 +388,8 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
       ...(firstString(item.tokko_id) ? { tokko_id: [firstString(item.tokko_id)] } : {}),
       ...(firstString(item.publication_id) ? { publication_id: [firstString(item.publication_id)] } : {}),
       ...(firstString(item.reference_code) ? { reference_code: [firstString(item.reference_code)] } : {}),
+      ...(address ? { address: [address] } : {}),
+      ...(operationLocation ? { operation_location: [operationLocation] } : {}),
       ...(firstString(item.resource_uri) ? { resource_uri: [firstString(item.resource_uri)] } : {}),
       ...(firstString(item.public_url) ? { public_url: [firstString(item.public_url)] } : {}),
       ...(firstString(item.last_modification) ? { last_modification: [firstString(item.last_modification)] } : {}),

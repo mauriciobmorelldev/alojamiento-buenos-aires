@@ -59,6 +59,26 @@ const resolveAttributes = (
 const isHiddenPublicStatus = (status: string) =>
   status === "tasacion" || status === "no_disponible";
 
+const firstAttributeValue = (
+  attributes: Listing["attributes"],
+  keys: string[]
+) => {
+  for (const key of keys) {
+    const value = attributes[key]?.find((item) => item.trim());
+    if (value) return value.trim();
+  }
+  return "";
+};
+
+const resolveDisplayAddress = (property: Listing) =>
+  firstAttributeValue(property.attributes, [
+    "address",
+    "operation_address",
+    "operation_location",
+    "full_location",
+    "location",
+  ]) || property.neighborhood;
+
 const fallbackImages = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDDAgcQ1jH-fIHqf_1_ZpyWhB5OgV3FjRjRnpql6lTJVWDtzGO6uOOup5LqkSCn2KKr5FZT69TKFGv9opxa-EtnkAhHAFONQKnnGSxg-kpoXjvTZd2_zb_M0iY4cdZDsbE31W35JVc6NtFBpzRAIJ3fzBoiXjTRbt76CbQqkPo_uMsnGWzj1yfw1KLkJl-CTvkOXdNQwFmLYckq3fv_U2TWQex40VRDPn80Z1xtb0tEJczaLIblLpxrFYmY9rVwD_c7FEWmHPHXIg",
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDI0K-3EhAsC26dD0_BayXjOCzeNuH20nxavwc4HLYyK1W8lmuyKoiNzSfyrjyS-T-oTiWd1HAvTSQG4R1JQrUZSjvWhWhLPKIErJI1sx8gjlWrwQumL4CKJ1-SJnVea2epp1jyuZ-pbSSiN09GVnDH2NouRR0pr7_1cvzrxCLdkp33_zUYVry2zh716dnQRPQansaLiUNHVZxz8kvq-qEq35qC1ciJztFsnuiUcECmtlHSgSDt4b9Fgu9NaPipKH8mp-uWLNphw",
@@ -422,6 +442,11 @@ export default function DetallePropiedadPage() {
           admin.id === property.createdByAdminId && admin.role === "colaborador"
       )
   );
+  const displayAddress = resolveDisplayAddress(property);
+  const displayZone =
+    displayAddress && displayAddress !== property.neighborhood
+      ? property.neighborhood
+      : "";
 
   const handleDownloadPdf = async () => {
     setPdfError("");
@@ -542,9 +567,22 @@ export default function DetallePropiedadPage() {
                   <h1 className="text-4xl font-headline font-extrabold tracking-tighter text-primary md:text-5xl">
                     {property.title}
                   </h1>
-                  <p className="text-lg font-light text-on-surface-variant">
-                    {property.neighborhood}
-                  </p>
+                  <div className="rounded-2xl border border-primary/10 bg-primary-fixed/55 p-4 text-primary">
+                    <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-primary/60">
+                      <span className="material-symbols-outlined text-base">
+                        location_on
+                      </span>
+                      Dirección
+                    </p>
+                    <p className="mt-2 text-lg font-headline font-extrabold leading-6">
+                      {displayAddress}
+                    </p>
+                    {displayZone ? (
+                      <p className="mt-1 text-sm font-semibold text-primary/70">
+                        {displayZone}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="rounded-2xl bg-surface-container-low p-5 text-left">
                   <p className="text-4xl font-headline font-bold text-primary">
