@@ -34,6 +34,17 @@ const getCoverImage = (images: string[], coverIndex: number) => {
   return images[coverIndex] ?? images[0];
 };
 
+const getPropertyAddress = (item: {
+  neighborhood: string;
+  attributes: Record<string, string[]>;
+}) =>
+  item.attributes.address?.find(Boolean) ??
+  item.attributes.operation_address?.find(Boolean) ??
+  item.attributes.operation_location?.find(Boolean) ??
+  item.attributes.full_location?.find(Boolean) ??
+  item.attributes.location?.find(Boolean) ??
+  item.neighborhood;
+
 const toggleAttributeSelection = (
   group: FilterGroup,
   option: string,
@@ -331,13 +342,18 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
                     </span>
                   </div>
                   <div className="p-6">
-                    <div className="flex items-center justify-between text-xs uppercase tracking-widest text-on-surface-variant">
-                      <span>{item.neighborhood}</span>
+                    <div className="flex items-center justify-end text-xs uppercase tracking-widest text-on-surface-variant">
                       <span>{propertyTypeLabels[item.type]}</span>
                     </div>
                     <h3 className="mt-3 text-xl font-headline font-bold text-primary">
                       {item.title}
                     </h3>
+                    <p className="mt-2 flex items-start gap-2 text-sm font-semibold leading-6 text-on-surface-variant">
+                      <span className="material-symbols-outlined mt-0.5 text-base text-primary">
+                        location_on
+                      </span>
+                      <span>{getPropertyAddress(item)}</span>
+                    </p>
                     <p className="mt-1 text-sm text-on-surface-variant">
                       {item.rooms} ambientes · {item.area} m²
                     </p>

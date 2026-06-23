@@ -31,6 +31,14 @@ const getCoverImage = (images: string[], coverIndex: number) => {
   return images[coverIndex] ?? images[0];
 };
 
+const getPropertyAddress = (item: Listing) =>
+  item.attributes.address?.find(Boolean) ??
+  item.attributes.operation_address?.find(Boolean) ??
+  item.attributes.operation_location?.find(Boolean) ??
+  item.attributes.full_location?.find(Boolean) ??
+  item.attributes.location?.find(Boolean) ??
+  item.neighborhood;
+
 const toggleAttributeSelection = (
   group: FilterGroup,
   option: string,
@@ -480,13 +488,18 @@ export default function ResultsStitch() {
                         </span>
                       </div>
                       <div className="space-y-4 p-5 sm:p-6">
-                        <div className="flex items-center justify-between text-xs uppercase tracking-widest text-on-surface-variant">
-                          <span>{item.neighborhood}</span>
+                        <div className="flex items-center justify-end text-xs uppercase tracking-widest text-on-surface-variant">
                           <span>{propertyTypeLabels[item.type]}</span>
                         </div>
                         <h3 className="text-xl font-headline font-bold text-primary">
                           {item.title}
                         </h3>
+                        <p className="flex items-start gap-2 text-sm font-semibold leading-6 text-on-surface-variant">
+                          <span className="material-symbols-outlined mt-0.5 text-base text-primary">
+                            location_on
+                          </span>
+                          <span>{getPropertyAddress(item)}</span>
+                        </p>
                         <p className="text-sm text-on-surface-variant">
                           {item.rooms} ambientes · {item.area} m²
                         </p>
