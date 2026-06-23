@@ -390,6 +390,7 @@ const normalizeTokkoProperty = (item: TokkoRemoteProperty): Listing => {
       ...(firstString(item.reference_code) ? { reference_code: [firstString(item.reference_code)] } : {}),
       ...(address ? { address: [address] } : {}),
       ...(operationLocation ? { operation_location: [operationLocation] } : {}),
+      ...(firstString(location.name) ? { location: [firstString(location.name)] } : {}),
       ...(firstString(item.resource_uri) ? { resource_uri: [firstString(item.resource_uri)] } : {}),
       ...(firstString(item.public_url) ? { public_url: [firstString(item.public_url)] } : {}),
       ...(firstString(item.last_modification) ? { last_modification: [firstString(item.last_modification)] } : {}),

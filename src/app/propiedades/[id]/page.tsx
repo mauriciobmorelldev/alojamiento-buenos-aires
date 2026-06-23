@@ -76,8 +76,16 @@ const resolveDisplayAddress = (property: Listing) =>
     "operation_address",
     "operation_location",
     "full_location",
-    "location",
   ]) || property.neighborhood;
+
+const resolveLocation = (property: Listing) =>
+  firstAttributeValue(property.attributes, ["location"]);
+
+const resolveOperationLocation = (property: Listing) =>
+  firstAttributeValue(property.attributes, [
+    "operation_location",
+    "full_location",
+  ]);
 
 const fallbackImages = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDDAgcQ1jH-fIHqf_1_ZpyWhB5OgV3FjRjRnpql6lTJVWDtzGO6uOOup5LqkSCn2KKr5FZT69TKFGv9opxa-EtnkAhHAFONQKnnGSxg-kpoXjvTZd2_zb_M0iY4cdZDsbE31W35JVc6NtFBpzRAIJ3fzBoiXjTRbt76CbQqkPo_uMsnGWzj1yfw1KLkJl-CTvkOXdNQwFmLYckq3fv_U2TWQex40VRDPn80Z1xtb0tEJczaLIblLpxrFYmY9rVwD_c7FEWmHPHXIg",
@@ -447,6 +455,8 @@ export default function DetallePropiedadPage() {
     displayAddress && displayAddress !== property.neighborhood
       ? property.neighborhood
       : "";
+  const displayLocation = resolveLocation(property);
+  const displayOperationLocation = resolveOperationLocation(property);
 
   const handleDownloadPdf = async () => {
     setPdfError("");
@@ -581,6 +591,16 @@ export default function DetallePropiedadPage() {
                       <p className="mt-1 text-sm font-semibold text-primary/70">
                         {displayZone}
                       </p>
+                    ) : null}
+                    {displayLocation && displayLocation !== displayAddress ? (
+                      <div className="mt-3 pt-3 border-t border-primary/20">
+                        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-primary/60">
+                          Ubicación aproximada
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-primary/80">
+                          {displayLocation}
+                        </p>
+                      </div>
                     ) : null}
                   </div>
                 </div>
