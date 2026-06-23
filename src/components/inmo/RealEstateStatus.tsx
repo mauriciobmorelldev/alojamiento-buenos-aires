@@ -54,6 +54,29 @@ const HouseMark = ({ loading = false }: { loading?: boolean }) => (
   </div>
 );
 
+const LOTTIE_LOADER_EMBED =
+  "https://lottie.host/embed/fb1730d2-9648-4008-ba55-f8a989c5e15e/E9ZNH6CJo7.lottie";
+
+const PremiumLoaderMotion = ({
+  size = "large",
+}: {
+  size?: "large" | "inline";
+}) => (
+  <div
+    className={`relative mx-auto overflow-hidden ${
+      size === "large" ? "h-56 w-56" : "h-40 w-40"
+    }`}
+  >
+    <iframe
+      src={LOTTIE_LOADER_EMBED}
+      title="Animación de carga"
+      aria-hidden="true"
+      loading="eager"
+      className="h-full w-full border-0"
+    />
+  </div>
+);
+
 export function RealEstateLoader({
   title = "Preparando la visita",
   message = "Estamos abriendo la propiedad. Esto puede tardar unos segundos.",
@@ -64,7 +87,7 @@ export function RealEstateLoader({
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-6 py-16 text-on-background">
       <section className="w-full max-w-md text-center">
-        <HouseMark loading />
+        <PremiumLoaderMotion />
         <p className="mt-3 text-xs font-bold uppercase tracking-[0.32em] text-on-surface-variant">
           Connexa
         </p>
@@ -91,9 +114,7 @@ export function InlineRealEstateLoader({
 }) {
   return (
     <div className="rounded-3xl bg-surface-container-lowest p-8 text-center shadow-[0_34px_75px_-58px_rgba(27,54,93,0.55)]">
-      <div className="scale-90">
-        <HouseMark loading />
-      </div>
+      <PremiumLoaderMotion size="inline" />
       <p className="mt-2 text-xs font-bold uppercase tracking-[0.28em] text-on-surface-variant">
         Connexa
       </p>
