@@ -519,13 +519,17 @@ export default function AdminBrandingPage() {
     }));
   };
 
-  const updateBuenosAiresFact = (index: number, value: string) => {
+  const updateBuenosAiresFact = (
+    index: number,
+    key: keyof HomeContent["buenosAires"]["quickFacts"][number],
+    value: string | boolean
+  ) => {
     setHomeForm((prev) => ({
       ...prev,
       buenosAires: {
         ...prev.buenosAires,
         quickFacts: prev.buenosAires.quickFacts.map((fact, factIndex) =>
-          factIndex === index ? value : fact
+          factIndex === index ? { ...fact, [key]: value } : fact
         ),
       },
     }));
@@ -536,7 +540,18 @@ export default function AdminBrandingPage() {
       ...prev,
       buenosAires: {
         ...prev.buenosAires,
-        quickFacts: [...prev.buenosAires.quickFacts, "Nuevo dato destacado"],
+        quickFacts: [
+          ...prev.buenosAires.quickFacts,
+          {
+            id: createId(),
+            text: "Nuevo dato destacado",
+            active: true,
+            backgroundColor: "",
+            textColor: "",
+            accentColor: "",
+            borderColor: "",
+          },
+        ],
       },
     }));
   };
@@ -2267,22 +2282,78 @@ export default function AdminBrandingPage() {
               </div>
               {homeForm.buenosAires.quickFacts.map((fact, index) => (
                 <motion.div
-                  key={`ba-fact-${index}`}
+                  key={fact.id || `ba-fact-${index}`}
                   layout
-                  className="grid gap-3 rounded-2xl bg-surface-container-lowest p-4 md:grid-cols-[1fr_auto]"
+                  className="grid gap-4 rounded-2xl bg-surface-container-lowest p-4"
                 >
-                  <input
-                    className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
-                    value={fact}
-                    onChange={(event) => updateBuenosAiresFact(index, event.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeBuenosAiresFact(index)}
-                    className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest text-error hover:bg-error-container"
-                  >
-                    Quitar
-                  </button>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <label className="flex items-center gap-2 rounded-full bg-surface-container-low px-4 py-3 text-xs font-semibold text-primary">
+                      <input
+                        type="checkbox"
+                        checked={fact.active}
+                        onChange={(event) =>
+                          updateBuenosAiresFact(index, "active", event.target.checked)
+                        }
+                      />
+                      Visible
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => removeBuenosAiresFact(index)}
+                      className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest text-error hover:bg-error-container"
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                  <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    Texto
+                    <input
+                      className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                      value={fact.text}
+                      onChange={(event) => updateBuenosAiresFact(index, "text", event.target.value)}
+                    />
+                  </label>
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    {[
+                      ["backgroundColor", "Fondo"],
+                      ["textColor", "Texto"],
+                      ["accentColor", "Número"],
+                      ["borderColor", "Borde"],
+                    ].map(([key, label]) => (
+                      <label
+                        key={`${fact.id}-${key}`}
+                        className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant"
+                      >
+                        {label}
+                        <div className="flex overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-low">
+                          <input
+                            type="color"
+                            value={(fact[key as keyof typeof fact] as string) || "#ffffff"}
+                            onChange={(event) =>
+                              updateBuenosAiresFact(
+                                index,
+                                key as keyof HomeContent["buenosAires"]["quickFacts"][number],
+                                event.target.value
+                              )
+                            }
+                            className="h-11 w-12 shrink-0 cursor-pointer border-0 bg-transparent p-1"
+                          />
+                          <input
+                            value={(fact[key as keyof typeof fact] as string) ?? ""}
+                            onChange={(event) =>
+                              updateBuenosAiresFact(
+                                index,
+                                key as keyof HomeContent["buenosAires"]["quickFacts"][number],
+                                event.target.value
+                              )
+                            }
+                            placeholder="#ffffff"
+                            className="min-w-0 flex-1 bg-transparent px-3 text-xs text-on-surface focus:outline-none"
+                          />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </motion.div>
               ))}
             </div>

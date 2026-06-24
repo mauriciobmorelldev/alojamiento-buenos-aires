@@ -96,6 +96,16 @@ export type BuenosAiresSection = {
   active: boolean;
 };
 
+export type BuenosAiresQuickFact = {
+  id: string;
+  text: string;
+  active: boolean;
+  backgroundColor?: string;
+  textColor?: string;
+  accentColor?: string;
+  borderColor?: string;
+};
+
 export type BuenosAiresContent = {
   active: boolean;
   menuLabel: string;
@@ -111,7 +121,7 @@ export type BuenosAiresContent = {
   introEyebrow: string;
   introTitle: string;
   introText: string;
-  quickFacts: string[];
+  quickFacts: BuenosAiresQuickFact[];
   sections: BuenosAiresSection[];
   finalEyebrow: string;
   finalTitle: string;
@@ -266,6 +276,9 @@ export type HomeContent = {
   workWithUs: WorkWithUsContent;
   partnersTitle: string;
   partnersSubtitle: string;
+  bannerShadow?: string;
+  bannerButtonShadow?: string;
+  partnersShadow?: string;
   partnerLogos: PartnerLogo[];
   banners: HomeBanner[];
   buenosAires: BuenosAiresContent;
@@ -471,6 +484,9 @@ export const defaultState: InmoState = {
     partnersTitle: "Trabajamos con aliados estratégicos",
     partnersSubtitle:
       "Marcas, estudios y proveedores que acompañan la operación inmobiliaria.",
+    bannerShadow: "",
+    bannerButtonShadow: "",
+    partnersShadow: "",
     menuItems: [
       {
         id: "menu-inicio",
@@ -618,10 +634,26 @@ export const defaultState: InmoState = {
       introText:
         "Buenos Aires cambia mucho de una cuadra a otra. Esta guía ordena lo importante para tomar una decisión inmobiliaria con menos dudas: conectividad, universidades, vida cotidiana, cultura, trabajo y requisitos básicos para instalarse.",
       quickFacts: [
-        "Zonas recomendadas según rutina y movilidad",
-        "Contexto para estudiantes, profesionales y familias",
-        "Agenda cultural y servicios para integrarte rápido",
-        "Requisitos claros antes de reservar una propiedad",
+        {
+          id: "ba-fact-zonas",
+          text: "Zonas recomendadas según rutina y movilidad",
+          active: true,
+        },
+        {
+          id: "ba-fact-contexto",
+          text: "Contexto para estudiantes, profesionales y familias",
+          active: true,
+        },
+        {
+          id: "ba-fact-cultura",
+          text: "Agenda cultural y servicios para integrarte rápido",
+          active: true,
+        },
+        {
+          id: "ba-fact-requisitos",
+          text: "Requisitos claros antes de reservar una propiedad",
+          active: true,
+        },
       ],
       sections: [
         {

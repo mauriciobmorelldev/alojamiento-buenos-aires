@@ -89,6 +89,7 @@ export default function BuenosAiresPage() {
   const themeStyles = buildThemeStyles(state.theme);
   const content = state.homeContent.buenosAires;
   const sections = (content.sections ?? []).filter((section) => section.active);
+  const quickFacts = (content.quickFacts ?? []).filter((fact) => fact.active);
   const heroVideo = content.heroVideo ? parseVideoUrl(content.heroVideo)?.fileUrl : "";
   const heroImage = heroVideo ? "" : content.heroImage;
   const optimizedHeroImage = heroImage
@@ -254,16 +255,26 @@ export default function BuenosAiresPage() {
               </div>
 
               <div className="-mx-6 mt-7 flex gap-2 overflow-x-auto px-6 pb-2 text-white [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:mt-12 sm:grid sm:gap-px sm:overflow-hidden sm:rounded-[1.6rem] sm:border sm:border-white/14 sm:bg-white/16 sm:p-0 sm:shadow-[0_35px_90px_-58px_rgba(0,0,0,0.8)] sm:backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4">
-                {content.quickFacts.slice(0, 4).map((fact, index) => (
+                {quickFacts.slice(0, 4).map((fact, index) => (
                   <div
-                    key={fact}
+                    key={fact.id || fact.text}
+                    style={{
+                      backgroundColor: fact.backgroundColor?.trim() || undefined,
+                      borderColor: fact.borderColor?.trim() || undefined,
+                    }}
                     className="group min-w-[13rem] rounded-2xl border border-white/12 bg-white/12 px-4 py-3 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/16 sm:min-w-0 sm:rounded-none sm:border-0 sm:bg-white/8 sm:p-5 sm:backdrop-blur-0"
                   >
-                    <span className="text-[9px] font-black uppercase tracking-[0.24em] text-primary-fixed/85 sm:text-[10px] sm:tracking-[0.28em]">
+                    <span
+                      className="text-[9px] font-black uppercase tracking-[0.24em] text-primary-fixed/85 sm:text-[10px] sm:tracking-[0.28em]"
+                      style={{ color: fact.accentColor?.trim() || undefined }}
+                    >
                       0{index + 1}
                     </span>
-                    <p className="mt-2 text-xs font-bold leading-5 text-white/88 sm:mt-3 sm:text-sm sm:leading-6">
-                      {fact}
+                    <p
+                      className="mt-2 text-xs font-bold leading-5 text-white/88 sm:mt-3 sm:text-sm sm:leading-6"
+                      style={{ color: fact.textColor?.trim() || undefined }}
+                    >
+                      {fact.text}
                     </p>
                   </div>
                 ))}

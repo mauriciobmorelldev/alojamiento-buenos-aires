@@ -1,6 +1,7 @@
 import {
   defaultState,
   STATE_VERSION,
+  type BuenosAiresQuickFact,
   type InmoState,
 } from "./inmoData";
 
@@ -54,6 +55,46 @@ const oldBuenosAiresDefaults = {
 const getNewDefaultIfOld = (value: string | undefined, oldValue: string, newValue: string) =>
   !value || value === oldValue ? newValue : value;
 
+const normalizeBuenosAiresQuickFact = (
+  fact: unknown,
+  index: number,
+  fallback?: BuenosAiresQuickFact
+): BuenosAiresQuickFact => {
+  if (typeof fact === "string") {
+    return {
+      id: fallback?.id ?? `ba-fact-${index + 1}`,
+      text: fact,
+      active: true,
+      backgroundColor: fallback?.backgroundColor ?? "",
+      textColor: fallback?.textColor ?? "",
+      accentColor: fallback?.accentColor ?? "",
+      borderColor: fallback?.borderColor ?? "",
+    };
+  }
+  if (fact && typeof fact === "object") {
+    const record = fact as Partial<BuenosAiresQuickFact>;
+    return {
+      id: record.id || fallback?.id || `ba-fact-${index + 1}`,
+      text: record.text || fallback?.text || "Nuevo dato destacado",
+      active: record.active ?? fallback?.active ?? true,
+      backgroundColor: record.backgroundColor ?? fallback?.backgroundColor ?? "",
+      textColor: record.textColor ?? fallback?.textColor ?? "",
+      accentColor: record.accentColor ?? fallback?.accentColor ?? "",
+      borderColor: record.borderColor ?? fallback?.borderColor ?? "",
+    };
+  }
+  return fallback ?? {
+    id: `ba-fact-${index + 1}`,
+    text: "Nuevo dato destacado",
+    active: true,
+  };
+};
+
+const quickFactSignature = (facts: unknown[]) =>
+  facts
+    .map((fact) => (typeof fact === "string" ? fact : (fact as { text?: string })?.text ?? ""))
+    .join("|");
+
 export const mergeState = (
   base: InmoState = defaultState,
   incoming: Partial<InmoState>
@@ -84,8 +125,14 @@ export const mergeState = (
     ),
     quickFacts:
       Array.isArray(incomingBuenosAires?.quickFacts) &&
-      incomingBuenosAires.quickFacts.join("|") !== oldBuenosAiresDefaults.quickFacts.join("|")
-        ? incomingBuenosAires.quickFacts
+      quickFactSignature(incomingBuenosAires.quickFacts) !== oldBuenosAiresDefaults.quickFacts.join("|")
+        ? incomingBuenosAires.quickFacts.map((fact, index) =>
+            normalizeBuenosAiresQuickFact(
+              fact,
+              index,
+              base.homeContent.buenosAires.quickFacts[index]
+            )
+          )
         : base.homeContent.buenosAires.quickFacts,
     sections: Array.isArray(incomingBuenosAires?.sections)
       ? incomingBuenosAires.sections.map((section) => {
