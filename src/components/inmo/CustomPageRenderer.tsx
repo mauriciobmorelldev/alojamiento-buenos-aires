@@ -76,6 +76,16 @@ const renderBlock = (block: CustomPageBlock, page: CustomPage) => {
   }
 
   if (block.type === "video") {
+    const videos = (
+      block.videoUrls?.length ? block.videoUrls : [block.videoUrl ?? ""]
+    ).filter(Boolean);
+    const videoGridClass =
+      block.videoLayout === "three"
+        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        : block.videoLayout === "two"
+          ? "grid-cols-1 md:grid-cols-2"
+          : "grid-cols-1";
+
     return (
       <section key={block.id} className="mx-auto grid w-full max-w-5xl gap-4 sm:gap-6">
         <div className="mx-auto w-full max-w-4xl">
@@ -88,11 +98,16 @@ const renderBlock = (block: CustomPageBlock, page: CustomPage) => {
             </p>
           ) : null}
         </div>
-        {block.videoUrl ? (
-          <LazySocialVideo
-            url={block.videoUrl}
-            title={block.title || page.title}
-          />
+        {videos.length ? (
+          <div className={`grid items-start gap-5 ${videoGridClass}`}>
+            {videos.map((url, index) => (
+              <LazySocialVideo
+                key={`${block.id}-video-${index}-${url}`}
+                url={url}
+                title={`${block.title || page.title} ${index + 1}`}
+              />
+            ))}
+          </div>
         ) : (
           <div className="mx-auto flex aspect-video w-full max-w-4xl items-center justify-center rounded-2xl bg-surface-container-low text-sm font-semibold text-on-surface-variant sm:rounded-3xl">
             Video pendiente

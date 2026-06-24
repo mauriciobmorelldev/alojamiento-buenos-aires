@@ -201,6 +201,8 @@ export type CustomPageBlock = {
   body?: string;
   image?: string;
   videoUrl?: string;
+  videoUrls?: string[];
+  videoLayout?: "stack" | "two" | "three";
   ctaLabel?: string;
   ctaHref?: string;
   items?: {

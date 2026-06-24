@@ -343,7 +343,15 @@ export default function AdminBrandingPage() {
             title: block.title.trim(),
             subtitle: block.subtitle?.trim(),
             body: block.body?.trim(),
-            videoUrl: block.videoUrl?.trim(),
+            videoUrls: (
+              block.videoUrls?.length ? block.videoUrls : [block.videoUrl ?? ""]
+            )
+              .map((url) => url.trim())
+              .filter(Boolean),
+            videoUrl: (
+              block.videoUrls?.length ? block.videoUrls[0] : block.videoUrl
+            )?.trim(),
+            videoLayout: block.videoLayout ?? "stack",
             ctaLabel: block.ctaLabel?.trim(),
             ctaHref: block.ctaHref?.trim(),
             items: block.items?.map((item) => ({
@@ -356,15 +364,14 @@ export default function AdminBrandingPage() {
         }))
         .filter((page) => page.title && page.slug);
 
-    const invalidVideoBlock = nextCustomPages
+    const invalidVideoUrl = nextCustomPages
       .flatMap((page) => page.blocks)
-      .find(
-        (block) =>
-          block.type === "video" &&
-          block.videoUrl &&
-          !isSupportedVideoUrl(block.videoUrl)
-      );
-    if (invalidVideoBlock) {
+      .filter((block) => block.type === "video")
+      .flatMap((block) =>
+        block.videoUrls?.length ? block.videoUrls : [block.videoUrl ?? ""]
+      )
+      .find((url) => url && !isSupportedVideoUrl(url));
+    if (invalidVideoUrl) {
       setFormError(
         "El enlace de video no es compatible. Usá YouTube, Vimeo, Instagram, TikTok, Facebook o un archivo MP4/WebM público."
       );
@@ -1007,6 +1014,8 @@ export default function AdminBrandingPage() {
       body: type === "text" ? "Escribí uno o más párrafos. Cada salto de línea se muestra como un párrafo." : "",
       image: "",
       videoUrl: "",
+      videoUrls: [],
+      videoLayout: "stack",
       ctaLabel: type === "cta" ? "Ver propiedades" : "",
       ctaHref: type === "cta" ? "/propiedades" : "",
       items:
@@ -1073,7 +1082,10 @@ export default function AdminBrandingPage() {
     pageId: string,
     blockId: string,
     key: keyof CustomPageBlock,
-    value: string | CustomPageBlock["items"]
+    value:
+      | string
+      | string[]
+      | CustomPageBlock["items"]
   ) => {
     setPageForms((prev) =>
       prev.map((page) =>
@@ -2247,45 +2259,45 @@ export default function AdminBrandingPage() {
                       {block.type === "video" ? (
                         <div className="grid gap-4 md:grid-cols-2">
                           <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
-                            Enlace del video
-                            <input
-                              type="url"
-                              className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm normal-case tracking-normal text-on-surface focus:border-primary focus:outline-none"
-                              value={block.videoUrl ?? ""}
+                            Videos, uno por línea
+                            <textarea
+                              className="min-h-32 rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm normal-case leading-6 tracking-normal text-on-surface focus:border-primary focus:outline-none"
+                              value={(
+                                block.videoUrls?.length
+                                  ? block.videoUrls
+                                  : block.videoUrl
+                                    ? [block.videoUrl]
+                                    : []
+                              ).join("\n")}
                               onChange={(event) =>
-                                updatePageBlock(page.id, block.id, "videoUrl", event.target.value)
+                                updatePageBlock(
+                                  page.id,
+                                  block.id,
+                                  "videoUrls",
+                                  event.target.value.split("\n")
+                                )
                               }
                               placeholder="YouTube, Vimeo, Instagram, TikTok, Facebook o MP4 público"
                             />
                           </label>
-                          <div className="flex min-h-32 items-center justify-center overflow-hidden rounded-2xl bg-surface-container-low">
-                            {block.image ? (
-                              <img
-                                src={block.image}
-                                alt=""
-                                width={640}
-                                height={360}
-                                className="aspect-video h-full w-full object-cover"
-                              />
-                            ) : (
-                              <span className="material-symbols-outlined text-4xl text-primary">
-                                play_circle
-                              </span>
-                            )}
-                          </div>
-                          <label className="grid content-start gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-                            Portada opcional
-                            <input
-                              type="file"
-                              accept="image/*"
+                          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                            Alineación
+                            <select
+                              value={block.videoLayout ?? "stack"}
                               onChange={(event) =>
-                                handlePageBlockImageUpload(page.id, block.id, event.target.files)
+                                updatePageBlock(
+                                  page.id,
+                                  block.id,
+                                  "videoLayout",
+                                  event.target.value
+                                )
                               }
-                              className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-low px-4 py-3 text-sm"
-                            />
-                            <span className="text-[11px] font-medium normal-case tracking-normal">
-                              La portada carga primero. El reproductor externo sólo se solicita al tocarlo.
-                            </span>
+                              className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm normal-case tracking-normal text-on-surface focus:border-primary focus:outline-none"
+                            >
+                              <option value="stack">Uno debajo del otro</option>
+                              <option value="two">Dos por fila</option>
+                              <option value="three">Tres por fila</option>
+                            </select>
                           </label>
                         </div>
                       ) : null}
