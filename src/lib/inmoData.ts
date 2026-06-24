@@ -80,6 +80,17 @@ export type BuenosAiresSection = {
   eyebrow: string;
   text: string;
   detail: string;
+  cardCtaLabel?: string;
+  cardCtaHref?: string;
+  chapterTitle?: string;
+  chapterBody?: string;
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  accentColor?: string;
   icon: string;
   image: string;
   active: boolean;
@@ -621,6 +632,15 @@ export const defaultState: InmoState = {
           icon: "map",
           detail:
             "Te ayudamos a leer la ciudad: qué zonas conectan mejor con tu rutina, cómo estimar tiempos reales de traslado, qué documentación conviene tener preparada y qué costos aparecen además del alquiler.",
+          cardCtaLabel: "Ver capítulo",
+          cardCtaHref: "#ba-guia",
+          chapterTitle: "Guía práctica para llegar y orientarte",
+          chapterBody:
+            "Antes de reservar una propiedad conviene entender tiempos de traslado, documentación, costos iniciales, servicios y zonas más prácticas según tu rutina. Este capítulo funciona como mapa inicial para tomar mejores decisiones desde el primer contacto.",
+          primaryCtaLabel: "Consultar por una zona",
+          primaryCtaHref: "/propiedades",
+          secondaryCtaLabel: "Ver propiedades",
+          secondaryCtaHref: "/propiedades",
           image:
             "https://images.unsplash.com/photo-1612294037637-ec328d0e075e?auto=format&fit=crop&w=1200&q=80",
           active: true,
@@ -633,6 +653,15 @@ export const defaultState: InmoState = {
           icon: "theater_comedy",
           detail:
             "Buenos Aires tiene planes todos los días. Reunimos referencias culturales y espacios de encuentro para que no elijas solo una dirección, sino también el tipo de vida que querés tener cerca.",
+          cardCtaLabel: "Ver capítulo",
+          cardCtaHref: "#ba-cultura",
+          chapterTitle: "Cultura, comunidad y vida de barrio",
+          chapterBody:
+            "La vida cotidiana también se decide por lo que pasa alrededor: teatros, cafés, ferias, polos gastronómicos, museos, eventos y redes de encuentro. Este capítulo ayuda a entender qué zonas acompañan mejor cada estilo de vida.",
+          primaryCtaLabel: "Buscar por estilo de vida",
+          primaryCtaHref: "/propiedades",
+          secondaryCtaLabel: "Ver guía completa",
+          secondaryCtaHref: "#guia-ba",
           image:
             "https://images.unsplash.com/photo-1577801599718-f4e3ad3fc794?auto=format&fit=crop&w=1200&q=80",
           active: true,
@@ -645,6 +674,15 @@ export const defaultState: InmoState = {
           icon: "school",
           detail:
             "Ubicamos universidades, centros de formación, zonas con buena conexión y barrios prácticos para estudiantes internacionales o argentinos que llegan por primera vez a la ciudad.",
+          cardCtaLabel: "Ver capítulo",
+          cardCtaHref: "#ba-educacion",
+          chapterTitle: "Educación y zonas convenientes para estudiar",
+          chapterBody:
+            "Universidades, centros educativos, accesos y recorridos diarios cambian mucho la experiencia de vivir en Buenos Aires. Este capítulo permite explicar qué barrios convienen según campus, horarios, transporte y presupuesto.",
+          primaryCtaLabel: "Consultar opciones",
+          primaryCtaHref: "/propiedades",
+          secondaryCtaLabel: "Ver propiedades",
+          secondaryCtaHref: "/propiedades",
           image:
             "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
           active: true,
@@ -657,6 +695,15 @@ export const defaultState: InmoState = {
           icon: "article",
           detail:
             "Un espacio para ordenar lo que suele aparecer después de elegir: servicios básicos, medios de pago, requisitos de reserva, movilidad, salud, conectividad y recomendaciones para la primera semana.",
+          cardCtaLabel: "Ver capítulo",
+          cardCtaHref: "#ba-recursos",
+          chapterTitle: "Recursos para instalarte con menos fricción",
+          chapterBody:
+            "Reuní acá información sobre requisitos, servicios, conectividad, salud, medios de pago, movilidad, contratos y recomendaciones prácticas para que la llegada a la ciudad sea clara y ordenada.",
+          primaryCtaLabel: "Hablar con un asesor",
+          primaryCtaHref: "/propiedades",
+          secondaryCtaLabel: "Ver requisitos",
+          secondaryCtaHref: "#ba-recursos",
           image:
             "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80",
           active: true,
@@ -669,6 +716,15 @@ export const defaultState: InmoState = {
           icon: "work",
           detail:
             "Buenos Aires funciona muy bien para trabajo remoto, networking y proyectos freelance. La guía conecta barrios, espacios de coworking y circuitos profesionales para elegir mejor dónde instalarte.",
+          cardCtaLabel: "Ver capítulo",
+          cardCtaHref: "#ba-trabajo",
+          chapterTitle: "Trabajo, networking y rutina profesional",
+          chapterBody:
+            "Este capítulo permite orientar a profesionales, freelancers y personas que trabajan remoto: zonas con coworkings, conectividad, movimiento comercial, acceso a reuniones y barrios con buena vida diaria.",
+          primaryCtaLabel: "Buscar zona para trabajar",
+          primaryCtaHref: "/propiedades",
+          secondaryCtaLabel: "Ver propiedades",
+          secondaryCtaHref: "/propiedades",
           image:
             "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80",
           active: true,

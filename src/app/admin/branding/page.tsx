@@ -580,6 +580,17 @@ export default function AdminBrandingPage() {
             eyebrow: "Categoría",
             text: "Texto breve para la card.",
             detail: "Texto ampliado para el bloque interno.",
+            cardCtaLabel: "Ver capítulo",
+            cardCtaHref: "",
+            chapterTitle: "Título del capítulo",
+            chapterBody: "Contenido ampliado del capítulo.",
+            primaryCtaLabel: "CTA principal",
+            primaryCtaHref: "/propiedades",
+            secondaryCtaLabel: "CTA secundario",
+            secondaryCtaHref: "",
+            backgroundColor: "",
+            textColor: "",
+            accentColor: "",
             icon: "location_city",
             image: "",
             active: true,
@@ -2394,6 +2405,127 @@ export default function AdminBrandingPage() {
                           }
                         />
                       </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        CTA card
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.cardCtaLabel ?? ""}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "cardCtaLabel", event.target.value)
+                          }
+                          placeholder="Ver capítulo"
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        Link CTA card
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.cardCtaHref ?? ""}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "cardCtaHref", event.target.value)
+                          }
+                          placeholder="#ba-guia o /pagina"
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                        Título capítulo
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.chapterTitle ?? ""}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "chapterTitle", event.target.value)
+                          }
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                        Contenido capítulo
+                        <textarea
+                          className="min-h-36 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.chapterBody ?? ""}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "chapterBody", event.target.value)
+                          }
+                          placeholder="Texto largo, bullets o información ampliada."
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        CTA principal
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.primaryCtaLabel ?? ""}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "primaryCtaLabel", event.target.value)
+                          }
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        Link CTA principal
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.primaryCtaHref ?? ""}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "primaryCtaHref", event.target.value)
+                          }
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        CTA secundario
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.secondaryCtaLabel ?? ""}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "secondaryCtaLabel", event.target.value)
+                          }
+                        />
+                      </label>
+                      <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                        Link CTA secundario
+                        <input
+                          className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                          value={section.secondaryCtaHref ?? ""}
+                          onChange={(event) =>
+                            updateBuenosAiresSection(section.id, "secondaryCtaHref", event.target.value)
+                          }
+                        />
+                      </label>
+                      {[
+                        ["backgroundColor", "Color fondo capítulo"],
+                        ["textColor", "Color texto capítulo"],
+                        ["accentColor", "Color acento capítulo"],
+                      ].map(([key, label]) => (
+                        <label
+                          key={`${section.id}-${key}`}
+                          className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant"
+                        >
+                          {label}
+                          <div className="flex overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest">
+                            <input
+                              type="color"
+                              value={(section[key as keyof typeof section] as string) || "#1b365d"}
+                              onChange={(event) =>
+                                updateBuenosAiresSection(
+                                  section.id,
+                                  key as keyof HomeContent["buenosAires"]["sections"][number],
+                                  event.target.value
+                                )
+                              }
+                              className="h-12 w-14 shrink-0 cursor-pointer border-0 bg-transparent p-1"
+                            />
+                            <input
+                              value={(section[key as keyof typeof section] as string) ?? ""}
+                              onChange={(event) =>
+                                updateBuenosAiresSection(
+                                  section.id,
+                                  key as keyof HomeContent["buenosAires"]["sections"][number],
+                                  event.target.value
+                                )
+                              }
+                              placeholder="#1b365d"
+                              className="min-w-0 flex-1 bg-transparent px-3 text-sm text-on-surface focus:outline-none"
+                            />
+                          </div>
+                        </label>
+                      ))}
                     </div>
                   </div>
                 </motion.article>

@@ -97,6 +97,7 @@ export const mergeState = (
               section.id as keyof typeof oldBuenosAiresDefaults.sections
             ];
           return {
+            ...baseSection,
             ...section,
             text:
               oldSection && section.text === oldSection.text
@@ -106,6 +107,23 @@ export const mergeState = (
               oldSection && section.detail === oldSection.detail
                 ? baseSection?.detail ?? section.detail
                 : section.detail,
+            cardCtaLabel: section.cardCtaLabel ?? baseSection?.cardCtaLabel ?? "Ver capítulo",
+            cardCtaHref:
+              section.cardCtaHref ?? baseSection?.cardCtaHref ?? `#${section.id}`,
+            chapterTitle: section.chapterTitle ?? baseSection?.chapterTitle ?? section.title,
+            chapterBody:
+              section.chapterBody ?? baseSection?.chapterBody ?? section.detail,
+            primaryCtaLabel:
+              section.primaryCtaLabel ?? baseSection?.primaryCtaLabel ?? "Consultar",
+            primaryCtaHref:
+              section.primaryCtaHref ?? baseSection?.primaryCtaHref ?? "/propiedades",
+            secondaryCtaLabel:
+              section.secondaryCtaLabel ?? baseSection?.secondaryCtaLabel ?? "Ver propiedades",
+            secondaryCtaHref:
+              section.secondaryCtaHref ?? baseSection?.secondaryCtaHref ?? "/propiedades",
+            backgroundColor: section.backgroundColor ?? baseSection?.backgroundColor ?? "",
+            textColor: section.textColor ?? baseSection?.textColor ?? "",
+            accentColor: section.accentColor ?? baseSection?.accentColor ?? "",
             active: section.active ?? true,
           };
         })

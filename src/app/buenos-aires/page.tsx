@@ -22,6 +22,16 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
 
+const getSectionHref = (section: { id: string; cardCtaHref?: string }) =>
+  section.cardCtaHref?.trim() || `#${section.id}`;
+
+const isExternalHref = (href: string) => /^https?:\/\//i.test(href);
+
+const linkProps = (href: string) =>
+  href.startsWith("/propiedades") || isExternalHref(href)
+    ? { target: "_blank", rel: "noreferrer" }
+    : {};
+
 const preconnectVideoOrigin = (videoUrl: string) => {
   try {
     const { origin } = new URL(videoUrl);
@@ -281,11 +291,14 @@ export default function BuenosAiresPage() {
             <div className="mt-14 flex flex-col gap-4 lg:h-[30rem] lg:flex-row">
               {sections.map((section, index) => {
                 const isActive = activeAccordionIndex === index;
+                const cardCtaHref = getSectionHref(section);
+                const cardCtaLabel = section.cardCtaLabel?.trim() || "Ver capítulo";
 
                 return (
-                  <button
+                  <div
                     key={section.id}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     style={{
                       flexGrow: isDesktopAccordion ? (isActive ? 2.35 : 0.78) : 0,
                       height: isDesktopAccordion ? "100%" : isActive ? 520 : 132,
@@ -293,6 +306,12 @@ export default function BuenosAiresPage() {
                     onMouseEnter={() => setActiveAccordionIndex(index)}
                     onFocus={() => setActiveAccordionIndex(index)}
                     onClick={() => setActiveAccordionIndex(index)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setActiveAccordionIndex(index);
+                      }
+                    }}
                     aria-expanded={isActive}
                     className="group relative overflow-hidden rounded-[1.75rem] bg-primary text-left text-white outline-none ring-primary-fixed/0 transition-[height,flex-grow,transform] duration-500 ease-out focus-visible:ring-4 lg:min-h-full lg:basis-0 lg:hover:-translate-y-1"
                   >
@@ -352,12 +371,16 @@ export default function BuenosAiresPage() {
                         <p className="mt-4 max-w-xl text-sm leading-7 text-white/72">
                           {section.detail}
                         </p>
-                        <span className="mt-5 inline-flex rounded-full bg-primary-fixed px-4 py-2 text-[10px] font-black uppercase tracking-widest text-primary">
-                          Ver capítulo
-                        </span>
+                        <Link
+                          href={cardCtaHref}
+                          {...linkProps(cardCtaHref)}
+                          className="mt-5 inline-flex rounded-full bg-primary-fixed px-4 py-2 text-[10px] font-black uppercase tracking-widest text-primary transition hover:-translate-y-0.5"
+                        >
+                          {cardCtaLabel}
+                        </Link>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -367,14 +390,32 @@ export default function BuenosAiresPage() {
         <section className="relative bg-primary py-16 text-on-primary sm:py-24">
           <div className="absolute inset-x-0 top-0 h-px bg-primary-fixed/35" />
           <div className="mx-auto grid max-w-screen-2xl gap-20 px-6 lg:px-8">
-            {sections.map((section, index) => (
+            {sections.map((section, index) => {
+              const chapterTitle = section.chapterTitle?.trim() || section.title;
+              const chapterBody = section.chapterBody?.trim() || section.detail;
+              const primaryCtaHref = section.primaryCtaHref?.trim();
+              const secondaryCtaHref = section.secondaryCtaHref?.trim();
+              const chapterStyle = {
+                backgroundColor: section.backgroundColor?.trim() || undefined,
+                color: section.textColor?.trim() || undefined,
+              };
+              const accentStyle = {
+                color: section.accentColor?.trim() || undefined,
+              };
+              const textStyle = {
+                color: section.textColor?.trim() || undefined,
+              };
+
+              return (
               <article
-                id={`ba-${slugify(section.title)}`}
+                id={section.id}
                 key={section.id}
-                className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center"
+                style={chapterStyle}
+                className="scroll-mt-28 rounded-[2rem] border border-white/10 p-4 sm:p-6 lg:grid lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-8"
               >
+                <span id={`ba-${slugify(section.title)}`} className="sr-only" />
                 <div
-                  className={`relative min-h-[28rem] overflow-hidden rounded-[2rem] ${
+                  className={`relative min-h-[22rem] overflow-hidden rounded-[1.6rem] sm:min-h-[28rem] ${
                     index % 2 ? "lg:order-2" : ""
                   }`}
                 >
@@ -396,29 +437,69 @@ export default function BuenosAiresPage() {
                     Capítulo {String(index + 1).padStart(2, "0")}
                   </div>
                 </div>
-                <div className="max-w-2xl">
+                <div className="mt-8 max-w-2xl lg:mt-0">
                   <div className="flex items-start gap-4">
                     <span className="material-symbols-outlined rounded-2xl bg-primary-fixed p-3 text-3xl text-primary shadow-[0_22px_50px_-30px_rgba(255,243,194,0.8)]">
                       {section.icon}
                     </span>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-on-primary/55">
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-[0.28em] text-on-primary/55"
+                        style={textStyle}
+                      >
                         {section.eyebrow}
                       </p>
-                      <h2 className="mt-2 font-headline text-4xl font-black leading-tight text-primary-fixed sm:text-5xl">
-                        {section.title}
+                      <h2
+                        className="mt-2 font-headline text-4xl font-black leading-tight text-primary-fixed sm:text-5xl"
+                        style={accentStyle}
+                      >
+                        {chapterTitle}
                       </h2>
                     </div>
                   </div>
-                  <p className="mt-8 text-2xl font-semibold leading-9 text-white">
+                  <p
+                    className="mt-8 text-2xl font-semibold leading-9 text-white"
+                    style={textStyle}
+                  >
                     {section.text}
                   </p>
-                  <p className="mt-5 text-base leading-8 text-on-primary/74">
-                    {section.detail}
-                  </p>
+                  <div
+                    className="mt-5 space-y-4 text-base leading-8 text-on-primary/74"
+                    style={textStyle}
+                  >
+                    {chapterBody.split("\n").filter(Boolean).map((paragraph, paragraphIndex) => (
+                      <p key={`${section.id}-paragraph-${paragraphIndex}`}>
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                  {(primaryCtaHref || secondaryCtaHref) ? (
+                    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                      {primaryCtaHref ? (
+                        <Link
+                          href={primaryCtaHref}
+                          {...linkProps(primaryCtaHref)}
+                          className="inline-flex justify-center rounded-full bg-primary-fixed px-5 py-3 text-xs font-black uppercase tracking-widest text-primary transition hover:-translate-y-1"
+                        >
+                          {section.primaryCtaLabel?.trim() || "Consultar"}
+                        </Link>
+                      ) : null}
+                      {secondaryCtaHref ? (
+                        <Link
+                          href={secondaryCtaHref}
+                          {...linkProps(secondaryCtaHref)}
+                          className="inline-flex justify-center rounded-full border border-white/20 bg-white/10 px-5 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:-translate-y-1 hover:bg-white/16"
+                          style={textStyle}
+                        >
+                          {section.secondaryCtaLabel?.trim() || "Ver más"}
+                        </Link>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
         </section>
 
