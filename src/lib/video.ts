@@ -1,10 +1,19 @@
-export type VideoProvider = "file" | "youtube" | "vimeo" | "embed" | "unknown";
+export type VideoProvider =
+  | "file"
+  | "youtube"
+  | "vimeo"
+  | "instagram"
+  | "tiktok"
+  | "facebook"
+  | "embed"
+  | "unknown";
 
 export type ParsedVideo = {
   provider: VideoProvider;
   originalUrl: string;
   embedUrl?: string;
   fileUrl?: string;
+  posterUrl?: string;
 };
 
 const directVideoPattern = /\.(mp4|webm|ogg|mov)(\?.*)?$/i;
@@ -66,6 +75,7 @@ export const parseVideoUrl = (value: string): ParsedVideo | null => {
       provider: "youtube",
       originalUrl,
       embedUrl: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}`,
+      posterUrl: `https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`,
     };
   }
 
@@ -76,6 +86,38 @@ export const parseVideoUrl = (value: string): ParsedVideo | null => {
       provider: "vimeo",
       originalUrl,
       embedUrl: `https://player.vimeo.com/video/${encodeURIComponent(id)}`,
+    };
+  }
+
+  if (url.hostname.includes("instagram.com")) {
+    const segments = url.pathname.split("/").filter(Boolean);
+    const contentType = segments[0];
+    const id = segments[1];
+    if (!id || !["p", "reel", "tv"].includes(contentType)) {
+      return { provider: "unknown", originalUrl };
+    }
+    return {
+      provider: "instagram",
+      originalUrl,
+      embedUrl: `https://www.instagram.com/${contentType}/${encodeURIComponent(id)}/embed/`,
+    };
+  }
+
+  if (url.hostname.includes("tiktok.com")) {
+    const match = url.pathname.match(/\/video\/(\d+)/);
+    if (!match?.[1]) return { provider: "unknown", originalUrl };
+    return {
+      provider: "tiktok",
+      originalUrl,
+      embedUrl: `https://www.tiktok.com/player/v1/${encodeURIComponent(match[1])}`,
+    };
+  }
+
+  if (url.hostname.includes("facebook.com") || url.hostname.includes("fb.watch")) {
+    return {
+      provider: "facebook",
+      originalUrl,
+      embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(originalUrl)}&show_text=false`,
     };
   }
 

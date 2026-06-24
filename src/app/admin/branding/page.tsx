@@ -21,6 +21,7 @@ import type {
 import { useInmoStore } from "@/lib/inmoStore";
 import { readAdminSession } from "@/lib/session";
 import { buildThemeStyles } from "@/lib/theme";
+import { isSupportedVideoUrl } from "@/lib/video";
 
 export default function AdminBrandingPage() {
   const { state, updateState } = useInmoStore();
@@ -48,6 +49,7 @@ export default function AdminBrandingPage() {
   const [formError, setFormError] = useState("");
   const [formNotice, setFormNotice] = useState("");
   const [uploadingField, setUploadingField] = useState("");
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
 
   const hasEmbeddedMedia = (value: unknown): boolean => {
     if (typeof value === "string") return value.startsWith("data:") || value.startsWith("blob:");
@@ -339,6 +341,7 @@ export default function AdminBrandingPage() {
             title: block.title.trim(),
             subtitle: block.subtitle?.trim(),
             body: block.body?.trim(),
+            videoUrl: block.videoUrl?.trim(),
             ctaLabel: block.ctaLabel?.trim(),
             ctaHref: block.ctaHref?.trim(),
             items: block.items?.map((item) => ({
@@ -350,6 +353,21 @@ export default function AdminBrandingPage() {
           })),
         }))
         .filter((page) => page.title && page.slug);
+
+    const invalidVideoBlock = nextCustomPages
+      .flatMap((page) => page.blocks)
+      .find(
+        (block) =>
+          block.type === "video" &&
+          block.videoUrl &&
+          !isSupportedVideoUrl(block.videoUrl)
+      );
+    if (invalidVideoBlock) {
+      setFormError(
+        "El enlace de video no es compatible. Usá YouTube, Vimeo, Instagram, TikTok, Facebook o un archivo MP4/WebM público."
+      );
+      return;
+    }
 
     if (
       activeTab === "work" &&
@@ -945,6 +963,7 @@ export default function AdminBrandingPage() {
         ],
       },
     ]);
+    setEditingPageId(id);
   };
 
   const updatePage = (
@@ -959,6 +978,7 @@ export default function AdminBrandingPage() {
 
   const removePage = (pageId: string) => {
     setPageForms((prev) => prev.filter((page) => page.id !== pageId));
+    setEditingPageId((current) => (current === pageId ? null : current));
   };
 
   const addPageBlock = (pageId: string, type: CustomPageBlockType) => {
@@ -972,12 +992,15 @@ export default function AdminBrandingPage() {
             ? "Llamado a la acción"
             : type === "cards"
               ? "Bloque de beneficios"
+              : type === "video"
+                ? "Video"
               : type === "image"
                 ? "Bloque con imagen"
                 : "Bloque de texto",
       subtitle: type === "hero" || type === "cta" || type === "image" ? "Texto de apoyo." : "",
       body: type === "text" ? "Escribí uno o más párrafos. Cada salto de línea se muestra como un párrafo." : "",
       image: "",
+      videoUrl: "",
       ctaLabel: type === "cta" ? "Ver propiedades" : "",
       ctaHref: type === "cta" ? "/propiedades" : "",
       items:
@@ -1856,14 +1879,47 @@ export default function AdminBrandingPage() {
               </motion.div>
             ) : null}
 
-            {pageForms.map((page, pageIndex) => (
+            {pageForms.map((page) => (
+              <div
+                key={`page-row-${page.id}`}
+                className="flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-outline-variant/20 bg-surface-container-low px-5 py-3"
+              >
+                <h4 className="min-w-0 truncate text-base font-bold text-primary">
+                  {page.title || "Página sin título"}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setEditingPageId(page.id)}
+                  className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-on-primary transition hover:-translate-y-0.5"
+                  style={{ color: "var(--color-on-primary)" }}
+                >
+                  <span className="material-symbols-outlined text-base">edit</span>
+                  Editar
+                </button>
+              </div>
+            ))}
+
+            <AnimatePresence>
+              {editingPageId ? (
+                <motion.button
+                  type="button"
+                  aria-label="Cerrar editor"
+                  onClick={() => setEditingPageId(null)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[90] cursor-default bg-primary/45 backdrop-blur-sm"
+                />
+              ) : null}
+            </AnimatePresence>
+
+            {pageForms.filter((page) => page.id === editingPageId).map((page) => (
               <motion.article
                 key={page.id}
-                layout
                 initial={{ opacity: 0, y: 18, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 170, damping: 22, delay: pageIndex * 0.03 }}
-                className="grid gap-5 rounded-[2rem] bg-surface-container-low p-5"
+                transition={{ type: "spring", stiffness: 190, damping: 24 }}
+                className="fixed inset-x-3 bottom-3 top-3 z-[100] mx-auto grid max-w-5xl content-start gap-5 overflow-y-auto rounded-[2rem] bg-surface-container-low p-5 shadow-2xl sm:inset-x-6 sm:p-7"
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
@@ -1878,6 +1934,14 @@ export default function AdminBrandingPage() {
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="submit"
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-on-primary transition hover:-translate-y-0.5"
+                      style={{ color: "var(--color-on-primary)" }}
+                    >
+                      <span className="material-symbols-outlined text-base">save</span>
+                      Guardar cambios
+                    </button>
                     <label className="flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-3 text-xs font-semibold text-primary">
                       <input
                         type="checkbox"
@@ -1888,6 +1952,14 @@ export default function AdminBrandingPage() {
                       />
                       Publicada
                     </label>
+                    <button
+                      type="button"
+                      onClick={() => setEditingPageId(null)}
+                      className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-surface-container-lowest text-primary transition hover:bg-primary-fixed"
+                      aria-label="Cerrar editor"
+                    >
+                      <span className="material-symbols-outlined">close</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => removePage(page.id)}
@@ -1933,6 +2005,7 @@ export default function AdminBrandingPage() {
                     ["hero", "Hero"],
                     ["text", "Texto"],
                     ["image", "Imagen"],
+                    ["video", "Video social"],
                     ["cards", "Cards"],
                     ["cta", "CTA"],
                   ].map(([type, label]) => (
@@ -2028,6 +2101,52 @@ export default function AdminBrandingPage() {
                               }
                               className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-low px-4 py-3 text-sm"
                             />
+                          </label>
+                        </div>
+                      ) : null}
+
+                      {block.type === "video" ? (
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                            Enlace del video
+                            <input
+                              type="url"
+                              className="rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm normal-case tracking-normal text-on-surface focus:border-primary focus:outline-none"
+                              value={block.videoUrl ?? ""}
+                              onChange={(event) =>
+                                updatePageBlock(page.id, block.id, "videoUrl", event.target.value)
+                              }
+                              placeholder="YouTube, Vimeo, Instagram, TikTok, Facebook o MP4 público"
+                            />
+                          </label>
+                          <div className="flex min-h-32 items-center justify-center overflow-hidden rounded-2xl bg-surface-container-low">
+                            {block.image ? (
+                              <img
+                                src={block.image}
+                                alt=""
+                                width={640}
+                                height={360}
+                                className="aspect-video h-full w-full object-cover"
+                              />
+                            ) : (
+                              <span className="material-symbols-outlined text-4xl text-primary">
+                                play_circle
+                              </span>
+                            )}
+                          </div>
+                          <label className="grid content-start gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                            Portada opcional
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(event) =>
+                                handlePageBlockImageUpload(page.id, block.id, event.target.files)
+                              }
+                              className="rounded-xl border border-dashed border-outline-variant/50 bg-surface-container-low px-4 py-3 text-sm"
+                            />
+                            <span className="text-[11px] font-medium normal-case tracking-normal">
+                              La portada carga primero. El reproductor externo sólo se solicita al tocarlo.
+                            </span>
                           </label>
                         </div>
                       ) : null}

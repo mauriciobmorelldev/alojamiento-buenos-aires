@@ -3,6 +3,7 @@
 import Link from "next/link";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import SiteFooter from "@/components/inmo/SiteFooter";
+import LazySocialVideo from "@/components/inmo/LazySocialVideo";
 import type { CustomPage, CustomPageBlock } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { buildThemeStyles } from "@/lib/theme";
@@ -69,6 +70,34 @@ const renderBlock = (block: CustomPageBlock, page: CustomPage) => {
             </p>
           ) : null}
         </div>
+      </section>
+    );
+  }
+
+  if (block.type === "video") {
+    return (
+      <section key={block.id} className="grid gap-6">
+        <div className="max-w-3xl">
+          <h2 className="text-3xl font-headline font-bold text-primary">
+            {block.title}
+          </h2>
+          {block.subtitle ? (
+            <p className="mt-3 text-base leading-8 text-on-surface-variant">
+              {block.subtitle}
+            </p>
+          ) : null}
+        </div>
+        {block.videoUrl ? (
+          <LazySocialVideo
+            url={block.videoUrl}
+            title={block.title || page.title}
+            poster={block.image}
+          />
+        ) : (
+          <div className="flex aspect-video items-center justify-center rounded-3xl bg-surface-container-low text-sm font-semibold text-on-surface-variant">
+            Video pendiente
+          </div>
+        )}
       </section>
     );
   }

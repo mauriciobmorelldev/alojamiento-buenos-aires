@@ -185,7 +185,13 @@ export type WorkWithUsContent = {
   fields: WorkWithUsField[];
 };
 
-export type CustomPageBlockType = "hero" | "text" | "image" | "cta" | "cards";
+export type CustomPageBlockType =
+  | "hero"
+  | "text"
+  | "image"
+  | "video"
+  | "cta"
+  | "cards";
 
 export type CustomPageBlock = {
   id: string;
@@ -194,6 +200,7 @@ export type CustomPageBlock = {
   subtitle?: string;
   body?: string;
   image?: string;
+  videoUrl?: string;
   ctaLabel?: string;
   ctaHref?: string;
   items?: {
