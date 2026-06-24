@@ -92,7 +92,6 @@ const renderBlock = (block: CustomPageBlock, page: CustomPage) => {
           <LazySocialVideo
             url={block.videoUrl}
             title={block.title || page.title}
-            poster={block.image}
           />
         ) : (
           <div className="mx-auto flex aspect-video w-full max-w-4xl items-center justify-center rounded-2xl bg-surface-container-low text-sm font-semibold text-on-surface-variant sm:rounded-3xl">
@@ -200,7 +199,7 @@ export default function CustomPageRenderer({ slug, fallback }: CustomPageRendere
     let active = true;
     setLoading(true);
     fetch(`/api/public/page/${encodeURIComponent(normalizedSlug)}`, {
-      cache: "force-cache",
+      cache: "no-store",
     })
       .then(async (response) => {
         if (!response.ok) return null;

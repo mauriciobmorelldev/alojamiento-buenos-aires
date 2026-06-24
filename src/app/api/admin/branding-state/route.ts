@@ -126,6 +126,17 @@ export async function PUT(request: Request) {
   revalidatePath("/");
   revalidatePath("/buenos-aires");
   revalidatePath("/propiedades");
+  (Array.isArray(payload.customPages) ? payload.customPages : []).forEach((page) => {
+    if (
+      page &&
+      typeof page === "object" &&
+      "slug" in page &&
+      typeof page.slug === "string" &&
+      page.slug.trim()
+    ) {
+      revalidatePath(`/${page.slug.replace(/^\/+|\/+$/g, "")}`);
+    }
+  });
   return NextResponse.json(
     { ok: true, source: "supabase" },
     {

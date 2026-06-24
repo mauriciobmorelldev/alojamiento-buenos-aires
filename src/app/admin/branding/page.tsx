@@ -408,6 +408,10 @@ export default function AdminBrandingPage() {
       customPages: nextCustomPages,
     }), { persist: false });
     setHomeForm((prev) => ({ ...prev, menuItems: normalizedMenuItems }));
+    if (activeTab === "pages") {
+      setEditingPageId(null);
+      setExpandedPageBlockId(null);
+    }
     setFormNotice(
       activeTab === "menu"
         ? "Menú actualizado. Ya se refleja en el header público."
@@ -1985,26 +1989,18 @@ export default function AdminBrandingPage() {
               </div>
             ))}
 
-            <AnimatePresence>
-              {editingPageId ? (
-                <motion.button
-                  type="button"
-                  aria-label="Cerrar editor"
-                  onClick={() => setEditingPageId(null)}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[90] cursor-default bg-primary/45 backdrop-blur-sm"
-                />
-              ) : null}
-            </AnimatePresence>
+            {editingPageId ? (
+              <button
+                type="button"
+                aria-label="Cerrar editor"
+                onClick={() => setEditingPageId(null)}
+                className="fixed inset-0 z-[90] cursor-default bg-primary/45"
+              />
+            ) : null}
 
             {pageForms.filter((page) => page.id === editingPageId).map((page) => (
-              <motion.article
+              <article
                 key={page.id}
-                initial={{ opacity: 0, y: 18, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 190, damping: 24 }}
                 className="fixed inset-x-2 bottom-2 top-2 z-[100] mx-auto grid max-w-3xl content-start gap-4 overflow-y-auto rounded-2xl bg-surface-container-low p-3 shadow-2xl sm:inset-x-6 sm:bottom-[5vh] sm:top-[5vh] sm:rounded-3xl sm:p-5"
               >
                 <div className="sticky -top-3 z-10 flex flex-wrap items-start justify-between gap-3 border-b border-outline-variant/20 bg-surface-container-low/95 px-1 py-3 backdrop-blur-md sm:-top-5">
@@ -2055,6 +2051,12 @@ export default function AdminBrandingPage() {
                     </button>
                   </div>
                 </div>
+
+                {formError ? (
+                  <p className="rounded-xl bg-error-container px-4 py-3 text-sm font-semibold text-error">
+                    {formError}
+                  </p>
+                ) : null}
 
                 <div className="grid gap-4 md:grid-cols-3">
                   <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
@@ -2108,18 +2110,14 @@ export default function AdminBrandingPage() {
 
                 <div className="grid gap-4">
                   {page.blocks.map((block, blockIndex) => (
-                    <motion.div
+                    <div
                       key={block.id}
-                      layout
                       draggable
                       onDragStart={() => setDraggedPageBlockId(block.id)}
                       onDragEnd={() => setDraggedPageBlockId(null)}
                       onDragOver={(event) => event.preventDefault()}
                       onDrop={() => dropPageBlock(page.id, block.id)}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: blockIndex * 0.02 }}
-                      className={`grid gap-3 rounded-2xl border bg-surface-container-lowest p-3 transition sm:p-4 ${
+                      className={`grid gap-3 rounded-2xl border bg-surface-container-lowest p-3 sm:p-4 ${
                         draggedPageBlockId === block.id
                           ? "border-primary opacity-60"
                           : "border-outline-variant/20"
@@ -2375,10 +2373,10 @@ export default function AdminBrandingPage() {
                       </button>
                       </>
                       ) : null}
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-              </motion.article>
+              </article>
             ))}
           </div>
           ) : null}
