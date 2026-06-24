@@ -26,10 +26,16 @@ export default function LazySocialVideo({
 }: LazySocialVideoProps) {
   const [playing, setPlaying] = useState(false);
   const parsed = parseVideoUrl(url);
+  const isVertical =
+    parsed?.provider === "instagram" || parsed?.provider === "tiktok";
+  const frameClass = isVertical
+    ? "mx-auto aspect-[9/16] w-full max-w-[22rem] sm:max-w-[24rem]"
+    : "mx-auto aspect-video w-full max-w-4xl";
+  const mediaClass = `${frameClass} rounded-2xl bg-black object-contain sm:rounded-3xl`;
 
   if (!parsed || parsed.provider === "unknown") {
     return (
-      <div className="flex aspect-video items-center justify-center rounded-3xl bg-surface-container-low px-6 text-center text-sm font-semibold text-on-surface-variant">
+      <div className="mx-auto flex aspect-video w-full max-w-4xl items-center justify-center rounded-2xl bg-surface-container-low px-6 text-center text-sm font-semibold text-on-surface-variant sm:rounded-3xl">
         El enlace de video no es compatible.
       </div>
     );
@@ -43,7 +49,7 @@ export default function LazySocialVideo({
         autoPlay
         playsInline
         preload="metadata"
-        className="aspect-video w-full rounded-3xl bg-black object-contain"
+        className={mediaClass}
       />
     );
   }
@@ -57,7 +63,7 @@ export default function LazySocialVideo({
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
         referrerPolicy="strict-origin-when-cross-origin"
-        className="aspect-video w-full rounded-3xl bg-black"
+        className={mediaClass}
       />
     );
   }
@@ -68,7 +74,7 @@ export default function LazySocialVideo({
     <button
       type="button"
       onClick={() => setPlaying(true)}
-      className="group relative aspect-video w-full cursor-pointer overflow-hidden rounded-3xl bg-primary text-on-primary"
+      className={`${frameClass} group relative cursor-pointer overflow-hidden rounded-2xl bg-primary text-on-primary sm:rounded-3xl`}
       aria-label={`Reproducir ${title}`}
     >
       {preview ? (
@@ -83,11 +89,11 @@ export default function LazySocialVideo({
         />
       ) : null}
       <span className="absolute inset-0 bg-black/35" />
-      <span className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-        <span className="material-symbols-outlined flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl text-primary shadow-lg transition group-hover:scale-105">
+      <span className="absolute inset-0 flex flex-col items-center justify-center gap-2.5">
+        <span className="material-symbols-outlined flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl text-primary shadow-lg transition group-hover:scale-105 sm:h-16 sm:w-16 sm:text-3xl">
           play_arrow
         </span>
-        <span className="rounded-full bg-black/45 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
+        <span className="max-w-[80%] rounded-full bg-black/45 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs">
           Reproducir en {providerLabel[parsed.provider] ?? "video"}
         </span>
       </span>

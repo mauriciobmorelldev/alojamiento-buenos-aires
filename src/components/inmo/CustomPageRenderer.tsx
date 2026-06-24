@@ -77,13 +77,13 @@ const renderBlock = (block: CustomPageBlock, page: CustomPage) => {
 
   if (block.type === "video") {
     return (
-      <section key={block.id} className="grid gap-6">
-        <div className="max-w-3xl">
-          <h2 className="text-3xl font-headline font-bold text-primary">
+      <section key={block.id} className="mx-auto grid w-full max-w-5xl gap-4 sm:gap-6">
+        <div className="mx-auto w-full max-w-4xl">
+          <h2 className="text-2xl font-headline font-bold text-primary sm:text-3xl">
             {block.title}
           </h2>
           {block.subtitle ? (
-            <p className="mt-3 text-base leading-8 text-on-surface-variant">
+            <p className="mt-2 text-sm leading-7 text-on-surface-variant sm:mt-3 sm:text-base sm:leading-8">
               {block.subtitle}
             </p>
           ) : null}
@@ -95,7 +95,7 @@ const renderBlock = (block: CustomPageBlock, page: CustomPage) => {
             poster={block.image}
           />
         ) : (
-          <div className="flex aspect-video items-center justify-center rounded-3xl bg-surface-container-low text-sm font-semibold text-on-surface-variant">
+          <div className="mx-auto flex aspect-video w-full max-w-4xl items-center justify-center rounded-2xl bg-surface-container-low text-sm font-semibold text-on-surface-variant sm:rounded-3xl">
             Video pendiente
           </div>
         )}
