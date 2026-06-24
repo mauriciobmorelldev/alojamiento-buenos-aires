@@ -285,7 +285,12 @@ export type HomeContent = {
   partnersSubtitle: string;
   bannerShadow?: string;
   bannerButtonShadow?: string;
+  heroOverlayColor?: string;
+  heroFadeColor?: string;
+  bannerOverlayColor?: string;
+  bannerFadeColor?: string;
   partnersShadow?: string;
+  partnersFadeColor?: string;
   partnerLogos: PartnerLogo[];
   banners: HomeBanner[];
   buenosAires: BuenosAiresContent;
@@ -493,7 +498,12 @@ export const defaultState: InmoState = {
       "Marcas, estudios y proveedores que acompañan la operación inmobiliaria.",
     bannerShadow: "",
     bannerButtonShadow: "",
+    heroOverlayColor: "",
+    heroFadeColor: "",
+    bannerOverlayColor: "",
+    bannerFadeColor: "",
     partnersShadow: "",
+    partnersFadeColor: "",
     menuItems: [
       {
         id: "menu-inicio",

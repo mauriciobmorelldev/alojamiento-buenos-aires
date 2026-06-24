@@ -50,6 +50,8 @@ export default function AdminBrandingPage() {
   const [formNotice, setFormNotice] = useState("");
   const [uploadingField, setUploadingField] = useState("");
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [expandedPageBlockId, setExpandedPageBlockId] = useState<string | null>(null);
+  const [draggedPageBlockId, setDraggedPageBlockId] = useState<string | null>(null);
 
   const hasEmbeddedMedia = (value: unknown): boolean => {
     if (typeof value === "string") return value.startsWith("data:") || value.startsWith("blob:");
@@ -1020,6 +1022,47 @@ export default function AdminBrandingPage() {
         page.id === pageId ? { ...page, blocks: [...page.blocks, block] } : page
       )
     );
+    setExpandedPageBlockId(block.id);
+  };
+
+  const movePageBlock = (
+    pageId: string,
+    blockId: string,
+    direction: -1 | 1
+  ) => {
+    setPageForms((prev) =>
+      prev.map((page) => {
+        if (page.id !== pageId) return page;
+        const currentIndex = page.blocks.findIndex((block) => block.id === blockId);
+        const nextIndex = currentIndex + direction;
+        if (currentIndex < 0 || nextIndex < 0 || nextIndex >= page.blocks.length) {
+          return page;
+        }
+        const blocks = [...page.blocks];
+        const [moved] = blocks.splice(currentIndex, 1);
+        blocks.splice(nextIndex, 0, moved);
+        return { ...page, blocks };
+      })
+    );
+  };
+
+  const dropPageBlock = (pageId: string, targetBlockId: string) => {
+    if (!draggedPageBlockId || draggedPageBlockId === targetBlockId) return;
+    setPageForms((prev) =>
+      prev.map((page) => {
+        if (page.id !== pageId) return page;
+        const fromIndex = page.blocks.findIndex(
+          (block) => block.id === draggedPageBlockId
+        );
+        const toIndex = page.blocks.findIndex((block) => block.id === targetBlockId);
+        if (fromIndex < 0 || toIndex < 0) return page;
+        const blocks = [...page.blocks];
+        const [moved] = blocks.splice(fromIndex, 1);
+        blocks.splice(toIndex, 0, moved);
+        return { ...page, blocks };
+      })
+    );
+    setDraggedPageBlockId(null);
   };
 
   const updatePageBlock = (
@@ -1699,6 +1742,46 @@ export default function AdminBrandingPage() {
           </div>
           ) : null}
 
+          {activeTab === "hero" ? (
+            <div className="grid gap-4 rounded-2xl bg-surface-container-low p-4 md:grid-cols-2">
+              {[
+                ["heroOverlayColor", "Color velo lateral", themeForm.primary],
+                ["heroFadeColor", "Color degradado inferior", themeForm.background || "#ffffff"],
+              ].map(([key, label, fallback]) => (
+                <label
+                  key={key}
+                  className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant"
+                >
+                  {label}
+                  <span className="flex items-center gap-3 rounded-xl bg-surface-container-lowest p-2">
+                    <input
+                      type="color"
+                      value={String(homeForm[key as keyof HomeContent] || fallback || "#ffffff")}
+                      onChange={(event) =>
+                        updateHomeField(
+                          key as keyof HomeContent,
+                          event.target.value as HomeContent[keyof HomeContent]
+                        )
+                      }
+                      className="h-10 w-12 cursor-pointer rounded-lg border-0 bg-transparent"
+                    />
+                    <input
+                      value={String(homeForm[key as keyof HomeContent] ?? "")}
+                      onChange={(event) =>
+                        updateHomeField(
+                          key as keyof HomeContent,
+                          event.target.value as HomeContent[keyof HomeContent]
+                        )
+                      }
+                      placeholder={String(fallback || "#ffffff")}
+                      className="min-w-0 flex-1 bg-transparent text-sm normal-case tracking-normal text-on-surface outline-none"
+                    />
+                  </span>
+                </label>
+              ))}
+            </div>
+          ) : null}
+
           {activeTab === "sections" ? (
           <div className="grid gap-4 md:grid-cols-2">
             {[
@@ -1889,7 +1972,10 @@ export default function AdminBrandingPage() {
                 </h4>
                 <button
                   type="button"
-                  onClick={() => setEditingPageId(page.id)}
+                  onClick={() => {
+                    setEditingPageId(page.id);
+                    setExpandedPageBlockId(null);
+                  }}
                   className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-on-primary transition hover:-translate-y-0.5"
                   style={{ color: "var(--color-on-primary)" }}
                 >
@@ -1919,9 +2005,9 @@ export default function AdminBrandingPage() {
                 initial={{ opacity: 0, y: 18, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ type: "spring", stiffness: 190, damping: 24 }}
-                className="fixed inset-x-3 bottom-3 top-3 z-[100] mx-auto grid max-w-5xl content-start gap-5 overflow-y-auto rounded-[2rem] bg-surface-container-low p-5 shadow-2xl sm:inset-x-6 sm:p-7"
+                className="fixed inset-x-2 bottom-2 top-2 z-[100] mx-auto grid max-w-3xl content-start gap-4 overflow-y-auto rounded-2xl bg-surface-container-low p-3 shadow-2xl sm:inset-x-6 sm:bottom-[5vh] sm:top-[5vh] sm:rounded-3xl sm:p-5"
               >
-                <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="sticky -top-3 z-10 flex flex-wrap items-start justify-between gap-3 border-b border-outline-variant/20 bg-surface-container-low/95 px-1 py-3 backdrop-blur-md sm:-top-5">
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
                       Página pública
@@ -2025,24 +2111,79 @@ export default function AdminBrandingPage() {
                     <motion.div
                       key={block.id}
                       layout
+                      draggable
+                      onDragStart={() => setDraggedPageBlockId(block.id)}
+                      onDragEnd={() => setDraggedPageBlockId(null)}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={() => dropPageBlock(page.id, block.id)}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: blockIndex * 0.02 }}
-                      className="grid gap-4 rounded-3xl bg-surface-container-lowest p-5"
+                      className={`grid gap-3 rounded-2xl border bg-surface-container-lowest p-3 transition sm:p-4 ${
+                        draggedPageBlockId === block.id
+                          ? "border-primary opacity-60"
+                          : "border-outline-variant/20"
+                      }`}
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <span className="rounded-full bg-primary-fixed px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-                          {block.type}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="material-symbols-outlined cursor-grab touch-none text-xl text-on-surface-variant active:cursor-grabbing"
+                          title="Arrastrar para reordenar"
+                        >
+                          drag_indicator
                         </span>
                         <button
                           type="button"
-                          onClick={() => removePageBlock(page.id, block.id)}
-                          className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-error hover:bg-error-container"
+                          onClick={() =>
+                            setExpandedPageBlockId((current) =>
+                              current === block.id ? null : block.id
+                            )
+                          }
+                          className="min-w-0 flex-1 cursor-pointer text-left"
                         >
-                          Quitar bloque
+                          <span className="block truncate text-sm font-bold text-primary">
+                            {block.title || "Sección sin título"}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                            {block.type}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => movePageBlock(page.id, block.id, -1)}
+                          disabled={blockIndex === 0}
+                          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface-container-low text-primary disabled:cursor-not-allowed disabled:opacity-30"
+                          aria-label="Subir sección"
+                        >
+                          <span className="material-symbols-outlined text-lg">arrow_upward</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => movePageBlock(page.id, block.id, 1)}
+                          disabled={blockIndex === page.blocks.length - 1}
+                          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface-container-low text-primary disabled:cursor-not-allowed disabled:opacity-30"
+                          aria-label="Bajar sección"
+                        >
+                          <span className="material-symbols-outlined text-lg">arrow_downward</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedPageBlockId((current) =>
+                              current === block.id ? null : block.id
+                            )
+                          }
+                          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary-fixed text-primary"
+                          aria-label="Editar sección"
+                        >
+                          <span className="material-symbols-outlined text-lg">
+                            {expandedPageBlockId === block.id ? "expand_less" : "edit"}
+                          </span>
                         </button>
                       </div>
 
+                      {expandedPageBlockId === block.id ? (
+                      <>
                       <div className="grid gap-4 md:grid-cols-2">
                         <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
                           Título del bloque
@@ -2224,6 +2365,15 @@ export default function AdminBrandingPage() {
                             </div>
                           ))}
                         </div>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => removePageBlock(page.id, block.id)}
+                        className="justify-self-start rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-error hover:bg-error-container"
+                      >
+                        Eliminar sección
+                      </button>
+                      </>
                       ) : null}
                     </motion.div>
                   ))}
@@ -3016,6 +3166,67 @@ export default function AdminBrandingPage() {
 
           {activeTab === "banners" ? (
           <div className="grid gap-4">
+            <div className="grid gap-4 rounded-2xl bg-surface-container-low p-4 md:grid-cols-2">
+              {[
+                ["bannerOverlayColor", "Color velo sobre la imagen", themeForm.primary],
+                ["bannerFadeColor", "Color degradado inferior", themeForm.primary],
+              ].map(([key, label, fallback]) => (
+                <label
+                  key={key}
+                  className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant"
+                >
+                  {label}
+                  <span className="flex items-center gap-3 rounded-xl bg-surface-container-lowest p-2">
+                    <input
+                      type="color"
+                      value={String(homeForm[key as keyof HomeContent] || fallback || "#1b365d")}
+                      onChange={(event) =>
+                        updateHomeField(
+                          key as keyof HomeContent,
+                          event.target.value as HomeContent[keyof HomeContent]
+                        )
+                      }
+                      className="h-10 w-12 cursor-pointer rounded-lg border-0 bg-transparent"
+                    />
+                    <input
+                      value={String(homeForm[key as keyof HomeContent] ?? "")}
+                      onChange={(event) =>
+                        updateHomeField(
+                          key as keyof HomeContent,
+                          event.target.value as HomeContent[keyof HomeContent]
+                        )
+                      }
+                      placeholder={String(fallback || "#1b365d")}
+                      className="min-w-0 flex-1 bg-transparent text-sm normal-case tracking-normal text-on-surface outline-none"
+                    />
+                  </span>
+                </label>
+              ))}
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant">
+                Sombra del carrusel
+                <input
+                  value={homeForm.bannerShadow ?? ""}
+                  onChange={(event) => updateHomeField("bannerShadow", event.target.value)}
+                  placeholder="0 34px 70px -34px rgba(27,54,93,.32)"
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm normal-case tracking-normal text-on-surface"
+                />
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant">
+                Sombra de botones
+                <input
+                  value={homeForm.bannerButtonShadow ?? ""}
+                  onChange={(event) =>
+                    updateHomeField("bannerButtonShadow", event.target.value)
+                  }
+                  placeholder="0 18px 40px -24px rgba(255,243,194,.9)"
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm normal-case tracking-normal text-on-surface"
+                />
+              </label>
+              <p className="text-xs leading-5 text-on-surface-variant md:col-span-2">
+                Los colores controlan los velos que permiten leer el texto sobre la imagen.
+                En las sombras podés escribir <strong>none</strong> para quitarlas.
+              </p>
+            </div>
             {homeForm.banners.map((banner, index) => (
               <motion.div
                 key={banner.id}
@@ -3107,6 +3318,43 @@ export default function AdminBrandingPage() {
 
           {activeTab === "logos" ? (
           <div className="grid gap-4">
+            <div className="grid gap-4 rounded-2xl bg-surface-container-low p-4 md:grid-cols-2">
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant">
+                Color desvanecido lateral
+                <span className="flex items-center gap-3 rounded-xl bg-surface-container-lowest p-2">
+                  <input
+                    type="color"
+                    value={
+                      homeForm.partnersFadeColor ||
+                      themeForm.surface ||
+                      themeForm.background ||
+                      "#ffffff"
+                    }
+                    onChange={(event) =>
+                      updateHomeField("partnersFadeColor", event.target.value)
+                    }
+                    className="h-10 w-12 cursor-pointer rounded-lg border-0 bg-transparent"
+                  />
+                  <input
+                    value={homeForm.partnersFadeColor ?? ""}
+                    onChange={(event) =>
+                      updateHomeField("partnersFadeColor", event.target.value)
+                    }
+                    placeholder={themeForm.surface || "#ffffff"}
+                    className="min-w-0 flex-1 bg-transparent text-sm normal-case tracking-normal text-on-surface outline-none"
+                  />
+                </span>
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant">
+                Sombra del bloque de logos
+                <input
+                  value={homeForm.partnersShadow ?? ""}
+                  onChange={(event) => updateHomeField("partnersShadow", event.target.value)}
+                  placeholder="0 34px 70px -34px rgba(27,54,93,.32)"
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm normal-case tracking-normal text-on-surface"
+                />
+              </label>
+            </div>
             {homeForm.partnerLogos.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 14 }}

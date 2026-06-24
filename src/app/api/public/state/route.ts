@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
     const [shell, listings] = await Promise.all([
-      readThroughCache(`public:state:shell:${mode}:v3`, PUBLIC_CACHE_TTL.shell, () =>
+      readThroughCache(`public:state:shell:${mode}:v4`, PUBLIC_CACHE_TTL.shell, () =>
         readPublicShell(mode)
       ),
       readThroughCache(

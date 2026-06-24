@@ -321,7 +321,6 @@ export const readPublicShell = async (
             }
           : {
               homeContent: sanitizeHomeContent(defaultState.homeContent),
-              customPages: sanitizeCustomPages(defaultState.customPages),
             }),
         filterGroups: defaultState.filterGroups,
         adminUsers: defaultState.adminUsers.map((admin) => ({
@@ -370,10 +369,6 @@ export const readPublicShell = async (
     home_content?: Record<string, unknown>;
     filter_groups?: InmoState["filterGroups"];
   } | null;
-  const customPages = Array.isArray(settingsData?.home_content?.customPages)
-    ? settingsData.home_content.customPages
-    : defaultState.customPages;
-
   return {
     data: {
       version: STATE_VERSION,
@@ -391,9 +386,6 @@ export const readPublicShell = async (
             homeContent: settings.error
               ? sanitizeHomeContent(defaultState.homeContent)
               : sanitizeHomeContent(settingsData?.home_content),
-            customPages: settings.error
-              ? sanitizeCustomPages(defaultState.customPages)
-              : sanitizeCustomPages(customPages),
           }),
       filterGroups: settings.error
         ? defaultState.filterGroups
@@ -418,6 +410,41 @@ export const readPublicShell = async (
     },
     source: "supabase",
   };
+};
+
+export const readPublicCustomPage = async (slug: string) => {
+  const normalizedSlug = slug.replace(/^\/+|\/+$/g, "");
+  const fallbackPage = sanitizeCustomPages(defaultState.customPages).find(
+    (page) => page.active && page.slug.replace(/^\/+|\/+$/g, "") === normalizedSlug
+  ) ?? null;
+  const supabase = getSupabaseServerClient();
+
+  if (!supabase || !isSupabaseConfigured()) {
+    return { page: fallbackPage, source: "fallback" as const };
+  }
+
+  const settings = await supabase
+    .from("platform_settings")
+    .select("home_content")
+    .eq("id", SETTINGS_ID)
+    .maybeSingle();
+
+  if (settings.error) {
+    console.warn("Supabase public page read failed", settings.error.message);
+    return { page: fallbackPage, source: "fallback" as const };
+  }
+
+  const homeContent = settings.data?.home_content as Record<string, unknown> | null;
+  const pages = Array.isArray(homeContent?.customPages)
+    ? sanitizeCustomPages(homeContent.customPages as InmoState["customPages"])
+    : [];
+  const page =
+    pages.find(
+      (item) =>
+        item.active && item.slug.replace(/^\/+|\/+$/g, "") === normalizedSlug
+    ) ?? null;
+
+  return { page, source: "supabase" as const };
 };
 
 export const readPublicListings = async (): Promise<PublicReadResult> => {

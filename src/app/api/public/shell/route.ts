@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
     const cached = await readThroughCache(
-      `public:shell:${mode}:v2`,
+      `public:shell:${mode}:v3`,
       PUBLIC_CACHE_TTL.shell,
       () => readPublicShell(mode)
     );

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import SiteFooter from "@/components/inmo/SiteFooter";
 import LazySocialVideo from "@/components/inmo/LazySocialVideo";
@@ -189,12 +190,45 @@ const renderBlock = (block: CustomPageBlock, page: CustomPage) => {
 
 export default function CustomPageRenderer({ slug, fallback }: CustomPageRendererProps) {
   const { state } = useInmoStore();
-  const { theme, customPages } = state;
+  const { theme } = state;
   const themeStyles = buildThemeStyles(theme);
   const normalizedSlug = slug.replace(/^\/+|\/+$/g, "");
-  const page = customPages.find(
-    (item) => item.active && item.slug.replace(/^\/+|\/+$/g, "") === normalizedSlug
-  );
+  const [page, setPage] = useState<CustomPage | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    fetch(`/api/public/page/${encodeURIComponent(normalizedSlug)}`, {
+      cache: "force-cache",
+    })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        const payload = (await response.json()) as { page?: CustomPage };
+        return payload.page ?? null;
+      })
+      .catch(() => null)
+      .then((nextPage) => {
+        if (!active) return;
+        setPage(nextPage);
+        setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [normalizedSlug]);
+
+  if (loading) {
+    return (
+      <div style={themeStyles} className="min-h-screen bg-background text-on-background">
+        <FrontHeader active="detail" />
+        <main className="mx-auto grid max-w-screen-2xl gap-6 px-6 pb-20 pt-24 lg:px-8">
+          <div className="h-64 animate-pulse rounded-3xl bg-surface-container-low" />
+          <div className="h-40 animate-pulse rounded-3xl bg-surface-container-low" />
+        </main>
+      </div>
+    );
+  }
 
   if (!page) return <>{fallback ?? null}</>;
 

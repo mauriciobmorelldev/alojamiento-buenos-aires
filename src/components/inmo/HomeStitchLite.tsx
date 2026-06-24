@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type TouchEvent,
+} from "react";
 import FrontHeader from "@/components/inmo/FrontHeader";
 import SiteFooter from "@/components/inmo/SiteFooter";
 import { getAvailability } from "@/lib/availability";
@@ -281,8 +288,24 @@ export default function HomeStitchLite({
             ) : (
               <div className="h-full w-full bg-background" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/72 via-primary/42 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `linear-gradient(to right, ${
+                  homeContent.heroOverlayColor?.trim() || "color-mix(in srgb, var(--color-primary) 72%, transparent)"
+                }, color-mix(in srgb, ${
+                  homeContent.heroOverlayColor?.trim() || "var(--color-primary)"
+                } 42%, transparent), transparent)`,
+              }}
+            />
+            <div
+              className="absolute inset-x-0 bottom-0 h-32"
+              style={{
+                backgroundImage: `linear-gradient(to top, ${
+                  homeContent.heroFadeColor?.trim() || "var(--color-background)"
+                }, transparent)`,
+              }}
+            />
           </div>
 
           <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8">
@@ -365,6 +388,9 @@ export default function HomeStitchLite({
           <section className="mx-auto max-w-screen-2xl px-4 pb-8 pt-5 sm:-mt-10 sm:px-6 sm:pt-0 lg:px-8">
             <div
               className="banner-carousel relative overflow-hidden rounded-[2rem] bg-primary text-on-primary pro-card"
+              style={{
+                boxShadow: homeContent.bannerShadow?.trim() || undefined,
+              }}
               onTouchStart={handleBannerTouchStart}
               onTouchEnd={handleBannerTouchEnd}
             >
@@ -396,8 +422,26 @@ export default function HomeStitchLite({
                       ) : (
                         <div className="absolute inset-0 brand-gradient" />
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/78 to-primary/10" />
-                      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-primary/72 to-transparent" />
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          backgroundImage: `linear-gradient(to right, ${
+                            homeContent.bannerOverlayColor?.trim() || "var(--color-primary)"
+                          }, color-mix(in srgb, ${
+                            homeContent.bannerOverlayColor?.trim() || "var(--color-primary)"
+                          } 78%, transparent), color-mix(in srgb, ${
+                            homeContent.bannerOverlayColor?.trim() || "var(--color-primary)"
+                          } 10%, transparent))`,
+                        }}
+                      />
+                      <div
+                        className="absolute inset-x-0 bottom-0 h-40"
+                        style={{
+                          backgroundImage: `linear-gradient(to top, color-mix(in srgb, ${
+                            homeContent.bannerFadeColor?.trim() || "var(--color-primary)"
+                          } 72%, transparent), transparent)`,
+                        }}
+                      />
                       <div className="banner-carousel__content relative flex min-h-[20rem] max-w-4xl flex-col justify-end p-7 sm:min-h-[25rem] sm:p-10">
                         <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-primary-fixed">
                           Destacado
@@ -408,7 +452,10 @@ export default function HomeStitchLite({
                         <p className="mt-3 max-w-2xl text-sm leading-7 text-on-primary/84 sm:text-base">
                           {banner.subtitle}
                         </p>
-                        <span className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary shadow-[0_18px_40px_-24px_rgba(255,243,194,0.9)]">
+                        <span
+                          className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-primary-fixed px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary"
+                          style={{ boxShadow: homeContent.bannerButtonShadow?.trim() || undefined }}
+                        >
                           {banner.ctaLabel || "Ver más"}
                           <span className="material-symbols-outlined text-base">arrow_forward</span>
                         </span>
@@ -448,7 +495,8 @@ export default function HomeStitchLite({
                       <button
                         type="button"
                         onClick={goToNextBanner}
-                        className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-fixed text-primary shadow-[0_18px_40px_-24px_rgba(255,243,194,0.9)] transition hover:-translate-y-0.5"
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-fixed text-primary transition hover:-translate-y-0.5"
+                        style={{ boxShadow: homeContent.bannerButtonShadow?.trim() || undefined }}
                         aria-label="Banner siguiente"
                       >
                         <span className="material-symbols-outlined">chevron_right</span>
@@ -483,14 +531,26 @@ export default function HomeStitchLite({
 
         {activePartnerLogos.length ? (
           <section className="mx-auto max-w-screen-2xl px-4 pb-16 sm:px-6 sm:pb-24 lg:px-8">
-            <div className="overflow-hidden rounded-3xl bg-surface-container-lowest p-5 pro-card sm:p-8">
+            <div
+              className="overflow-hidden rounded-3xl bg-surface-container-lowest p-5 pro-card sm:p-8"
+              style={{
+                boxShadow: homeContent.partnersShadow?.trim() || undefined,
+              }}
+            >
               <h2 className="text-3xl font-headline font-bold tracking-tight text-primary">
                 {homeContent.partnersTitle}
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-on-surface-variant">
                 {homeContent.partnersSubtitle}
               </p>
-              <div className="logo-marquee mt-6">
+              <div
+                className="logo-marquee mt-6"
+                style={{
+                  "--logo-marquee-fade":
+                    homeContent.partnersFadeColor?.trim() ||
+                    "var(--color-surface-container-lowest)",
+                } as CSSProperties}
+              >
                 <div className="logo-marquee__track">
                   {[...activePartnerLogos, ...activePartnerLogos].map((logo, index) => {
                     const content = (

@@ -348,12 +348,12 @@ textarea:disabled,
 
 .logo-marquee::before {
   left: 0;
-  background: linear-gradient(90deg, var(--color-surface-container-lowest), transparent);
+  background: linear-gradient(90deg, var(--logo-marquee-fade, var(--color-surface-container-lowest)), transparent);
 }
 
 .logo-marquee::after {
   right: 0;
-  background: linear-gradient(270deg, var(--color-surface-container-lowest), transparent);
+  background: linear-gradient(270deg, var(--logo-marquee-fade, var(--color-surface-container-lowest)), transparent);
 }
 
 .logo-marquee__track {
