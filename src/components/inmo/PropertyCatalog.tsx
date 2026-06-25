@@ -372,7 +372,7 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
           </div>
         )}
       </section>
-      <SiteFooter />
+      <SiteFooter cookiesOnly />
     </div>
   );
 }

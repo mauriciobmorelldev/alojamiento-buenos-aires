@@ -61,7 +61,11 @@ const linkProps = (href: string) =>
     ? { target: "_blank", rel: "noreferrer" }
     : {};
 
-export default function SiteFooter() {
+export default function SiteFooter({
+  cookiesOnly = false,
+}: {
+  cookiesOnly?: boolean;
+}) {
   const { state } = useInmoStore();
   const { theme, homeContent } = state;
   const footer = homeContent.footer;
@@ -121,6 +125,29 @@ export default function SiteFooter() {
     (link) => link.active && link.label.trim()
   );
   const cookiesHref = normalizeHref(footer.cookiesHref || "/cookies");
+
+  if (cookiesOnly) {
+    return (
+      <footer
+        style={footerStyles}
+        className="border-t border-white/10 bg-[var(--footer-bg)] text-[var(--footer-text)]"
+      >
+        <div className="mx-auto flex max-w-screen-2xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <p className="max-w-2xl text-sm leading-6 text-[var(--footer-text)]/76">
+            {footer.cookiesText ||
+              "Usamos cookies técnicas y de medición para mejorar la experiencia del sitio."}
+          </p>
+          <Link
+            href={cookiesHref}
+            {...linkProps(cookiesHref)}
+            className="inline-flex w-fit shrink-0 rounded-full border border-[var(--footer-text)]/15 px-4 py-2 text-xs font-bold uppercase tracking-widest text-[var(--footer-link)] transition hover:bg-[var(--footer-button-bg)] hover:text-[var(--footer-button-text)]"
+          >
+            {footer.cookiesLabel || "Ver cookies"}
+          </Link>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer
@@ -192,7 +219,8 @@ export default function SiteFooter() {
               Cookies
             </h3>
             <p className="mt-4 text-sm leading-6 text-[var(--footer-text)]/76">
-              Usamos cookies técnicas y de medición para mejorar la experiencia del sitio.
+              {footer.cookiesText ||
+                "Usamos cookies técnicas y de medición para mejorar la experiencia del sitio."}
             </p>
             <Link
               href={cookiesHref}

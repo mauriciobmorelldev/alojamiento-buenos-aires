@@ -3527,6 +3527,14 @@ export default function AdminBrandingPage() {
                 />
               </label>
               <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
+                Texto de cookies
+                <textarea
+                  className="min-h-20 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"
+                  value={homeForm.footer.cookiesText ?? ""}
+                  onChange={(event) => updateFooterField("cookiesText", event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant md:col-span-2">
                 Texto legal
                 <input
                   className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:border-primary focus:outline-none"

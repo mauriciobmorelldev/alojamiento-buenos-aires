@@ -621,7 +621,7 @@ export default function ResultsStitch() {
           </div>
         </div>
       </main>
-      <SiteFooter />
+      <SiteFooter cookiesOnly />
     </div>
   );
 }

@@ -680,7 +680,7 @@ export default function DetallePropiedadPage() {
           </div>
 
           <div className="lg:col-span-4 space-y-8">
-            <div className="rounded-2xl bg-surface-container-lowest p-6 shadow-[0_40px_60px_-15px_rgba(27,27,28,0.06)]">
+            <div className="hidden rounded-2xl bg-surface-container-lowest p-6 shadow-[0_40px_60px_-15px_rgba(27,27,28,0.06)]">
               <h3 className="text-xl font-headline font-bold text-primary">
                 Consultar con un asesor
               </h3>
@@ -755,7 +755,7 @@ export default function DetallePropiedadPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
+      <SiteFooter cookiesOnly />
 
       {isViewerOpen ? (
         <div

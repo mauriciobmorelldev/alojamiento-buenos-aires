@@ -256,6 +256,7 @@ export type FooterContent = {
   title: string;
   description: string;
   legalText: string;
+  cookiesText: string;
   cookiesLabel: string;
   cookiesHref: string;
   sections: FooterSection[];
@@ -801,6 +802,8 @@ export const defaultState: InmoState = {
       description:
         "Explorá propiedades, coordiná visitas y recibí acompañamiento comercial en cada paso.",
       legalText: "© Connexa Real Estate. Todos los derechos reservados.",
+      cookiesText:
+        "Usamos cookies técnicas y de medición para mejorar la experiencia del sitio.",
       cookiesLabel: "Política de cookies",
       cookiesHref: "/cookies",
       sections: [
