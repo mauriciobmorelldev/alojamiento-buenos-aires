@@ -187,7 +187,7 @@ export default function AdminIntegracionesPage() {
       if (!response.ok || !payload?.ok) {
         throw new Error(payload?.error || "No se pudo sincronizar Tokko.");
       }
-      const stateResponse = await fetch("/api/inmo-state?scope=admin", {
+      const stateResponse = await fetch("/api/inmo-state?scope=admin&mode=properties", {
         cache: "no-store",
         headers: getAdminHeaders(),
       });

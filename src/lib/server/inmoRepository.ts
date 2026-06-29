@@ -349,9 +349,9 @@ export const readPublicShell = async (
     settingsQuery,
     supabase
       .from("profiles")
-      .select("id,kind,name,email,role,phone,active")
+      .select("id,role,active")
       .eq("kind", "admin"),
-    supabase.from("agents").select("id,name,role,phone,email,photo"),
+    supabase.from("agents").select("id,name,role"),
   ]);
 
   if (settings.error) {
@@ -392,20 +392,20 @@ export const readPublicShell = async (
         : settingsData?.filter_groups ?? defaultState.filterGroups,
       adminUsers: profiles.error ? [] : ensureArray(profiles.data).map((profile) => ({
         id: profile.id,
-        name: profile.name,
-        email: profile.email,
+        name: "",
+        email: "",
         password: "",
         role: (profile.role === "owner" ? "owner" : "colaborador") as AdminRole,
-        phone: profile.phone ?? "",
+        phone: "",
         active: Boolean(profile.active),
       })),
       agents: agents.error ? [] : ensureArray(agents.data).map((agent) => ({
         id: agent.id,
         name: agent.name,
         role: agent.role,
-        phone: agent.phone,
-        email: agent.email,
-        photo: sanitizePublicImage(agent.photo, 260_000) || undefined,
+        phone: "",
+        email: "",
+        photo: undefined,
       })),
     },
     source: "supabase",

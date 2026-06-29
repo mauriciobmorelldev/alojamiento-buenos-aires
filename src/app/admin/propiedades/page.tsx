@@ -83,11 +83,15 @@ export default function AdminPropertiesPage() {
         ? listings.filter((listing) => listing.createdByAdminId === authedAdmin.id)
         : [];
   const assignableAgents = isOwner ? agents : [];
+  const collaboratorAdmins = adminUsers.filter(
+    (admin) => admin.role === "colaborador" && admin.active
+  );
 
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
   const [listingForm, setListingForm] = useState<ListingFormState>(
     getEmptyListingForm(filterGroups, assignableAgents)
   );
+  const [assignedAdminId, setAssignedAdminId] = useState("");
   const [imageUrlDraft, setImageUrlDraft] = useState("");
   const [videoUrlDraft, setVideoUrlDraft] = useState("");
   const [formError, setFormError] = useState<string>("");
@@ -183,6 +187,7 @@ export default function AdminPropertiesPage() {
   const openNewListingForm = () => {
     setEditingListingId(null);
     setListingForm(getEmptyListingForm(filterGroups, assignableAgents));
+    setAssignedAdminId("");
     setImageUrlDraft("");
     setVideoUrlDraft("");
     setFormError("");
@@ -257,8 +262,7 @@ export default function AdminPropertiesPage() {
       ...baseListing,
       agentId: isOwner ? baseListing.agentId : undefined,
       createdByAdminId:
-        previousListing?.createdByAdminId ??
-        (isOwner ? undefined : authedAdmin.id),
+        isOwner ? assignedAdminId || undefined : previousListing?.createdByAdminId ?? authedAdmin.id,
     };
 
     setIsSaving(true);
@@ -344,6 +348,7 @@ export default function AdminPropertiesPage() {
     if (!isOwner && listing.createdByAdminId !== authedAdmin?.id) return;
     setEditingListingId(listing.id);
     setListingForm(getListingForm(listing));
+    setAssignedAdminId(listing.createdByAdminId ?? "");
     setFormError("");
     setMediaNotice("");
     setIsFormOpen(true);
@@ -882,26 +887,43 @@ export default function AdminPropertiesPage() {
           />
 
           {isOwner ? (
-            <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-              Corredor asignado
-              <select
-                className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                value={listingForm.agentId}
-                onChange={(event) =>
-                  setListingForm((prev) => ({
-                    ...prev,
-                    agentId: event.target.value,
-                  }))
-                }
-              >
-                <option value="">Sin asignar</option>
-                {assignableAgents.map((agent) => (
-                  <option key={agent.id} value={agent.id}>
-                    {agent.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Panel del colaborador
+                <select
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+                  value={assignedAdminId}
+                  onChange={(event) => setAssignedAdminId(event.target.value)}
+                >
+                  <option value="">Owner / inventario general</option>
+                  {collaboratorAdmins.map((admin) => (
+                    <option key={admin.id} value={admin.id}>
+                      {admin.name || admin.email}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                Corredor asignado
+                <select
+                  className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+                  value={listingForm.agentId}
+                  onChange={(event) =>
+                    setListingForm((prev) => ({
+                      ...prev,
+                      agentId: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Sin asignar</option>
+                  {assignableAgents.map((agent) => (
+                    <option key={agent.id} value={agent.id}>
+                      {agent.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           ) : null}
 
           <div className="grid gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4">

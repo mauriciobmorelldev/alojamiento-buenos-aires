@@ -6,7 +6,7 @@ import { deleteRemovedListingMedia } from "@/lib/server/mediaStorage";
 const getAdmin = async (request: Request) => {
   const adminId = request.headers.get("x-admin-id");
   if (!adminId) return null;
-  const result = await readInmoState();
+  const result = await readInmoState({ scope: "admin", adminMode: "properties" });
   const admin = result.data.adminUsers.find((item) => item.id === adminId && item.active);
   return admin ? { admin, state: result.data } : null;
 };
@@ -37,8 +37,7 @@ export async function POST(request: Request) {
       ...incoming,
       agentId: isOwner ? incoming.agentId : undefined,
       createdByAdminId:
-        previous?.createdByAdminId ??
-        (isOwner ? incoming.createdByAdminId : context.admin.id),
+        isOwner ? incoming.createdByAdminId : previous?.createdByAdminId ?? context.admin.id,
     };
 
     const result = await upsertListing(listing);

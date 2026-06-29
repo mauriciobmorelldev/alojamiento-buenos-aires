@@ -4,7 +4,7 @@ import { defaultState } from "@/lib/inmoData";
 import {
   readInmoState,
   readPublicHomeListings,
-  readPublicListings,
+  readPublicListingsPage,
   readPublicShell,
   writeInmoState,
 } from "@/lib/server/inmoRepository";
@@ -32,7 +32,9 @@ export async function GET(request: Request) {
         readThroughCache(
           `public:listings:${mode}:compat:v1`,
           mode === "home" ? PUBLIC_CACHE_TTL.homeListings : PUBLIC_CACHE_TTL.catalogListings,
-          mode === "home" ? readPublicHomeListings : readPublicListings
+          mode === "home"
+            ? readPublicHomeListings
+            : () => readPublicListingsPage({ page: 1, pageSize: 12 })
         ),
       ]);
       const source =
@@ -86,7 +88,7 @@ export async function GET(request: Request) {
       adminModeParam === "leads" ||
       adminModeParam === "settings"
         ? adminModeParam
-        : "full";
+        : "dashboard";
     const result = await readInmoState({ scope: "admin", adminMode });
     const admin = result.data.adminUsers.find((item) => item.id === adminId && item.active);
     if (!admin) {

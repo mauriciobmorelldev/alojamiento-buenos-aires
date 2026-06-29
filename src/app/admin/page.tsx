@@ -159,7 +159,7 @@ export default function AdminDashboardPage() {
         setTokkoSyncNotice("Configurá Tokko desde Admin > Integraciones antes de sincronizar.");
         return;
       }
-      const stateResponse = await fetch("/api/inmo-state?scope=admin", {
+      const stateResponse = await fetch("/api/inmo-state?scope=admin&mode=properties", {
         cache: "no-store",
         headers: adminId ? { "x-admin-id": adminId } : {},
       });
