@@ -1,9 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const pausedClientPaths = new Set(["/acceso", "/registro", "/mi-cuenta", "/confirmar"]);
+const catalogHosts = new Set(["catalogopropiedades.com", "www.catalogopropiedades.com"]);
 
 export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+  const host = request.headers.get("host")?.split(":")[0].toLowerCase() ?? "";
 
   if (searchParams.has("_rsc")) {
     const accept = request.headers.get("accept") ?? "";
@@ -13,6 +15,19 @@ export function proxy(request: NextRequest) {
       const cleanUrl = request.nextUrl.clone();
       cleanUrl.searchParams.delete("_rsc");
       return NextResponse.redirect(cleanUrl);
+    }
+  }
+
+  if (catalogHosts.has(host)) {
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL("/propiedades", request.url));
+    }
+    if (
+      !pathname.startsWith("/propiedades") &&
+      !pathname.startsWith("/api/public/") &&
+      pathname !== "/robots.txt"
+    ) {
+      return NextResponse.redirect(new URL("/propiedades", request.url));
     }
   }
 

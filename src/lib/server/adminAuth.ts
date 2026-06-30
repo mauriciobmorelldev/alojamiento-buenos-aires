@@ -3,7 +3,7 @@ import { readInmoState } from "@/lib/server/inmoRepository";
 export const getAdminFromRequest = async (request: Request) => {
   const adminId = request.headers.get("x-admin-id");
   if (!adminId) return null;
-  const result = await readInmoState();
+  const result = await readInmoState({ scope: "admin", adminMode: "settings" });
   const admin = result.data.adminUsers.find((item) => item.id === adminId && item.active);
   return admin ? { admin, state: result.data } : null;
 };

@@ -955,6 +955,7 @@ export const readInmoState = async (
         .from("property_images")
         .select("property_id,url,sort_order")
         .in("property_id", propertyIds)
+        .lte("sort_order", 3)
         .order("sort_order")
     : { data: [], error: null };
 

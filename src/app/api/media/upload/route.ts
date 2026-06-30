@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const state = await readInmoState({ scope: "admin" });
+    const state = await readInmoState({ scope: "admin", adminMode: "settings" });
     const admin = state.data.adminUsers.find((item) => item.id === adminId && item.active);
     if (!admin) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });

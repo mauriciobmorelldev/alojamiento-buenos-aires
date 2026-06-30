@@ -344,12 +344,24 @@ export default function AdminPropertiesPage() {
     }
   };
 
-  const handleListingEdit = (listing: Listing) => {
+  const handleListingEdit = async (listing: Listing) => {
     if (!isOwner && listing.createdByAdminId !== authedAdmin?.id) return;
-    setEditingListingId(listing.id);
-    setListingForm(getListingForm(listing));
-    setAssignedAdminId(listing.createdByAdminId ?? "");
-    setFormError("");
+    const headers: HeadersInit = authedAdmin ? { "x-admin-id": authedAdmin.id } : {};
+    const response = await fetch(`/api/properties?id=${encodeURIComponent(listing.id)}`, {
+      cache: "no-store",
+      headers,
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      property?: Listing;
+      error?: string;
+    } | null;
+    const fullListing = response.ok && payload?.property ? payload.property : listing;
+    if (!response.ok) {
+      setFormError(payload?.error ?? "No se pudo cargar la ficha completa.");
+    }
+    setEditingListingId(fullListing.id);
+    setListingForm(getListingForm(fullListing));
+    setAssignedAdminId(fullListing.createdByAdminId ?? "");
     setMediaNotice("");
     setIsFormOpen(true);
     setHighlightForm(true);

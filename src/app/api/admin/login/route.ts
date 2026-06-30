@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     });
   }
 
-  const { data } = await readInmoState({ scope: "admin" });
+  const { data } = await readInmoState({ scope: "admin", adminMode: "settings" });
   const admin = data.adminUsers.find(
     (item) => item.active && item.email.trim().toLowerCase() === email
   );

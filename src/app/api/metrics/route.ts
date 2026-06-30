@@ -3,6 +3,6 @@ import { buildOperationalMetrics } from "@/lib/server/analytics";
 import { readInmoState } from "@/lib/server/inmoRepository";
 
 export async function GET() {
-  const { data } = await readInmoState();
+  const { data } = await readInmoState({ scope: "admin", adminMode: "dashboard" });
   return NextResponse.json(buildOperationalMetrics(data));
 }
