@@ -6,6 +6,7 @@ import { useInmoStore } from "@/lib/inmoStore";
 import {
   propertyTypeLabels,
   type FilterGroup,
+  type InmoState,
   type Listing,
   type PropertyType,
 } from "@/lib/inmoData";
@@ -17,6 +18,12 @@ import SiteFooter from "@/components/inmo/SiteFooter";
 
 type PropertyTypeFilter = "all" | PropertyType;
 type OperationFilter = "all" | "venta" | "alquiler";
+type CatalogPagination = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+};
 
 const typeFilters: Array<{ id: PropertyTypeFilter; label: string }> = [
   { id: "all", label: "Todas" },
@@ -57,8 +64,16 @@ const toggleAttributeSelection = (
   };
 };
 
-export default function ResultsStitch() {
-  const { state, isReady } = useInmoStore();
+export default function ResultsStitch({
+  initialState,
+  initialPagination,
+  initialPage = 1,
+}: {
+  initialState?: Partial<InmoState>;
+  initialPagination?: CatalogPagination;
+  initialPage?: number;
+}) {
+  const { state, isReady } = useInmoStore(initialState);
   const { filterGroups, theme, adminUsers } = state;
 
   const [query, setQuery] = useState("");
@@ -67,20 +82,27 @@ export default function ResultsStitch() {
   const [minRooms, setMinRooms] = useState("all");
   const [sort, setSort] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
-  const [page, setPage] = useState(1);
-  const [catalogListings, setCatalogListings] = useState<Listing[]>([]);
-  const [isCatalogLoading, setIsCatalogLoading] = useState(true);
+  const [page, setPage] = useState(initialPage);
+  const [catalogListings, setCatalogListings] = useState<Listing[]>(
+    initialState?.listings ?? []
+  );
+  const [isCatalogLoading, setIsCatalogLoading] = useState(
+    !(initialState?.listings?.length)
+  );
   const [catalogError, setCatalogError] = useState("");
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 12,
-    total: 0,
-    totalPages: 1,
-  });
+  const [pagination, setPagination] = useState<CatalogPagination>(
+    initialPagination ?? {
+      page: initialPage,
+      pageSize: 12,
+      total: initialState?.listings?.length ?? 0,
+      totalPages: 1,
+    }
+  );
   const [attributeFilters, setAttributeFilters] = useState<
     Record<string, string[]>
   >({});
   const didMountFiltersRef = useRef(false);
+  const skipInitialCatalogFetchRef = useRef(Boolean(initialState?.listings?.length));
 
   const themeStyles = buildThemeStyles(theme);
   const collaboratorAdminIds = new Set(
@@ -116,6 +138,10 @@ export default function ResultsStitch() {
 
   useEffect(() => {
     if (!isReady) return;
+    if (skipInitialCatalogFetchRef.current) {
+      skipInitialCatalogFetchRef.current = false;
+      return;
+    }
     const controller = new AbortController();
     const timeoutId = window.setTimeout(async () => {
       setIsCatalogLoading(true);
