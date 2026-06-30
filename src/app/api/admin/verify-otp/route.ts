@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminOtpChallenge } from "@/lib/server/adminOtp";
-import { readInmoState } from "@/lib/server/inmoRepository";
+import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as {
@@ -18,11 +18,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: verified.error }, { status: 401 });
   }
 
-  const { data } = await readInmoState();
-  const admin = data.adminUsers.find(
-    (item) => item.id === verified.adminId && item.active
-  );
-  if (!admin) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !isSupabaseConfigured()) {
+    return NextResponse.json({ ok: false, error: "Supabase no configurado." }, { status: 503 });
+  }
+  const result = await supabase
+    .from("profiles")
+    .select("id,email,name,role,active")
+    .eq("id", verified.adminId)
+    .eq("kind", "admin")
+    .maybeSingle();
+  const admin = result.data;
+  if (result.error || !admin?.active) {
     return NextResponse.json({ ok: false, error: "Usuario inactivo." }, { status: 403 });
   }
 

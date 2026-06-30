@@ -7,8 +7,8 @@ import {
   validateClientRegistration,
   type ClientRegistrationInput,
 } from "@/lib/clientValidation";
-import { readInmoState } from "@/lib/server/inmoRepository";
 import { sendEmail } from "@/lib/server/email";
+import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as
@@ -24,12 +24,12 @@ export async function POST(request: Request) {
 
   const errors = validateClientRegistration(body);
   const email = normalizeEmail(body.email);
-  const { data } = await readInmoState();
-  const duplicate = data.clientUsers.some(
-    (client) => client.email.trim().toLowerCase() === email
-  );
+  const supabase = getSupabaseServerClient();
+  const duplicate = supabase && isSupabaseConfigured()
+    ? await supabase.from("clients").select("id").ilike("email", email).limit(1)
+    : { data: [], error: null };
 
-  if (duplicate) {
+  if (duplicate.data?.length) {
     errors.email = "Ya existe una cuenta con ese email.";
   }
 
