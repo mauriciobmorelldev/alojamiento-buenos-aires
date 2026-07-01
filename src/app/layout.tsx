@@ -19,8 +19,18 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Connexa · Inmobiliaria",
-  description: "Propiedades para comprar, alquilar y consultar en Connexa.",
+  title: "Conexa",
+  description: "Propiedades, información y servicios inmobiliarios de Conexa.",
+  openGraph: {
+    title: "Conexa",
+    description: "Propiedades, información y servicios inmobiliarios de Conexa.",
+    siteName: "Conexa",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Conexa",
+    description: "Propiedades, información y servicios inmobiliarios de Conexa.",
+  },
 };
 
 export default function RootLayout({
