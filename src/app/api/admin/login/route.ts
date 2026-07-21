@@ -16,8 +16,10 @@ type AdminLoginProfile = {
   role: string | null;
 };
 
+const skipOtpInLocal = process.env.NODE_ENV !== "production";
+
 const findAdminProfile = async (email: string) => {
-  if (!isSupabaseConfigured()) return null;
+  if (skipOtpInLocal || !isSupabaseConfigured()) return null;
 
   const supabase = getSupabaseWriteClient() ?? getSupabaseServerClient();
   if (!supabase) return null;
@@ -67,6 +69,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Invalid credentials" }, { status: 401 });
     }
 
+    if (skipOtpInLocal) {
+      return NextResponse.json({
+        ok: true,
+        requiresOtp: false,
+        admin: {
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          role: profile.role === "colaborador" ? "colaborador" : "owner",
+        },
+      });
+    }
+
     const challenge = await createAdminOtpChallenge({
       adminId: profile.id,
       email: profile.email,
@@ -87,6 +102,19 @@ export async function POST(request: Request) {
 
   if (!admin || admin.password.trim() !== password) {
     return NextResponse.json({ ok: false, error: "Invalid credentials" }, { status: 401 });
+  }
+
+  if (skipOtpInLocal) {
+    return NextResponse.json({
+      ok: true,
+      requiresOtp: false,
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        name: admin.name,
+        role: admin.role,
+      },
+    });
   }
 
   const challenge = await createAdminOtpChallenge({

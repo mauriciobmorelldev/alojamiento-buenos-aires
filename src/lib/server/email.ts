@@ -26,7 +26,7 @@ export type PublicEmailSettings = Omit<EmailSettings, "resendApiKey"> & {
 
 const defaultEmailSettings = (): EmailSettings => ({
   mode: process.env.RESEND_API_KEY ? "resend" : "preview",
-  from: process.env.EMAIL_FROM || "Connexa <no-reply@connexa.com>",
+  from: process.env.EMAIL_FROM || "Alojamiento Buenos Aires <no-reply@alojamientobuenosaires.com>",
   resendApiKey: process.env.RESEND_API_KEY || undefined,
 });
 

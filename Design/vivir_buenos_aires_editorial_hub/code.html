@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vivir Buenos Aires - Editorial Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#31302d",
+                        "surface-container": "#20201f",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#1c1b1b",
+                        "on-tertiary-fixed-variant": "#594325",
+                        "inverse-on-surface": "#313030",
+                        "on-error": "#690005",
+                        "surface-tint": "#bfc6dc",
+                        "on-background": "#e5e2e1",
+                        "primary-fixed-dim": "#bfc6dc",
+                        "on-primary-fixed": "#141b2c",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffddb6",
+                        "on-secondary-fixed-variant": "#474743",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed": "#291801",
+                        "on-surface": "#e5e2e1",
+                        "outline": "#8f9097",
+                        "surface-container-lowest": "#0e0e0e",
+                        "primary-fixed": "#dbe2f9",
+                        "on-tertiary": "#412d11",
+                        "inverse-surface": "#e5e2e1",
+                        "tertiary-fixed-dim": "#e2c19b",
+                        "on-secondary-fixed": "#1c1c19",
+                        "secondary-fixed": "#e5e2dd",
+                        "secondary": "#c9c6c2",
+                        "primary": "#bfc6dc",
+                        "on-primary": "#293041",
+                        "surface-dim": "#131313",
+                        "secondary-container": "#474743",
+                        "on-primary-fixed-variant": "#3f4759",
+                        "background": "#131313",
+                        "on-secondary-container": "#b7b5b0",
+                        "surface-container-highest": "#353535",
+                        "outline-variant": "#45474c",
+                        "surface-container-high": "#2a2a2a",
+                        "secondary-fixed-dim": "#c9c6c2",
+                        "inverse-primary": "#565e71",
+                        "surface-bright": "#393939",
+                        "surface-variant": "#353535",
+                        "on-primary-container": "#798195",
+                        "surface": "#131313",
+                        "primary-container": "#101828",
+                        "tertiary": "#e2c19b",
+                        "on-surface-variant": "#c6c6cd",
+                        "tertiary-container": "#251500",
+                        "on-tertiary-container": "#997d5a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "margin-desktop": "80px",
+                        "section-gap": "160px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "margin-mobile": "24px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "headline-lg": ["Playfair Display"],
+                        "body-md": ["Inter"],
+                        "accent-italic": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "500" }],
+                        "headline-lg": ["48px", { "lineHeight": "56px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "accent-italic": ["24px", { "lineHeight": "32px", "fontWeight": "400", "fontStyle": "italic" }],
+                        "display-lg": ["80px", { "lineHeight": "92px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["32px", { "lineHeight": "40px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "32px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-surface');
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .glass-nav {
+            background-color: rgba(19, 19, 19, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .cinematic-hover:hover {
+            transform: scale(1.02);
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .cinematic-hover img {
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .cinematic-hover:hover img {
+            transform: scale(1.05);
+        }
+
+        .gradient-overlay {
+            background: linear-gradient(to top, rgba(14, 14, 14, 0.8) 0%, rgba(14, 14, 14, 0) 60%);
+        }
+    </style>
+</head>
+<body class="min-h-screen font-body-md overflow-x-hidden">
+<!-- Top Navigation -->
+<nav class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl border-b border-outline-variant/10 flat no shadows">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-6 w-full max-w-7xl mx-auto">
+<div class="hidden md:flex gap-8">
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300 ease-in-out duration-400" href="#">Properties</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300 ease-in-out duration-400" href="#">Neighborhoods</a>
+</div>
+<a class="font-headline-md text-headline-md text-on-surface uppercase tracking-widest text-center hover:opacity-80 transition-opacity flex-1 md:flex-none" href="#">
+                Alojamiento Buenos Aires
+            </a>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-label-caps text-label-caps text-tertiary-fixed-dim border-b border-tertiary-fixed-dim pb-1 ease-in-out duration-400" href="#">Magazine</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300 ease-in-out duration-400" href="#">Owner</a>
+<button class="font-label-caps text-label-caps text-on-surface border border-outline px-4 py-2 hover:bg-surface-container-highest transition-colors">
+                    Inquire
+                </button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative w-full h-[921px] min-h-[600px] flex items-center justify-center pt-20">
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="A stunning, highly detailed wide-angle photograph of a grand architectural landmark in Buenos Aires, Argentina. The scene is shot during golden hour with dramatic, high-contrast lighting casting long shadows. The mood is cinematic and luxurious, reflecting a high-fashion editorial style. Deep charcoal and warm cream tones dominate the color palette, emphasizing the raw architectural grit combined with minimalist luxury. The composition is expansive, allowing plenty of breathing room around the central subject." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBWf9oy1FQghXG_IFH5FaLzxM1ZJPv56-IZURpEmVVHtXeMRehi2CU9XVtA25Mfbby1wHjAxdVs5PPeCLdxjD3P4Wo4F5oeeuLzE-omtg1Jt8gK1TiPgiYb8r7r6QjxBpvprJRH-9CII3SuTBPWP9WwR4snkrIX8xt-Pp1D0O7flpdDl6EFOg4QIf4mN6wUF_co7PWTw8VMdQ5sTd1QYV3T6VvqI0OvYbv-H1b0Sah1GIzAq1fUwUY')"></div>
+<div class="absolute inset-0 bg-background/30 backdrop-blur-[2px]"></div>
+</div>
+<div class="relative z-10 text-center px-margin-mobile">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-stack-md">Vivir Buenos Aires</h1>
+<p class="font-accent-italic text-accent-italic text-tertiary-fixed-dim max-w-2xl mx-auto">The cultural pulse of the city, captured through an editorial lens.</p>
+</div>
+</header>
+<!-- Category Navigation -->
+<div class="w-full bg-surface-container border-b border-outline-variant/20 sticky top-[88px] z-40 py-4">
+<div class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop overflow-x-auto no-scrollbar">
+<div class="flex gap-8 min-w-max items-center justify-center md:justify-start">
+<a class="font-label-caps text-label-caps text-tertiary border-b border-tertiary pb-1" href="#">All Categories</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-tertiary transition-colors" href="#">Neighborhoods</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-tertiary transition-colors" href="#">Gastronomy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-tertiary transition-colors" href="#">Architecture</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-tertiary transition-colors" href="#">Literature</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-tertiary transition-colors" href="#">Events</a>
+</div>
+</div>
+</div>
+<!-- Main Content Area -->
+<main class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-section-gap">
+<!-- Featured Story (Full Width) -->
+<article class="mb-section-gap group cursor-pointer cinematic-hover relative overflow-hidden h-[716px] min-h-[500px]">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-[600ms]" data-alt="A moody, high-contrast close-up portrait of an artisan in San Telmo, Buenos Aires, working intently on a leather craft. The lighting is cinematic, with deep shadows and warm, precise highlights illuminating the texture of the leather and the artisan's hands. The aesthetic is gritty yet luxurious, resembling a high-end documentary photography style. The color palette focuses on rich earth tones, charcoal blacks, and muted bronze accents, evoking a sense of heritage and meticulous craftsmanship." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCKsSDb2s99Hgw5CRL0hqaSzBELLv8bteRZ6zXIuL3PxxNMODzTiv2yZ_DV-eBfumQf3K9Y53CaHcSrlvWiue2rG5ichCUX4ariD83Ag6fFeoYqM_EdAk2drOX4ibmNXdtVMyp6fiAp7CNQXa6GxilsFKu0LGj9L39Lt7W_-AHj5v7CakiRORJDo1zBXLmOAp0qDMax1yqLnTNbklgvArSjzS7RDPh_Ow6WiyAAJKkovaUlxxxCpCk')"></div>
+<div class="absolute inset-0 gradient-overlay"></div>
+<div class="absolute bottom-0 left-0 p-8 md:p-12 w-full md:w-2/3 lg:w-1/2 flex flex-col gap-stack-sm">
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim uppercase tracking-widest">Culture &amp; Heritage</span>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-stack-md">The Last Leather Masters of San Telmo</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-stack-lg line-clamp-3">In the cobblestone alleys of the southern barrio, a quiet revolution of craftsmanship persists against the tide of mass production, weaving the soul of the city into every stitch.</p>
+<div class="flex items-center gap-2 text-tertiary group-hover:gap-4 transition-all duration-300">
+<span class="font-label-caps text-label-caps uppercase">Read Story</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</div>
+</article>
+<!-- Asymmetrical Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-section-gap items-start">
+<!-- Left Column (Larger) -->
+<div class="col-span-1 md:col-span-7 flex flex-col gap-gutter">
+<article class="group cursor-pointer cinematic-hover relative overflow-hidden aspect-[4/3]">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-[600ms]" data-alt="An elegant, minimalist shot of a meticulously plated contemporary dish at a high-end restaurant in Palermo Soho, Buenos Aires. The composition is asymmetrical, focusing on the textures and vibrant, precise placement of the food against a dark, matte ceramic plate. The lighting is soft yet directional, highlighting the culinary details. The background is a deep, blurred charcoal, emphasizing a luxurious, editorial gastronomy aesthetic with subtle cream and bronze highlights." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDtcq6lKnqQi_gwXnovaVcDKKswYrtcyeZhkLANXz4Id0PKpVvDpy90fFVke5U1neBA8H0Hzys56zDF4E9BVj9AbdOTjZVYoW8VCbIPuOJAAwEWKKQxnuTcKOEU6jQbyqdLO-n6BnH7aVwxLJLqVwvFrZmczcRW4hmATQBPsdIuuHRAcaJQ5jnavLQuXuD6VtyG0EEmwZL1EVkWytDda3194E7ewdRkZWCK-KmJmddlqvFq8vrJZSA')"></div>
+<div class="absolute inset-0 gradient-overlay opacity-80"></div>
+<div class="absolute bottom-0 left-0 p-6 md:p-8 w-full flex flex-col gap-stack-sm">
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim uppercase tracking-widest">Gastronomy</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Redefining the Porteño Palate</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">How a new wave of young chefs is taking traditional Argentine staples and elevating them to fine art in Palermo's hidden kitchens.</p>
+</div>
+</article>
+<article class="group cursor-pointer flex flex-col gap-stack-sm p-6 bg-surface-container-low border border-outline-variant/10 hover:border-tertiary/30 transition-colors duration-400">
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim uppercase tracking-widest">Literature</span>
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-tertiary transition-colors">Borges and the Labyrinth of Recoleta</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Tracing the footsteps of Argentina's literary giant through the grand avenues and quiet cemeteries that shaped his surreal narratives.</p>
+<div class="flex items-center gap-2 text-on-surface mt-4 group-hover:text-tertiary transition-colors">
+<span class="font-label-caps text-label-caps uppercase">Read Story</span>
+</div>
+</article>
+</div>
+<!-- Right Column (Smaller, offset) -->
+<div class="col-span-1 md:col-span-5 flex flex-col gap-gutter mt-0 md:mt-24">
+<article class="group cursor-pointer cinematic-hover relative overflow-hidden aspect-[3/4]">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-[600ms]" data-alt="A striking architectural detail of a French-style facade in Recoleta, Buenos Aires. The image focuses on ornate wrought-iron balconies and intricate stone carvings against a moody, overcast sky. The shot is high-contrast, black and white with a subtle sepia/bronze toning, evoking a sense of timeless elegance and historic grandeur. The aesthetic is strictly minimalist luxury, emphasizing form, texture, and the raw grit of the city's heritage." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDp5KVdvuyRL69GdZfKMOt-fTLoTBN1bJsJDkF4iCFQVmj9aVBqw1CtXn0lM6L48rK3Zg1vTgduHifivc_faAveHDtftluOuDgbx2cX268AbrRg1x2Ejf6M342pfgkuwuhoijnNrEu8qxT0W_NwvoX_wvRmolxjjUtlmMNNTvmbCkJ1Y1KAn0gBA23GKIHaYf6Cc46ouTWBWG6WO6YyZQjWa53Bxa9GLFfO5aUAJZH_kyssCJweNpE')"></div>
+<div class="absolute inset-0 gradient-overlay opacity-90"></div>
+<div class="absolute bottom-0 left-0 p-6 md:p-8 w-full flex flex-col gap-stack-sm">
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim uppercase tracking-widest">Architecture</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">The Paris of the South</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">A photographic essay detailing the enduring influence of Beaux-Arts design on the skyline of Barrio Norte.</p>
+</div>
+</article>
+</div>
+</div>
+<!-- Integrated Property Link Section (The Lifestyle Collection) -->
+<section class="mb-section-gap border-t border-outline-variant/20 pt-16">
+<div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+<div>
+<h2 class="font-display-lg-mobile md:font-headline-lg text-display-lg-mobile md:text-headline-lg text-on-surface mb-stack-sm">The Lifestyle Collection</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">Curated residences that embody the cultural narratives explored in our journal. Live the stories we tell.</p>
+</div>
+<a class="font-label-caps text-label-caps text-tertiary border-b border-tertiary pb-1 hover:text-on-surface hover:border-on-surface transition-all duration-300 whitespace-nowrap" href="#">View All Properties</a>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-outline-variant/10">
+<!-- Contextual Article -->
+<div class="p-8 md:p-12 bg-surface-container-low flex flex-col justify-center">
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim uppercase tracking-widest mb-stack-md">Neighborhood Focus: Palermo Chico</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-stack-md">Quiet Luxury Among the Embassies</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-lg">Where grand tree-lined avenues meet exclusive contemporary design. Palermo Chico remains the most fiercely guarded enclave of high society in Buenos Aires, a perfect marriage of diplomatic history and modern opulence.</p>
+<a class="inline-flex items-center gap-2 text-on-surface font-label-caps text-label-caps hover:text-tertiary transition-colors" href="#">
+<span>Explore the Neighborhood</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<!-- Paired Property Card -->
+<div class="relative h-[400px] lg:h-auto group cursor-pointer cinematic-hover overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-[600ms]" data-alt="An expansive, high-end interior shot of a luxury apartment living room in Palermo Chico, Buenos Aires. The space features minimalist modern furniture, warm cream upholstery, and dark charcoal accents. Large floor-to-ceiling windows offer a view of lush green trees outside. The lighting is soft, natural, and cinematic, emphasizing a serene, refined atmosphere. The aesthetic aligns with a premium architectural magazine, showcasing elegant design and thoughtful spatial arrangement." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAafPFfDok7ePNZODNRhbqMk1_V2v0rCQH75sI4XTvoU8CSFKsNi5krlK3MCS0CxLEUbaPNAz6dlP6BSvc9bjZy276lPmJLfLK8RqMx4-uRMM76UULkWdZ6507GncWDfJRhdqph3f_L2saJ8X4DPkQ89ivRX7538OK1Gmp3WJfzt9tap1yhs5ct-R5XXwcFY3BvwetTtAVFuz7oRN5A7YjzgaT17KKEkScAOTw1RXo9bp5pALkX7uA')"></div>
+<div class="absolute inset-0 bg-background/20 group-hover:bg-background/10 transition-colors duration-400"></div>
+<div class="absolute top-6 right-6">
+<span class="material-symbols-outlined text-on-surface font-variation-settings: 'FILL' 0;">favorite</span>
+</div>
+<div class="absolute bottom-0 left-0 p-8 w-full bg-gradient-to-t from-background/90 via-background/60 to-transparent">
+<div class="flex justify-between items-end">
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-1">Villa Ocampo Penthouse</h4>
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim">Palermo Chico</p>
+</div>
+<div class="text-right">
+<p class="font-body-md text-body-md text-on-surface-variant">Price upon request</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Newsletter Subscription -->
+<section class="max-w-3xl mx-auto text-center py-24 bg-surface-container-lowest border border-outline-variant/10 px-6">
+<span class="material-symbols-outlined text-tertiary-fixed-dim mb-6" style="font-size: 48px; font-variation-settings: 'wght' 200;">mail</span>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-stack-md">The Cultural Dispatch</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-12 max-w-lg mx-auto">A weekly curation of high design, architecture, and exclusive property insights delivered directly to your inbox.</p>
+<form class="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
+<div class="relative flex-1">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant text-on-surface font-body-md focus:ring-0 focus:border-on-surface transition-colors pb-2 px-0 placeholder:text-on-surface-variant/50" placeholder="Your Email Address" required="" type="email"/>
+</div>
+<button class="font-label-caps text-label-caps uppercase text-background bg-on-surface px-8 py-3 hover:bg-tertiary transition-colors duration-300" type="submit">
+                    Subscribe
+                </button>
+</form>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-container-lowest grid grid-cols-12 gap-gutter max-w-7xl mx-auto items-center">
+<div class="col-span-12 md:col-span-6 flex flex-col gap-4 items-center md:items-start text-center md:text-left mb-8 md:mb-0">
+<div class="font-headline-lg text-headline-lg text-on-surface">ALOJAMIENTO BUENOS AIRES</div>
+<p class="font-body-md text-body-md text-secondary max-w-md">© 2024 ALOJAMIENTO BUENOS AIRES. THE CITY AS PROTAGONIST.</p>
+</div>
+<div class="col-span-12 md:col-span-6 flex flex-wrap justify-center md:justify-end gap-6 md:gap-8">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Palermo</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Recoleta</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">San Telmo</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Legal</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Contact</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Newsletter</a>
+</div>
+</footer>
+</body></html>

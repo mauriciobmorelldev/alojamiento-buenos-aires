@@ -310,11 +310,11 @@ export default function HomeStitchLite({
 
           <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8">
             <div className="animate-home-rise max-w-3xl">
-              <div className="connexa-mark mb-6 flex max-w-3xl items-end overflow-hidden text-on-primary">
+              <div className="aba-legacy-mark mb-6 flex max-w-3xl items-end overflow-hidden text-on-primary">
                 <span className="font-headline text-3xl font-extrabold uppercase tracking-normal sm:text-4xl md:text-7xl">
                   Conne
                 </span>
-                <span className="animate-connexa-x font-headline text-4xl font-extrabold uppercase text-primary-fixed sm:text-5xl md:text-8xl">
+                <span className="animate-aba-x font-headline text-4xl font-extrabold uppercase text-primary-fixed sm:text-5xl md:text-8xl">
                   x
                 </span>
                 <span className="font-headline text-3xl font-extrabold uppercase tracking-normal sm:text-4xl md:text-7xl">
@@ -515,7 +515,7 @@ export default function HomeStitchLite({
               ["home_work", "Catálogo claro", "Explorá propiedades con fotos y características relevantes."],
               ["apartment", "Filtros simples", "Encontrá opciones por zona, tipo, ambientes y estado."],
               ["support_agent", "Consulta directa", "Enviá tus datos desde la ficha y recibí seguimiento comercial."],
-              ["forum", "Sin exponer datos", "Connexa responde por el canal correcto."],
+              ["forum", "Sin exponer datos", "Alojamiento Buenos Aires responde por el canal correcto."],
             ].map(([icon, title, text]) => (
               <div
                 key={title}
@@ -631,7 +631,7 @@ export default function HomeStitchLite({
                 return (
                   <Link
                     key={item.id}
-                    href={`/propiedades/${item.id}`}
+                    href={`/departamentos/${item.id}`}
                     target="_blank"
                     rel="noreferrer"
                     className="group block overflow-hidden rounded-3xl bg-surface-container-lowest pro-card transition-transform hover:-translate-y-2"
@@ -749,7 +749,7 @@ export default function HomeStitchLite({
                   return (
                     <Link
                       key={item.id}
-                      href={`/propiedades/${item.id}`}
+                      href={`/departamentos/${item.id}`}
                       target="_blank"
                       rel="noreferrer"
                       className="block rounded-3xl bg-surface-container-low p-4 transition-transform hover:-translate-y-1"

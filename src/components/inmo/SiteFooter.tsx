@@ -236,7 +236,7 @@ export default function SiteFooter({
       <div className="border-t border-[var(--footer-text)]/10">
         <div className="mx-auto flex max-w-screen-2xl flex-col gap-3 px-4 py-5 text-xs text-[var(--footer-text)]/62 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <span>{footer.legalText}</span>
-          <span>{theme.name || "Connexa"}</span>
+          <span>{theme.name || "Alojamiento Buenos Aires"}</span>
         </div>
       </div>
     </footer>

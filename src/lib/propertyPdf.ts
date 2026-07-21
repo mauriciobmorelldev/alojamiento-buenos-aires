@@ -211,7 +211,7 @@ const drawPremiumHeader = (
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(primary.r, primary.g, primary.b);
-  doc.text((theme.name || "Connexa").toUpperCase(), margin, 14);
+  doc.text((theme.name || "Alojamiento Buenos Aires").toUpperCase(), margin, 14);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.text(title.toUpperCase(), pageWidth - margin, 14, { align: "right" });
@@ -630,7 +630,7 @@ export const generatePropertyPdf = async ({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(120, 120, 120);
-    doc.text(fitText(doc, `${theme.name || "Connexa"} - ${property.neighborhood}`, 120), margin, pageHeight - 9);
+    doc.text(fitText(doc, `${theme.name || "Alojamiento Buenos Aires"} - ${property.neighborhood}`, 120), margin, pageHeight - 9);
     doc.link(margin, pageHeight - 13, pageWidth - margin * 2, 7, { url: propertyUrl });
     doc.text(`${page}/${totalPages}`, pageWidth - margin, pageHeight - 9, {
       align: "right",

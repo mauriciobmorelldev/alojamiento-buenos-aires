@@ -13,17 +13,13 @@ type FrontHeaderProps = {
   hideBrand?: boolean;
 };
 
-const ConnexaWordmark = ({ compact = false }: { compact?: boolean }) => (
+const AbaWordmark = ({ compact = false }: { compact?: boolean }) => (
   <span
     className={`font-headline font-extrabold uppercase tracking-normal text-primary ${
       compact ? "text-lg" : "text-2xl sm:text-3xl"
     }`}
   >
-    Conne
-    <span className="text-primary-fixed drop-shadow-[0_1px_0_rgba(27,54,93,0.28)]">
-      x
-    </span>
-    a
+    Alojamiento BA
   </span>
 );
 
@@ -48,7 +44,8 @@ const normalizeMenuHref = (href: string) => {
   return `/${value}`;
 };
 
-const opensPropertyModule = (href: string) => href.startsWith("/propiedades");
+const opensPropertyModule = (href: string) =>
+  href.startsWith("/propiedades") || href.startsWith("/departamentos");
 
 const propertyModuleLinkProps = (href: string) =>
   opensPropertyModule(href) ? { target: "_blank", rel: "noreferrer" } : {};
@@ -59,18 +56,22 @@ const ensureBuenosAiresMenuItem = (
   active = true
 ) => {
   if (!active) return items;
-  if (items.some((item) => normalizeMenuHref(item.href) === "/buenos-aires")) {
+  if (
+    items.some((item) =>
+      ["/buenos-aires", "/vivir-buenos-aires"].includes(normalizeMenuHref(item.href))
+    )
+  ) {
     return items;
   }
 
   const nextItems = [...items];
   const propertiesIndex = nextItems.findIndex(
-    (item) => normalizeMenuHref(item.href).startsWith("/propiedades")
+    (item) => opensPropertyModule(normalizeMenuHref(item.href))
   );
   const item = {
     id: "menu-buenos-aires",
     label,
-    href: "/buenos-aires",
+    href: "/vivir-buenos-aires",
     active: true,
   };
 
@@ -87,7 +88,7 @@ const ensureWorkWithUsMenuItem = (
 ) => {
   if (
     items.some(
-      (item) => normalizeMenuHref(item.href) === "/trabaja-con-nosotros"
+      (item) => normalizeMenuHref(item.href) === "/contacto"
     )
   ) {
     return items;
@@ -96,9 +97,9 @@ const ensureWorkWithUsMenuItem = (
   return [
     ...items,
     {
-      id: "menu-trabaja",
-      label: "Trabaja con nosotros",
-      href: "/trabaja-con-nosotros",
+      id: "menu-contacto",
+      label: "Contacto",
+      href: "/contacto",
       active: true,
     },
   ];
@@ -127,7 +128,7 @@ export default function FrontHeader({
                 {
                   id: "menu-propiedades",
                   label: "Propiedades",
-                  href: "/propiedades",
+                  href: "/departamentos",
                   active: true,
                 },
               ],
@@ -191,7 +192,7 @@ export default function FrontHeader({
                   className="h-9 w-auto object-contain"
                 />
               ) : (
-                <ConnexaWordmark />
+                <AbaWordmark />
               )}
             </Link>
           )}
@@ -201,8 +202,8 @@ export default function FrontHeader({
           {menuItems.map((item) => {
             const isActive =
               (active === "home" && item.href === "/") ||
-              (active === "catalog" && item.href.startsWith("/propiedades")) ||
-              (active === "detail" && item.href.startsWith("/propiedades"));
+              (active === "catalog" && opensPropertyModule(item.href)) ||
+              (active === "detail" && opensPropertyModule(item.href));
             return (
               <Link
                 key={item.id}
@@ -279,7 +280,7 @@ export default function FrontHeader({
                   className="h-8 w-auto object-contain"
                 />
               ) : (
-                <ConnexaWordmark compact />
+                <AbaWordmark compact />
               )}
             </div>
             <button

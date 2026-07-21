@@ -212,7 +212,14 @@ export default function CustomPageRenderer({ slug, fallback }: CustomPageRendere
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
+    const markLoading = () => {
+      if (active) setLoading(true);
+    };
+    if (typeof queueMicrotask === "function") {
+      queueMicrotask(markLoading);
+    } else {
+      window.setTimeout(markLoading, 0);
+    }
     fetch(`/api/public/page/${encodeURIComponent(normalizedSlug)}`, {
       cache: "no-store",
     })

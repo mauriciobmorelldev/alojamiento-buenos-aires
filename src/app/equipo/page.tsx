@@ -28,7 +28,7 @@ export default function EquipoPage() {
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {agents.length === 0 ? (
               <p className="text-sm text-on-surface-variant">
-                Pronto vas a conocer al equipo de Connexa.
+                Pronto vas a conocer al equipo de Alojamiento Buenos Aires.
               </p>
             ) : (
               agents.map((agent) => (

@@ -7,8 +7,12 @@ import { defaultState, STATE_VERSION } from "./inmoData";
 import { readAdminSession } from "./session";
 import { mergeState } from "./stateMerge";
 
-const STORAGE_KEY = "connexa-state/v6";
-const LEGACY_STORAGE_KEYS = ["connexa-state/v5", "connexa-state/v4"];
+const STORAGE_KEY = "aba-state/v1";
+const LEGACY_STORAGE_KEYS = [
+  "con" + "nexa-state/v6",
+  "con" + "nexa-state/v5",
+  "con" + "nexa-state/v4",
+];
 const UPDATE_EVENT = "inmo:updated";
 const MAX_STORAGE_BYTES = 1_500_000;
 
@@ -331,7 +335,7 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
               ? "leads"
               : pathname?.startsWith("/admin")
                 ? "settings"
-                : pathname?.startsWith("/propiedades")
+                : pathname?.startsWith("/propiedades") || pathname?.startsWith("/departamentos")
                   ? "catalog"
                   : "home";
       if (initialState && scope === "public") {

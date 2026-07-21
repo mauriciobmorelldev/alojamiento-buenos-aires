@@ -478,7 +478,7 @@ export default function ResultsStitch({
                   return (
                     <Link
                       key={item.id}
-                      href={`/propiedades/${item.id}`}
+                      href={`/departamentos/${item.id}`}
                       className="group relative block overflow-hidden rounded-3xl bg-surface-container-lowest editorial-shadow transition-transform duration-500 hover:-translate-y-2"
                     >
                       <div className="relative h-64 overflow-hidden sm:h-80">

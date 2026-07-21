@@ -1,0 +1,361 @@
+<!DOCTYPE html><html class="dark" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Alojamiento Buenos Aires | The City as Protagonist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#131313",
+                      "surface-container-highest": "#353535",
+                      "error": "#ffb4ab",
+                      "inverse-surface": "#e5e2e1",
+                      "surface-container": "#20201f",
+                      "primary": "#bfc6dc",
+                      "surface-container-lowest": "#0e0e0e",
+                      "surface-dim": "#131313",
+                      "on-background": "#e5e2e1",
+                      "on-primary-container": "#798195",
+                      "tertiary-fixed-dim": "#e2c19b",
+                      "surface-variant": "#353535",
+                      "secondary-fixed": "#e5e2dd",
+                      "inverse-on-surface": "#313030",
+                      "on-surface": "#e5e2e1",
+                      "outline": "#8f9097",
+                      "on-tertiary": "#412d11",
+                      "on-surface-variant": "#c6c6cd",
+                      "on-primary": "#293041",
+                      "on-secondary-fixed": "#1c1c19",
+                      "surface-container-low": "#1c1b1b",
+                      "primary-fixed": "#dbe2f9",
+                      "on-error-container": "#ffdad6",
+                      "inverse-primary": "#565e71",
+                      "secondary-fixed-dim": "#c9c6c2",
+                      "secondary-container": "#474743",
+                      "on-tertiary-fixed": "#291801",
+                      "surface-container-high": "#2a2a2a",
+                      "primary-fixed-dim": "#bfc6dc",
+                      "primary-container": "#101828",
+                      "on-tertiary-fixed-variant": "#594325",
+                      "on-secondary-container": "#b7b5b0",
+                      "secondary": "#c9c6c2",
+                      "surface-tint": "#bfc6dc",
+                      "tertiary": "#e2c19b",
+                      "on-primary-fixed-variant": "#3f4759",
+                      "outline-variant": "#45474c",
+                      "tertiary-container": "#251500",
+                      "surface-bright": "#393939",
+                      "on-tertiary-container": "#997d5a",
+                      "error-container": "#93000a",
+                      "on-primary-fixed": "#141b2c",
+                      "on-secondary": "#31302d",
+                      "background": "#131313",
+                      "on-error": "#690005",
+                      "on-secondary-fixed-variant": "#474743",
+                      "tertiary-fixed": "#ffddb6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-md": "16px",
+                      "stack-lg": "32px",
+                      "stack-sm": "8px",
+                      "margin-mobile": "24px",
+                      "margin-desktop": "80px",
+                      "section-gap": "160px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "headline-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "accent-italic": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Playfair Display"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "48px",
+                              {
+                                      "lineHeight": "52px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "accent-italic": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "400",
+                                      "fontStyle": "italic"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg": [
+                              "80px",
+                              {
+                                      "lineHeight": "92px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(16, 24, 40, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .btn-ghost {
+            color: #e5e2e1;
+            border: 1px solid #A68966;
+            border-radius: 0;
+            padding: 12px 24px;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: all 0.4s ease-in-out;
+        }
+        .btn-ghost:hover {
+            background-color: #A68966;
+            color: #101828;
+        }
+        .ken-burns {
+            transition: transform 6s ease-in-out;
+        }
+        .group:hover .ken-burns {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased overflow-x-hidden selection:bg-tertiary-fixed-dim selection:text-primary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl border-b border-outline-variant/10">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-6 w-full max-w-[1440px] mx-auto">
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300" href="#">Properties</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300" href="#">Neighborhoods</a>
+</div>
+<a class="font-headline-md text-headline-md text-on-surface uppercase tracking-widest hover:opacity-80 transition-opacity ease-in-out duration-400" href="#">Alojamiento Buenos Aires</a>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300" href="#">Magazine</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300" href="#">Owner</a>
+<a class="font-label-caps text-label-caps text-tertiary-fixed-dim border-b border-tertiary-fixed-dim pb-1 hover:opacity-80 transition-opacity ease-in-out duration-400" href="#">Inquire</a>
+</div>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative w-full h-screen min-h-[800px] flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 w-full h-full">
+<div class="absolute inset-0 bg-cover bg-center bg-no-repeat w-full h-full ken-burns" data-alt="A cinematic, high-contrast evening shot of a grand Parisian-style street corner in Recoleta, Buenos Aires. The warm golden light from streetlamps spills onto the wet cobblestones, contrasting with the deep indigo of the twilight sky. The mood is luxurious, moody, and deeply atmospheric, evoking a high-end editorial feel." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD4qbsRbNR6YDhcahT4JQ0XoClmDlE_Ke39UKx4oJJY3NeCjHVCoCrOrJvn5nT9e7tMXQ7LiedXWRnSFhrxw17yKMglvCKvmXyaJ9fmNQAJ4Zt0Tk7gfBJqquK1MqZf7pYvzeOikvrd7FM9Eznp3cIBOxqPbsg5O30k6d8T9xHTWIyAJ0EujxtQcOq6jvvUgzEjz5TCcPVw3Jg5QEPgQd__9ocxlhfEbumfcS73c5JWTqcPEg5qK6E')"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-surface/40 via-surface/20 to-surface"></div>
+</div>
+<div class="relative z-10 text-center px-margin-mobile md:px-margin-desktop max-w-4xl mx-auto mt-24 md:mt-24">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-stack-lg leading-tight tracking-tight">
+                Habitar el espíritu de la ciudad.<br>
+<span class="font-accent-italic text-accent-italic md:text-[40px] text-tertiary-fixed-dim mt-4 block italic">Buenos Aires</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-stack-lg leading-relaxed mb-12">
+                Otros alquilan metros cuadrados. Nosotros alquilamos la esencia de Buenos Aires. Una curaduría de espacios para vivir la ciudad como un local.
+            </p>
+<div class="flex flex-col sm:flex-row gap-6 justify-center items-center"><button class="btn-ghost w-full sm:w-auto">Ver propiedades</button><button class="btn-ghost w-full sm:w-auto">Descubrí la ciudad</button></div>
+</div>
+</header>
+<!-- Brand Philosophy -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop max-w-[1440px] mx-auto text-center">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface max-w-3xl mx-auto leading-tight mb-stack-lg">
+            "La ciudad es la protagonista."
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl mx-auto">
+            Nuestros espacios son el umbral. Diseñados con una estética de lujo minimalista, sirven como el refugio perfecto después de sumergirse en el vibrante ritmo cultural porteño.
+        </p>
+</section>
+<!-- Featured Properties Grid -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop max-w-[1440px] mx-auto bg-surface-container-lowest">
+<div class="flex justify-between items-end mb-stack-lg border-b border-outline-variant/10 pb-stack-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Selección Exclusiva</h3>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors" href="#">Ver todas</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Property 1 -->
+<a class="group block relative overflow-hidden h-[500px] border border-outline-variant/20 hover:border-tertiary/50 transition-colors duration-500" href="#">
+<div class="absolute inset-0 bg-cover bg-center ken-burns" data-alt="Interior shot of a sophisticated, high-ceilinged apartment in Recoleta. Sunlight streams through tall French windows, illuminating a minimalist curation of mid-century modern furniture and a large, abstract painting. The lighting is cinematic, highlighting the elegant moldings and rich wooden floors." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDgoKNW_vbRCjE_C76FUmesqqqtO7ZJp6W5j10zEPS1qm2Mf1K66E5YxhJXYX_n87X_5a_MSijFMV2Y5ZJh0teFtBYHvvXTlVeztTjciWho2LdQ0UQDLBKJWV7Rz1dEXwFivdLYnoI3zJ9V7ubZ_KCyVpw1nuIXPkPM8tmvGHeZp6prb041Crha-Ou3ckIshZc-ClVph-LhBNcXUZeS23zoi6_5yvFyVHj5kVEovzvGPfIO3y_IWLs')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim/90 via-surface-dim/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim mb-2">Recoleta</p>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-2">Atelier Recoleta</h4>
+<div class="flex justify-between items-center font-body-md text-body-md text-on-surface-variant">
+<span class="">$1,500/mo</span>
+<span class="">2 Rooms</span>
+</div>
+</div>
+</a>
+<!-- Property 2 -->
+<a class="group block relative overflow-hidden h-[500px] border border-outline-variant/20 hover:border-tertiary/50 transition-colors duration-500 md:mt-12" href="#">
+<div class="absolute inset-0 bg-cover bg-center ken-burns" data-alt="A moody, high-contrast interior of a historic Casona in San Telmo. Exposed brick walls, vintage leather seating, and industrial lighting create a sophisticated, slightly gritty luxury vibe. The warm glow of a desk lamp adds a layer of intimacy to the dark, textured room." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBNZI4UGOxmiXas-SPzr6zhiH1frQks3Q66zFMS58s50NMucd4aw62U0d9MEEzqY8j-pbGK_IbhgxCURi-wsw4yj1fsvsLxU5M7SW7H786iuihMuzEly33YiE4a4Fud_oHXjqdm7yZAn-8wNjWGnX3kObn3B2akAOK5ryBQ8eSZtAcJipHa9m-ap7bmW1zjMLWnpIL2u4HU89Sy_bwjpeluXAHJ6xpRcPzpJLmHEjzbDZCQKzID5TY')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim/90 via-surface-dim/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim mb-2">San Telmo</p>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-2">Casona San Telmo</h4>
+<div class="flex justify-between items-center font-body-md text-body-md text-on-surface-variant">
+<span class="">$1,200/mo</span>
+<span class="">3 Rooms</span>
+</div>
+</div>
+</a>
+<!-- Property 3 -->
+<a class="group block relative overflow-hidden h-[500px] border border-outline-variant/20 hover:border-tertiary/50 transition-colors duration-500 md:mt-24" href="#">
+<div class="absolute inset-0 bg-cover bg-center ken-burns" data-alt="A bright, minimalist, and highly modern apartment in Belgrano. Floor-to-ceiling windows look out over leafy treetops. The interior features sleek, seamless concrete floors, contemporary white built-in shelving, and stark, elegant black accents. The atmosphere is crisp, serene, and luxurious." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA_UE3kpXSN_GOZxF_Be4aoQJv18Tnf7QLxQ--C71_UAiPPpH4YIpBrrE8A5_m-QxigbkJYthyXh6wALS3fObAaNvWlFT7C4NuJmpBnYbZGWNAPGLG-13TCf5IHauCSY7_-fBHdzAvip5oRalC3bkEMUMn9-lQcS6BD59W1dN_NYsAKM8k6U_bURbbWDT2tGRqN5x-xTW6jjzSkeC-yAX6TBUtWGKiXuY53T8E5hXk28JB2-fdGDTY')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim/90 via-surface-dim/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim mb-2">Belgrano</p>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-2">Modern Belgrano</h4>
+<div class="flex justify-between items-center font-body-md text-body-md text-on-surface-variant">
+<span class="">$1,800/mo</span>
+<span class="">2 Rooms</span>
+</div>
+</div>
+</a>
+</div>
+</section>
+<!-- Neighborhood Discovery -->
+<section class="w-full">
+<div class="relative h-[80vh] w-full flex items-center group overflow-hidden border-b border-outline-variant/10">
+<div class="absolute inset-0 bg-cover bg-center ken-burns" data-alt="A cinematic, wide-angle street view of Palermo Soho, Buenos Aires. Lush green canopy over cobblestone streets, chic cafes with outdoor seating, and street art partially visible. The lighting is golden hour, casting long, dramatic shadows and a warm, inviting glow over the fashionable neighborhood." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCIf1pafqqjHbf7mztZxgdwkURtG9_GNceAtyApoZL-hBZa8yiSh6R9J1-SufRG3LSbXVwyhOFg_eJJZKC3TM6q1jZtg654z_I_Rp6WMJqhQESPj5PxXM3hjk_9fMkSLZ5DpnyrvtDCBMl1Rg_InaIEL3v867r41U1k7o35wda9VzSo9-qRVgXWUfiz8pbwT3x1c6xiWut64sURC10D3PiCbdLt_yj0y_kWSnpb9oCBXuzCTzJOSXk')"></div>
+<div class="absolute inset-0 bg-surface/40 group-hover:bg-surface/20 transition-colors duration-700"></div>
+<div class="relative z-10 px-margin-mobile md:px-margin-desktop w-full max-w-[1440px] mx-auto">
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-4">Palermo</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mb-8">El epicentro del diseño, la gastronomía y la vida nocturna. Vanguardia en cada esquina.</p>
+<button class="btn-ghost">Ver Guía de Barrio</button>
+</div>
+</div>
+</section>
+<!-- Owner Acquisition -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop max-w-[1440px] mx-auto">
+<div class="glass-panel p-12 md:p-24 border border-outline-variant/20 flex flex-col items-center text-center max-w-4xl mx-auto">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-6">Publique su propiedad con nosotros.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-10 max-w-xl">
+                Buscamos espacios con carácter e historia para un público internacional exigente. Confíe la gestión de su propiedad a expertos en curaduría.
+            </p>
+<button class="btn-ghost">Contáctenos</button>
+</div>
+</section>
+<!-- Floating WhatsApp -->
+<a class="fixed bottom-8 right-8 w-14 h-14 bg-surface-container-highest border border-outline-variant/20 rounded-full flex items-center justify-center hover:bg-tertiary-fixed-dim hover:text-surface-container-lowest transition-colors duration-300 z-50 group shadow-lg" href="#">
+<span class="material-symbols-outlined text-on-surface group-hover:text-surface-container-lowest transition-colors">chat</span>
+</a>
+<!-- Footer -->
+<footer class="w-full py-section-gap px-margin-desktop bg-surface-container-lowest border-t border-outline-variant/10">
+<div class="grid grid-cols-12 gap-gutter max-w-7xl mx-auto">
+<div class="col-span-12 md:col-span-4 mb-12 md:mb-0">
+<div class="font-headline-lg text-headline-lg text-on-surface mb-6">Alojamiento Buenos Aires</div>
+<p class="font-body-md text-body-md text-secondary">© 2024 ALOJAMIENTO BUENOS AIRES. THE CITY AS PROTAGONIST.</p>
+</div>
+<div class="col-span-12 md:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+<div class="flex flex-col gap-4">
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim">Neighborhoods</span>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Palermo</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Recoleta</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">San Telmo</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim">Info</span>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Legal</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Contact</a>
+</div>
+<div class="col-span-2 flex flex-col gap-4">
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim">Subscribe</span>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Newsletter</a>
+<div class="relative mt-2">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant text-on-surface font-body-md focus:ring-0 focus:border-on-surface py-2 px-0 transition-colors" placeholder="Email Address" type="email">
+</div>
+</div>
+</div>
+</div>
+</footer>
+
+
+</body></html>

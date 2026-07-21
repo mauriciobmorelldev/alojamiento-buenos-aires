@@ -19,6 +19,8 @@ const tables = [
   "lead_events",
   "property_metrics",
   "tokko_sync_logs",
+  "editorial_posts",
+  "newsletter_subscribers",
 ];
 
 export async function GET() {

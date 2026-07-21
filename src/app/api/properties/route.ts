@@ -15,8 +15,29 @@ import { sanitizeVideoUrls } from "@/lib/video";
 const propertySelect =
   "id,title,type,status,price,price_unit,currency,neighborhood,area,rooms,tag,highlight,description,videos,cover_index,agent_id,created_by_admin_id,attributes";
 
+type PropertyRow = {
+  id: string;
+  title: string;
+  created_by_admin_id?: string | null;
+  type: string;
+  status: string;
+  price: number | string | null;
+  price_unit: string;
+  currency?: string | null;
+  neighborhood: string;
+  area: number | string | null;
+  rooms: number | string | null;
+  tag?: string | null;
+  highlight?: string | null;
+  description?: string | null;
+  videos?: unknown;
+  cover_index?: number | string | null;
+  agent_id?: string | null;
+  attributes?: Record<string, string[]>;
+};
+
 const mapProperty = (
-  row: Record<string, any>,
+  row: PropertyRow,
   images: Array<{ url: string }>
 ): Listing => ({
   id: row.id,

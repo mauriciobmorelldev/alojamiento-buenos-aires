@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminOtpChallenge } from "@/lib/server/adminOtp";
+import { readInmoState } from "@/lib/server/inmoRepository";
 import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -18,28 +19,49 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: verified.error }, { status: 401 });
   }
 
+  const supabaseConfigured = isSupabaseConfigured();
+  const allowLocalAdminFallback = !supabaseConfigured || process.env.NODE_ENV !== "production";
   const supabase = getSupabaseServerClient();
-  if (!supabase || !isSupabaseConfigured()) {
-    return NextResponse.json({ ok: false, error: "Supabase no configurado." }, { status: 503 });
+  if (supabase && supabaseConfigured) {
+    const result = await supabase
+      .from("profiles")
+      .select("id,email,name,role,active")
+      .eq("id", verified.adminId)
+      .eq("kind", "admin")
+      .maybeSingle();
+    const admin = result.data;
+    if (!result.error && admin?.active) {
+      return NextResponse.json({
+        ok: true,
+        admin: {
+          id: admin.id,
+          email: admin.email,
+          name: admin.name,
+          role: admin.role,
+        },
+      });
+    }
   }
-  const result = await supabase
-    .from("profiles")
-    .select("id,email,name,role,active")
-    .eq("id", verified.adminId)
-    .eq("kind", "admin")
-    .maybeSingle();
-  const admin = result.data;
-  if (result.error || !admin?.active) {
+
+  if (!allowLocalAdminFallback) {
+    return NextResponse.json({ ok: false, error: "Usuario inactivo." }, { status: 403 });
+  }
+
+  const { data } = await readInmoState({ scope: "admin", adminMode: "settings" });
+  const localAdmin = data.adminUsers.find(
+    (admin) => admin.active && admin.id === verified.adminId
+  );
+  if (!localAdmin) {
     return NextResponse.json({ ok: false, error: "Usuario inactivo." }, { status: 403 });
   }
 
   return NextResponse.json({
     ok: true,
     admin: {
-      id: admin.id,
-      email: admin.email,
-      name: admin.name,
-      role: admin.role,
+      id: localAdmin.id,
+      email: localAdmin.email,
+      name: localAdmin.name,
+      role: localAdmin.role,
     },
   });
 }

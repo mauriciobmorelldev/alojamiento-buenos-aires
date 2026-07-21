@@ -249,7 +249,7 @@ export default function MiCuentaPage() {
                         </p>
                         <div className="mt-4 flex flex-wrap gap-2">
                           <Link
-                            href={`/propiedades/${listing.id}`}
+                            href={`/departamentos/${listing.id}`}
                             className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-on-primary"
                             style={{ color: "var(--color-on-primary)" }}
                           >

@@ -149,7 +149,7 @@ export default function WorkWithUsPage({ initialState }: WorkWithUsPageProps) {
         <FrontHeader active="home" />
         <main className="mx-auto flex min-h-[70vh] max-w-3xl flex-col items-center justify-center px-6 pt-24 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.35em] text-primary">
-            Connexa
+            Alojamiento Buenos Aires
           </p>
           <h1 className="mt-4 text-4xl font-headline font-extrabold text-primary">
             Esta sección no está disponible.

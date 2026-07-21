@@ -1308,7 +1308,7 @@ export default function AdminPropertiesPage() {
                     </button>
                   ) : null}
                   <Link
-                    href={`/propiedades/${listing.id}`}
+                    href={`/departamentos/${listing.id}`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-on-surface-variant"

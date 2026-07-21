@@ -2,9 +2,12 @@ import {
   defaultState,
   STATE_VERSION,
   type AdminRole,
+  type EditorialPost,
   type InmoState,
   type Listing,
+  type LeadType,
   type LeadStatus,
+  type NewsletterSubscriber,
   type PriceCurrency,
   type PriceUnit,
   type PropertyStatus,
@@ -303,6 +306,79 @@ const mapPublicListingRows = (
     attributes: property.attributes ?? {},
   }));
 
+type EditorialPostRow = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string | null;
+  body?: string | null;
+  cover_image?: string | null;
+  category?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  published?: boolean | null;
+  published_at?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+type NewsletterSubscriberRow = {
+  id: string;
+  email: string;
+  name?: string | null;
+  active?: boolean | null;
+  created_at?: string | null;
+};
+
+const mapEditorialPostRow = (post: EditorialPostRow): EditorialPost => ({
+  id: post.id,
+  slug: post.slug,
+  title: post.title,
+  excerpt: post.excerpt ?? "",
+  body: post.body ?? "",
+  coverImage: sanitizePublicImage(post.cover_image, 1_100_000),
+  category: post.category ?? "",
+  metaTitle: post.meta_title ?? post.title,
+  metaDescription: post.meta_description ?? post.excerpt ?? "",
+  published: Boolean(post.published),
+  publishedAt: post.published_at ?? "",
+  createdAt: post.created_at ?? "",
+  updatedAt: post.updated_at ?? "",
+});
+
+const toEditorialPostRow = (post: EditorialPost) => ({
+  id: post.id,
+  slug: post.slug,
+  title: post.title,
+  excerpt: post.excerpt,
+  body: post.body,
+  cover_image: post.coverImage,
+  category: post.category,
+  meta_title: post.metaTitle,
+  meta_description: post.metaDescription,
+  published: post.published,
+  published_at: post.publishedAt || null,
+  updated_at: new Date().toISOString(),
+});
+
+const mapNewsletterSubscriberRow = (
+  subscriber: NewsletterSubscriberRow
+): NewsletterSubscriber => ({
+  id: subscriber.id,
+  email: subscriber.email,
+  name: subscriber.name ?? "",
+  active: Boolean(subscriber.active),
+  createdAt: subscriber.created_at ?? "",
+});
+
+const toNewsletterSubscriberRow = (subscriber: NewsletterSubscriber) => ({
+  id: subscriber.id,
+  email: subscriber.email,
+  name: subscriber.name,
+  active: subscriber.active,
+  created_at: subscriber.createdAt,
+});
+
 export const readPublicShell = async (
   mode: PublicShellMode = "home"
 ): Promise<PublicReadResult> => {
@@ -539,6 +615,50 @@ export const readPublicListings = async (): Promise<PublicReadResult> => {
         ensureArray(properties.data) as PublicPropertyRow[],
         imagesByProperty
       ),
+    },
+    source: "supabase",
+  };
+};
+
+export const readPublicEditorialPosts = async (): Promise<PublicReadResult> => {
+  const fallbackPosts = defaultState.editorialPosts
+    .filter((post) => post.published)
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+  const supabase = getSupabaseServerClient();
+
+  if (!supabase || !isSupabaseConfigured()) {
+    return {
+      data: {
+        version: STATE_VERSION,
+        editorialPosts: fallbackPosts,
+      },
+      source: "fallback",
+    };
+  }
+
+  const posts = await supabase
+    .from("editorial_posts")
+    .select(
+      "id,slug,title,excerpt,body,cover_image,category,meta_title,meta_description,published,published_at,created_at,updated_at"
+    )
+    .eq("published", true)
+    .order("published_at", { ascending: false });
+
+  if (posts.error) {
+    console.warn("Supabase public editorial_posts read failed", posts.error.message);
+    return {
+      data: {
+        version: STATE_VERSION,
+        editorialPosts: fallbackPosts,
+      },
+      source: "fallback",
+    };
+  }
+
+  return {
+    data: {
+      version: STATE_VERSION,
+      editorialPosts: ensureArray(posts.data).map(mapEditorialPostRow),
     },
     source: "supabase",
   };
@@ -873,6 +993,7 @@ export const readInmoState = async (
   const needsLeadEvents = adminMode === "full" || adminMode === "leads";
   const needsMetrics = adminMode === "full" || adminMode === "dashboard";
   const needsTokkoLogs = adminMode === "full" || adminMode === "dashboard";
+  const needsNewsletter = adminMode === "full" || adminMode === "dashboard" || adminMode === "settings";
   const needsProperties =
     adminMode === "full" ||
     adminMode === "dashboard" ||
@@ -898,6 +1019,8 @@ export const readInmoState = async (
     leads,
     leadEvents,
     metrics,
+    editorialPosts,
+    newsletterSubscribers,
   ] = await Promise.all([
     supabase
       .from("platform_settings")
@@ -921,7 +1044,7 @@ export const readInmoState = async (
       ? Promise.resolve({ data: null, error: null })
       : supabase
           .from("leads")
-          .select("id,name,email,phone,property_id,agent_id,client_id,status,created_at,updated_at,notes"),
+          .select("id,name,email,phone,lead_type,property_id,agent_id,client_id,status,created_at,updated_at,notes,payload"),
     isPublicScope || !needsLeadEvents
       ? Promise.resolve({ data: null, error: null })
       : supabase
@@ -932,6 +1055,18 @@ export const readInmoState = async (
       : supabase
           .from("property_metrics")
           .select("id,property_id,views,leads,favorites,last_viewed_at"),
+    supabase
+      .from("editorial_posts")
+      .select(
+        "id,slug,title,excerpt,body,cover_image,category,meta_title,meta_description,published,published_at,created_at,updated_at"
+      )
+      .order("updated_at", { ascending: false }),
+    isPublicScope || !needsNewsletter
+      ? Promise.resolve({ data: null, error: null })
+      : supabase
+          .from("newsletter_subscribers")
+          .select("id,email,name,active,created_at")
+          .order("created_at", { ascending: false }),
   ]);
   const tokkoLogs = isPublicScope || !needsTokkoLogs
     ? { data: null, error: null }
@@ -969,6 +1104,8 @@ export const readInmoState = async (
     ["leads", leads.error?.message],
     ["lead_events", leadEvents.error?.message],
     ["property_metrics", metrics.error?.message],
+    ["editorial_posts", editorialPosts.error?.message],
+    ["newsletter_subscribers", newsletterSubscribers.error?.message],
     ["tokko_sync_logs", tokkoLogs.error?.message],
   ].filter(([, error]) => error);
 
@@ -1065,6 +1202,7 @@ export const readInmoState = async (
       name: lead.name,
       email: lead.email,
       phone: lead.phone,
+      leadType: (lead.lead_type ?? "tenant") as LeadType,
       propertyId: lead.property_id ?? undefined,
       agentId: lead.agent_id ?? undefined,
       clientId: lead.client_id ?? undefined,
@@ -1072,6 +1210,7 @@ export const readInmoState = async (
       createdAt: lead.created_at,
       updatedAt: lead.updated_at,
       notes: lead.notes ?? undefined,
+      payload: lead.payload ?? undefined,
     })),
     leadEvents: ensureArray(leadEvents.data).map((event) => ({
       id: event.id,
@@ -1097,6 +1236,10 @@ export const readInmoState = async (
       startedAt: log.started_at,
       finishedAt: log.finished_at,
     })),
+    editorialPosts: ensureArray(editorialPosts.data).map(mapEditorialPostRow),
+    newsletterSubscribers: ensureArray(newsletterSubscribers.data).map(
+      mapNewsletterSubscriberRow
+    ),
   };
 
   const merged = mergeState(defaultState, incoming);
@@ -1112,6 +1255,8 @@ export const readInmoState = async (
       leadEvents: incoming.leadEvents ?? [],
       propertyMetrics: incoming.propertyMetrics ?? [],
       tokkoSyncLogs: incoming.tokkoSyncLogs ?? [],
+      editorialPosts: incoming.editorialPosts ?? [],
+      newsletterSubscribers: incoming.newsletterSubscribers ?? [],
     },
     source: "supabase",
   };
@@ -1244,15 +1389,48 @@ export const writeInmoState = async (state: InmoState) => {
         name: lead.name,
         email: lead.email,
         phone: lead.phone,
+        lead_type: lead.leadType ?? "tenant",
         property_id: lead.propertyId ?? null,
         agent_id: lead.agentId ?? null,
         client_id: lead.clientId ?? null,
         status: lead.status,
         notes: lead.notes ?? null,
+        payload: lead.payload ?? {},
         created_at: lead.createdAt,
         updated_at: lead.updatedAt,
       }))
     ), "upsert leads");
+  }
+
+  if (state.editorialPosts.length) {
+    assertSupabaseOk(
+      await supabase.from("editorial_posts").upsert(state.editorialPosts.map(toEditorialPostRow)),
+      "upsert editorial_posts"
+    );
+  }
+  const existingEditorialPosts = await supabase.from("editorial_posts").select("id");
+  if (!existingEditorialPosts.error) {
+    const keepIds = new Set(state.editorialPosts.map((post) => post.id));
+    const deleteIds = ensureArray(existingEditorialPosts.data)
+      .map((post) => post.id)
+      .filter((id) => !keepIds.has(id));
+    if (deleteIds.length) {
+      assertSupabaseOk(
+        await supabase.from("editorial_posts").delete().in("id", deleteIds),
+        "delete editorial_posts"
+      );
+    }
+  }
+
+  if (state.newsletterSubscribers.length) {
+    assertSupabaseOk(
+      await supabase
+        .from("newsletter_subscribers")
+        .upsert(state.newsletterSubscribers.map(toNewsletterSubscriberRow), {
+          onConflict: "email",
+        }),
+      "upsert newsletter_subscribers"
+    );
   }
 
   if (state.leadEvents.length) {

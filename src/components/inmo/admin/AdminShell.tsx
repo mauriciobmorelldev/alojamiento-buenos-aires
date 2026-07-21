@@ -27,6 +27,7 @@ export type AdminSection =
   | "clientes"
   | "leads"
   | "administradores"
+  | "editorial"
   | "branding"
   | "filtros"
   | "integraciones";
@@ -57,6 +58,7 @@ const navItems: Array<{
   },
   { id: "agentes", label: "Corredores", href: "/admin/agentes", icon: "group" },
   { id: "leads", label: "Leads", href: "/admin/leads", icon: "insights" },
+  { id: "editorial", label: "Editorial", href: "/admin/editorial", icon: "article" },
   {
     id: "administradores",
     label: "Administradores",
@@ -212,6 +214,7 @@ export default function AdminShell({
     const result = (await response.json().catch(() => null)) as {
       ok?: boolean;
       requiresOtp?: boolean;
+      admin?: { id: string; email: string; role?: string };
       challenge?: {
         challengeId?: string;
         emailSent?: boolean;
@@ -219,6 +222,18 @@ export default function AdminShell({
       };
       error?: string;
     } | null;
+
+    if (response.ok && result?.ok && !result.requiresOtp && result.admin) {
+      const nextSession = {
+        adminId: result.admin.id,
+        email: result.admin.email,
+        issuedAt: new Date().toISOString(),
+      };
+      writeAdminSession(nextSession);
+      setSession(nextSession);
+      window.location.href = result.admin.role === "colaborador" ? "/admin/propiedades" : "/admin";
+      return;
+    }
 
     if (!response.ok || !result?.ok || !result.requiresOtp || !result.challenge?.challengeId) {
       const messageByError: Record<string, string> = {
@@ -332,27 +347,27 @@ export default function AdminShell({
       return (
         <div
           style={themeStyles}
-          className="inmo-admin min-h-screen bg-background text-on-surface"
+          className="inmo-admin aba-admin-crm min-h-screen bg-[#f6f3ee] text-[#243044]"
         />
       );
     }
     return (
       <div
         style={themeStyles}
-        className="inmo-admin min-h-screen bg-background text-on-surface"
+        className="inmo-admin aba-admin-crm min-h-screen bg-[#f6f3ee] text-[#243044]"
       >
         <div className="mx-auto flex min-h-screen max-w-screen-lg items-center justify-center px-6 py-12">
-          <div className="w-full max-w-3xl rounded-3xl bg-surface-container-lowest p-10 shadow-[0_40px_60px_-15px_rgba(27,27,28,0.08)]">
+          <div className="w-full max-w-3xl border border-[#e1ddd5] bg-white p-10 shadow-[0_40px_90px_-45px_rgba(0,0,0,0.9)] backdrop-blur-xl">
             <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-                  Suite de Gestión
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#d7b66f]">
+                  ABA Suite
                 </p>
-                <h1 className="mt-3 text-4xl font-headline font-extrabold text-primary">
-                  Acceso administrador
+                <h1 className="mt-3 font-serif text-5xl font-normal leading-tight text-[#243044]">
+                  Gestión editorial e inmobiliaria.
                 </h1>
-                <p className="mt-3 text-sm text-on-surface-variant">
-                  Ingresá con un usuario autorizado para gestionar la operación inmobiliaria.
+                <p className="mt-4 text-sm leading-7 text-[#697386]">
+                  Ingresá para administrar propiedades, consultas, artículos y el contenido visual del sitio.
                 </p>
               </div>
 
@@ -367,7 +382,7 @@ export default function AdminShell({
                     className="grid gap-4"
                     onSubmit={handleLogin}
                   >
-                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[#697386]">
                       Email
                       <input
                         required
@@ -375,11 +390,11 @@ export default function AdminShell({
                         autoComplete="username"
                         value={email}
                         onChange={(event) => setEmail(event.target.value)}
-                        className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
-                        placeholder="usuario@connexa.com"
+                        className="w-full rounded-full border border-[#d8d2c8] bg-[#f8f6f1] px-5 py-3 text-sm font-semibold text-[#243044] outline-none placeholder:text-[#243044]/35 focus:border-[#9b6f43]"
+                        placeholder="admin@alojamientobuenosaires.com"
                       />
                     </label>
-                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
+                    <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[#697386]">
                       Contraseña
                       <input
                         required
@@ -387,7 +402,7 @@ export default function AdminShell({
                         autoComplete="current-password"
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
-                        className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
+                        className="w-full rounded-full border border-[#d8d2c8] bg-[#f8f6f1] px-5 py-3 text-sm font-semibold text-[#243044] outline-none placeholder:text-[#243044]/35 focus:border-[#9b6f43]"
                         placeholder="••••••••"
                       />
                     </label>
@@ -402,14 +417,13 @@ export default function AdminShell({
                     ) : null}
                     <button
                       type="submit"
-                      className="mt-2 w-full rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-on-primary shadow-[0_20px_40px_-25px_rgba(7,22,13,0.6)]"
-                      style={{ color: "var(--color-on-primary)" }}
+                      className="mt-2 w-full rounded-full bg-white px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-black shadow-[0_20px_40px_-25px_rgba(7,22,13,0.6)] transition hover:bg-[#d7b66f]"
                     >
                       Continuar
                     </button>
                     <Link
                       href="/"
-                      className="text-center text-xs font-semibold uppercase tracking-widest text-on-surface-variant"
+                      className="text-center text-xs font-semibold uppercase tracking-widest text-[#697386]"
                     >
                       Volver al front
                     </Link>
@@ -498,7 +512,7 @@ export default function AdminShell({
     return (
       <div
         style={themeStyles}
-        className="inmo-admin min-h-screen bg-background text-on-surface"
+        className="inmo-admin aba-admin-crm min-h-screen bg-[#f6f3ee] text-[#243044]"
       >
         <div className="mx-auto flex min-h-screen max-w-screen-md items-center justify-center px-6">
           <div className="rounded-3xl bg-surface-container-lowest p-10 text-center shadow-[0_40px_60px_-15px_rgba(27,27,28,0.08)]">
@@ -525,17 +539,17 @@ export default function AdminShell({
   return (
     <div
       style={themeStyles}
-      className="inmo-admin min-h-screen bg-background text-on-surface"
+      className="inmo-admin aba-admin-crm min-h-screen bg-[#f6f3ee] text-[#243044]"
     >
-      <aside className="hidden h-screen w-72 fixed left-0 top-0 bg-surface-container-high flex-col py-6 space-y-2 z-50 lg:flex">
+      <aside className="hidden h-screen w-72 fixed left-0 top-0 border-r border-[#e1ddd5] bg-white text-[#243044] flex-col py-6 space-y-2 z-50 lg:flex">
         <div className="px-6 mb-7">
           {theme.logo ? (
             <img src={theme.logo} alt={theme.name} className="h-9 w-auto object-contain" />
           ) : (
-            <h1 className="text-xl font-headline font-black text-primary">{theme.name}</h1>
+            <h1 className="font-serif text-2xl font-normal text-[#243044]">ABA</h1>
           )}
-          <p className="text-[10px] uppercase tracking-widest opacity-60 font-bold mt-1 text-on-surface">
-            Suite de Gestión
+          <p className="text-[10px] uppercase tracking-widest opacity-60 font-bold mt-1 text-[#243044]">
+            Suite editorial
           </p>
         </div>
 
@@ -547,8 +561,8 @@ export default function AdminShell({
                 key={item.id}
                 className={
                   active
-                    ? "bg-surface-container-lowest text-primary rounded-lg shadow-sm px-4 py-3 ml-2 mr-2 flex items-center gap-3 text-sm font-semibold transition-all translate-x-1"
-                    : "text-on-surface/70 px-4 py-3 ml-2 mr-2 flex items-center gap-3 text-sm font-semibold hover:bg-surface-container-lowest/60 transition-all"
+                    ? "bg-[#243044] text-white rounded-lg shadow-sm px-4 py-3 ml-2 mr-2 flex items-center gap-3 text-sm font-semibold transition-all translate-x-1"
+                    : "text-[#697386] px-4 py-3 ml-2 mr-2 flex items-center gap-3 text-sm font-semibold hover:bg-[#f8f6f1] hover:text-[#243044] transition-all"
                 }
                 href={item.href}
               >
@@ -576,19 +590,19 @@ export default function AdminShell({
 
         <div className="pt-4 border-t border-outline-variant/20 space-y-1">
           <div className="px-6 mb-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-primary font-semibold">
+            <div className="w-10 h-10 rounded-full bg-[#243044] text-white flex items-center justify-center font-semibold">
               {authedAdmin.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-sm font-bold text-on-surface">{authedAdmin.name}</p>
-              <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">
+              <p className="text-sm font-bold text-[#243044]">{authedAdmin.name}</p>
+              <p className="text-[10px] uppercase tracking-widest text-[#8a93a3]">
                 {authedAdmin.role}
               </p>
             </div>
           </div>
 
           <Link
-            className="text-on-surface/70 px-4 py-2 ml-2 mr-2 flex items-center gap-3 text-xs font-semibold hover:bg-surface-container-lowest/60 transition-all"
+            className="text-[#697386] px-4 py-2 ml-2 mr-2 flex items-center gap-3 text-xs font-semibold hover:bg-[#f8f6f1] hover:text-[#243044] transition-all"
             href="/"
           >
             <span className="material-symbols-outlined text-lg" data-icon="open_in_new">
@@ -599,7 +613,7 @@ export default function AdminShell({
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full text-on-surface/70 px-4 py-2 ml-2 mr-2 mb-2 flex items-center gap-3 text-xs font-semibold hover:bg-surface-container-lowest/60 transition-all"
+            className="w-full text-[#697386] px-4 py-2 ml-2 mr-2 mb-2 flex items-center gap-3 text-xs font-semibold hover:bg-[#f8f6f1] hover:text-[#243044] transition-all"
           >
             <span className="material-symbols-outlined text-lg" data-icon="logout">
               logout

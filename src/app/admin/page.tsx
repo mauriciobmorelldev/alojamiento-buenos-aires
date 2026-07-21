@@ -633,7 +633,7 @@ export default function AdminDashboardPage() {
               topProperties.map((property) => (
                 <Link
                   key={property.id}
-                  href={`/propiedades/${property.id}`}
+                  href={`/departamentos/${property.id}`}
                   className="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4 hover:border-primary/40"
                 >
                   <p className="font-bold text-primary">{property.title}</p>

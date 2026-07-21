@@ -1,10 +1,20 @@
-import { RealEstateLoader } from "@/components/inmo/RealEstateStatus";
-
 export default function Loading() {
   return (
-    <RealEstateLoader
-      title="Preparando la visita"
-      message="Estamos abriendo la propiedad y ordenando la informacion para mostrarla bien."
-    />
+    <main className="aba-public aba-loader" aria-label="Cargando Alojamiento Buenos Aires">
+      <div className="aba-loader__plate" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="aba-loader__content">
+        <p className="aba-label">Alojamiento Buenos Aires</p>
+        <h1>La ciudad se está abriendo.</h1>
+        <div className="aba-loader__rail">
+          <span>Propiedades</span>
+          <span>Barrios</span>
+          <span>Magazine</span>
+        </div>
+      </div>
+    </main>
   );
 }

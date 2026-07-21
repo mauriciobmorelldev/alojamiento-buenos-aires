@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Piso Señorial en Alvear - Alojamiento BA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#594325",
+                        "on-tertiary-container": "#997d5a",
+                        "secondary-fixed-dim": "#c9c6c2",
+                        "on-surface-variant": "#c6c6cd",
+                        "on-error-container": "#ffdad6",
+                        "primary": "#bfc6dc",
+                        "on-surface": "#e5e2e1",
+                        "outline-variant": "#45474c",
+                        "tertiary": "#e2c19b",
+                        "inverse-on-surface": "#313030",
+                        "surface-bright": "#393939",
+                        "surface-container-high": "#2a2a2a",
+                        "primary-fixed-dim": "#bfc6dc",
+                        "on-primary-fixed": "#141b2c",
+                        "surface-tint": "#bfc6dc",
+                        "on-error": "#690005",
+                        "on-secondary": "#31302d",
+                        "on-primary": "#293041",
+                        "surface-variant": "#353535",
+                        "on-secondary-fixed": "#1c1c19",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#b7b5b0",
+                        "secondary-container": "#474743",
+                        "tertiary-fixed": "#ffddb6",
+                        "tertiary-container": "#251500",
+                        "tertiary-fixed-dim": "#e2c19b",
+                        "inverse-primary": "#565e71",
+                        "surface-container-highest": "#353535",
+                        "on-primary-fixed-variant": "#3f4759",
+                        "on-tertiary": "#412d11",
+                        "surface": "#131313",
+                        "primary-fixed": "#dbe2f9",
+                        "outline": "#8f9097",
+                        "on-tertiary-fixed": "#291801",
+                        "surface-container-low": "#1c1b1b",
+                        "background": "#131313",
+                        "surface-container-lowest": "#0e0e0e",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container": "#20201f",
+                        "secondary": "#c9c6c2",
+                        "secondary-fixed": "#e5e2dd",
+                        "primary-container": "#101828",
+                        "on-secondary-fixed-variant": "#474743",
+                        "on-primary-container": "#798195",
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "surface-dim": "#131313"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "section-gap": "160px",
+                        "margin-mobile": "24px",
+                        "stack-md": "16px",
+                        "stack-lg": "32px",
+                        "gutter": "24px",
+                        "margin-desktop": "80px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "accent-italic": ["Playfair Display"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Playfair Display"],
+                        "headline-lg": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-lg": ["Inter"],
+                        "display-lg-mobile": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "500" }],
+                        "accent-italic": ["24px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "40px", "fontWeight": "500" }],
+                        "headline-lg": ["48px", { "lineHeight": "56px", "fontWeight": "500" }],
+                        "display-lg": ["80px", { "lineHeight": "92px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+        }
+        .hero-zoom {
+            animation: kenburns 20s infinite alternate ease-in-out;
+        }
+        @keyframes kenburns {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        .glass-overlay {
+            background: rgba(16, 24, 40, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-tertiary selection:text-tertiary-container">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl bg-transparent">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-24 w-full">
+<div class="font-headline-md text-headline-md text-on-surface tracking-tight">
+                Alojamiento BA
+            </div>
+<nav class="hidden md:flex gap-8">
+<a class="font-label-caps text-label-caps text-tertiary border-b border-tertiary pb-1 ease-in-out duration-400" href="#">Properties</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-tertiary transition-colors duration-400 ease-in-out" href="#">Neighborhoods</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-tertiary transition-colors duration-400 ease-in-out" href="#">Culture</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-tertiary transition-colors duration-400 ease-in-out" href="#">Inquiry</a>
+</nav>
+<button class="text-primary hover:text-tertiary transition-colors duration-400 ease-in-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+</div>
+</header>
+<main class="w-full">
+<!-- Hero Gallery -->
+<section class="relative w-full h-[819px] md:h-[921px] overflow-hidden">
+<div class="absolute inset-0 overflow-hidden">
+<img alt="Hero Image" class="w-full h-full object-cover hero-zoom" data-alt="A grand, sophisticated living room in a classical Parisian-style apartment in Buenos Aires. The room features high ceilings with intricate plaster moldings, towering windows letting in soft natural light, and chevron hardwood floors. The furniture is a mix of plush modern velvet sofas in deep charcoal and antique wooden accents. The lighting is high-contrast, editorial, emphasizing the textures and architectural details. Shot in a cinematic, luxury minimal style with a dark mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs18wvKwPbL90o2uJJI7bwdRgjvWWEGYl0bfzHmamuQfetwAeaRfdoAhmxU-y5NnoUxf5rxlVbQNZ3y9V6LI1JgSmkL1esSKF4_sGSbgcG1SG43LVxFkshKaTE-6DYGhxMkTkhJ-_R2gQuY-m88yfKxUkOaXbJUpp9GjEgfjuCHQt9OoUHnsGJjSKjU0dQipzv0rmQjBMk8MWiazUlqzI-AMFETYVhHNsFQnO-bRYXaih-Dzy9SbE"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
+</section>
+<section class="px-margin-mobile md:px-margin-desktop py-stack-lg max-w-[1440px] mx-auto">
+<div class="grid grid-cols-4 md:grid-cols-12 gap-gutter">
+<!-- Thumbnail Grid -->
+<div class="col-span-4 md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4 -mt-32 relative z-10 mb-section-gap">
+<img alt="Detail 1" class="w-full aspect-[4/3] object-cover rounded shadow-lg border border-outline-variant/20 fade-in-up" data-alt="A detailed shot of chevron patterned hardwood flooring meeting a stark white baseboard with ornate trim in a luxury Buenos Aires apartment. Soft, natural light spills across the polished wood, creating rich warm tones against the cool shadows. Cinematic and minimalist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-1u_KNcfb_-53aHw9ewgdvMzbkSAs8i5U6ZV4gGuTsM-jkCUUiR7P6wqwydCXvEkAc_F2SgS3IP3W_HTO1MtCyX7lB1kQTab32einKa0brHAoc-mdj_RVuS982NquhGp5m87CObSTNKWFcmMjOwVTFfv-zVKY5cUFLjWVu-ePerHqIsnR2cesgPthL148pKhjAsFw4J9valqa-LlVBaD1_HG_YXcjafd0iOYiixXsVD8Lu1EtnJQ"/>
+<img alt="Detail 2" class="w-full aspect-[4/3] object-cover rounded shadow-lg border border-outline-variant/20 fade-in-up" data-alt="An elegant, modern kitchen seamlessly integrated into classical architecture. Dark charcoal matte cabinetry contrasts with a heavily veined Calacatta marble countertop and backsplash. Warm pendant lighting casts a subtle glow. High-contrast luxury photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaRWeIKGmjpeMAy6f6oFaNToVFnLm8_O64PR8Eb1Hs3EnmPvIVPApaVc4RVNkFzQoOrcncYhx8-u60MQr0ms8lAJ-9HVX2tWmA5RxJbXr0A_WTz_2A_85TzNL1-JmW_bfay2Jcy4o4FRnW9cB_Zt1LEoHJrFkNMZQBJkJv37DODH-JsIwI_8c3jSTnx-Z3AJ1l03_qtiW8jhrvLmb9r59SeUHmHFkVszbA1nOvtjZ_tJeB2M_aXDg" style="transition-delay: 100ms;"/>
+<img alt="Detail 3" class="w-full aspect-[4/3] object-cover rounded shadow-lg border border-outline-variant/20 hidden md:block fade-in-up" data-alt="A serene master bedroom featuring a large bed with crisp, high-thread-count white linens. Tall french doors open to a wrought-iron balcony. The walls are a deep moody grey with classic paneling. Soft, ethereal morning light. Cinematic atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHkHdkCbTkQo7mgBe9V5WIxlj1UEre1MUMP9Z-Pth6rEFhBIJZ8V4GFRwSMv4euYphyGQ3Q7oxA6_P3-nHzBOglCyqoQ1JX9IMf2ls4tCUkTUPmmUY8qyXUhFggsCByJLPWZmbzSyAzdqxuHiNhs2uy-AWe00rD1EoND6X5PGKmpDXMcHOcmc_MCHICnXlYJ4mDIiIbzm3PseZT5jb4fSMzTgZpAr5PfqMtXL1XY12ZA_t8FkzZKo" style="transition-delay: 200ms;"/>
+<img alt="Detail 4" class="w-full aspect-[4/3] object-cover rounded shadow-lg border border-outline-variant/20 hidden md:block fade-in-up" data-alt="A luxurious bathroom detail showing a freestanding soaking tub against a wall of dark, textured slate. Brass fixtures catch dim, atmospheric lighting. A sense of quiet opulence and sanctuary. Dark mode luxury aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwDqcMSjSig0HRa7mCIhVY70lZd3hegNC1oCsOxS9cqod5XhV-3b2f5C-lE0xxFhXVmzBITTHPwwIxjHFK-ka2hi4Alsmg3DVyudRmpUnvtmPqjuV3PQNQZ5Uzer679h2CTXQYJp71vtbvNYE8YYkNrAWK3HG7sDSbd2jcf65dXIjOmSObUmktAct7cIfPTfBZshCiZX5M4O3U93X2V3iGLrKFYHTuA35d2_0aFFYzAu1hhv0GYOY" style="transition-delay: 300ms;"/>
+</div>
+<!-- Property Header & Summary -->
+<div class="col-span-4 md:col-span-10 md:col-start-2 fade-in-up">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-stack-lg mb-stack-lg border-b border-outline-variant/20 pb-stack-lg">
+<div>
+<p class="font-label-caps text-label-caps text-secondary mb-stack-sm tracking-widest uppercase">Recoleta / USD 4,500 / mo</p>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-stack-sm">Piso Señorial en Alvear</h1>
+</div>
+<div class="flex gap-stack-md pb-2">
+<button class="w-12 h-12 rounded-full border border-outline-variant/30 flex items-center justify-center hover:bg-surface-container-high hover:border-tertiary transition-all duration-300 group">
+<span class="material-symbols-outlined text-secondary group-hover:text-tertiary" style="font-variation-settings: 'FILL' 0;">favorite</span>
+</button>
+<button class="w-12 h-12 rounded-full border border-outline-variant/30 flex items-center justify-center hover:bg-surface-container-high hover:border-tertiary transition-all duration-300 group">
+<span class="material-symbols-outlined text-secondary group-hover:text-tertiary" style="font-variation-settings: 'FILL' 0;">share</span>
+</button>
+</div>
+</div>
+<!-- Summary Facts -->
+<div class="flex flex-wrap gap-x-stack-lg gap-y-stack-md py-stack-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 0;">meeting_room</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">4 Ambientes</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 0;">square_foot</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">250 m²</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 0;">deck</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Balcony / Terrace</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 0;">security</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">24h Security</span>
+</div>
+</div>
+</div>
+<!-- Narrative Description -->
+<div class="col-span-4 md:col-span-8 md:col-start-3 mt-section-gap fade-in-up">
+<p class="font-accent-italic text-accent-italic text-secondary mb-stack-lg">"An oasis of classic porteño elegance seamlessly integrated with contemporary luxury."</p>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-stack-md">
+                        Situated on the iconic Avenida Alvear, this distinguished residence embodies the grandeur of Buenos Aires' golden era. The property has been meticulously restored, preserving its original architectural integrity while introducing state-of-the-art comforts.
+                    </p>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                        High ceilings, intricate molding, and original herringbone floors provide a canvas for sophisticated living. The expansive living areas are bathed in natural light, offering sweeping views of the leafy boulevard below, creating a serene sanctuary amidst the vibrant city.
+                    </p>
+</div>
+</div>
+</section>
+<!-- Neighborhood Editorial Block -->
+<section class="mt-section-gap relative py-section-gap border-y border-outline-variant/10">
+<div class="absolute inset-0 z-0">
+<img alt="Recoleta Neighborhood" class="w-full h-full object-cover opacity-30" data-alt="An atmospheric, moody street photography shot of a classic Parisian-style corner building in Recoleta, Buenos Aires. The scene is enveloped in a soft, cinematic mist with warm, glowing streetlamps casting long shadows on wet cobblestones. Tall, bare trees frame the ornate French architecture. High-contrast, dark mode aesthetic, conveying old-world charm and melancholic beauty." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbcXhcuZDq-St59ZQ4ZjxObmJuenqr2KgWPqtuCilkrW3UELy03GgULoOMmFw-u-ji85WYmJ_Dyrl5wqcFtpnIuYIvowVeDepQd-plXN6GRnckpS24lRQmKW-b2B1ceZ8O4Izvllm4z3TObio_mjZmP-gs0xLJJ2fJi0sddaFp1GHSsBclTVOF-dl_e1O7V5Kirle4ADF_nngGtbwb9gmdyLRX-WcNKIVo7tmpHMgpC3zASQ-dCyo"/>
+<div class="absolute inset-0 bg-background/80"></div>
+</div>
+<div class="relative z-10 px-margin-mobile md:px-margin-desktop max-w-[1440px] mx-auto">
+<div class="grid grid-cols-4 md:grid-cols-12 gap-gutter items-center">
+<div class="col-span-4 md:col-span-5 fade-in-up">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-stack-lg">The Spirit of Recoleta</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-stack-lg">
+                            Known for its Parisian-style townhouses, opulent palaces, and luxury boutiques, Recoleta is the undisputed heart of aristocratic Buenos Aires. It is a neighborhood where old-world charm and intellectual soul converge on every tree-lined avenue.
+                        </p>
+<a class="inline-flex items-center gap-2 font-label-caps text-label-caps text-tertiary hover:text-on-surface transition-colors duration-300 uppercase tracking-widest group" href="#">
+                            Explore Neighborhood
+                            <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform duration-300" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</a>
+</div>
+<div class="col-span-4 md:col-span-6 md:col-start-7 mt-stack-lg md:mt-0 fade-in-up">
+<img alt="Recoleta Details" class="w-full aspect-square md:aspect-[4/5] object-cover rounded-sm border border-outline-variant/20" data-alt="A detailed, close-up shot of an ornate wrought-iron gate and a heavy, carved wooden door in Recoleta, Buenos Aires. The texture of the aged metal and wood is highlighted by dramatic, directional light. A subtle bronze plaque reads 'Alvear'. The mood is exclusive, secretive, and historical, fitting a luxury editorial aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBO2eFS6HIWL2e-1X_7jM1HHvyApRIPTBv_eNTMuPmrguQIx8bur5g7eRhpR43rgjv7imkRkpPA82mGw6hYXfu8cxMLCkW_rjA6UlcxWk2MuD6ZYC_Veh8AbHV0_5EIH_z1jom2qMb6UNRxCycHQlG7mczn6W_KJEixdSylT3OJQRCxbJHArA9DVLs7PRWVK1ZrmdGBH130Tea5WMEnW0B6KTI0PHlqrXz1H1vFs4zDu_-x5zUU_0o"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Amenities & Details -->
+<section class="px-margin-mobile md:px-margin-desktop py-section-gap max-w-[1440px] mx-auto bg-surface-container-lowest">
+<div class="grid grid-cols-4 md:grid-cols-12 gap-gutter">
+<div class="col-span-4 md:col-span-4 fade-in-up">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-stack-md">Refined Details</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-lg">Every element has been curated to offer an uncompromising standard of living.</p>
+</div>
+<div class="col-span-4 md:col-span-7 md:col-start-6 grid grid-cols-1 md:grid-cols-2 gap-x-stack-lg gap-y-stack-lg fade-in-up">
+<!-- Amenity Item -->
+<div class="border-t border-outline-variant/20 pt-stack-sm flex items-start gap-4">
+<span class="material-symbols-outlined text-tertiary mt-1" style="font-variation-settings: 'FILL' 0;">ac_unit</span>
+<div>
+<h4 class="font-label-caps text-label-caps text-on-surface uppercase mb-1">Central Climate</h4>
+<p class="font-body-md text-body-md text-secondary">Zoned air conditioning and heating.</p>
+</div>
+</div>
+<!-- Amenity Item -->
+<div class="border-t border-outline-variant/20 pt-stack-sm flex items-start gap-4">
+<span class="material-symbols-outlined text-tertiary mt-1" style="font-variation-settings: 'FILL' 0;">elevator</span>
+<div>
+<h4 class="font-label-caps text-label-caps text-on-surface uppercase mb-1">Private Access</h4>
+<p class="font-body-md text-body-md text-secondary">Direct private elevator to residence.</p>
+</div>
+</div>
+<!-- Amenity Item -->
+<div class="border-t border-outline-variant/20 pt-stack-sm flex items-start gap-4">
+<span class="material-symbols-outlined text-tertiary mt-1" style="font-variation-settings: 'FILL' 0;">floor</span>
+<div>
+<h4 class="font-label-caps text-label-caps text-on-surface uppercase mb-1">Slavonian Oak</h4>
+<p class="font-body-md text-body-md text-secondary">Original restored hardwood floors.</p>
+</div>
+</div>
+<!-- Amenity Item -->
+<div class="border-t border-outline-variant/20 pt-stack-sm flex items-start gap-4">
+<span class="material-symbols-outlined text-tertiary mt-1" style="font-variation-settings: 'FILL' 0;">local_parking</span>
+<div>
+<h4 class="font-label-caps text-label-caps text-on-surface uppercase mb-1">Secure Parking</h4>
+<p class="font-body-md text-body-md text-secondary">One dedicated subterranean space.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Inquiry & Lead Form -->
+<section class="px-margin-mobile md:px-margin-desktop py-section-gap max-w-[1440px] mx-auto">
+<div class="bg-surface-container-high rounded-xl p-stack-lg md:p-margin-desktop border border-outline-variant/20 relative overflow-hidden fade-in-up">
+<!-- Abstract Shader Background -->
+<div class="absolute inset-0 opacity-10 pointer-events-none mix-blend-screen">
+
+</div>
+<div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-stack-lg md:gap-margin-desktop">
+<div>
+<h3 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-stack-md">Inquire</h3>
+<p class="font-body-lg text-body-lg text-secondary mb-stack-lg">To schedule a private viewing or request further details, please reach out to our dedicated advisory team.</p>
+<button class="w-full md:w-auto px-8 py-4 border border-tertiary/50 hover:border-tertiary text-on-surface hover:bg-tertiary/10 transition-all duration-400 font-label-caps text-label-caps uppercase tracking-widest flex items-center justify-center gap-3 mb-stack-md">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chat</span>
+                            Contact on WhatsApp
+                        </button>
+</div>
+<form class="flex flex-col gap-stack-md">
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 focus:border-on-surface focus:ring-0 px-0 py-2 font-body-md text-body-md text-on-surface transition-colors peer placeholder-transparent" id="name" placeholder="Name" type="text"/>
+<label class="absolute left-0 top-2 font-label-caps text-label-caps text-secondary transition-all peer-focus:-top-4 peer-focus:text-[10px] peer-focus:text-on-surface peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-[10px]" for="name">Name</label>
+</div>
+<div class="relative group mt-4">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 focus:border-on-surface focus:ring-0 px-0 py-2 font-body-md text-body-md text-on-surface transition-colors peer placeholder-transparent" id="email" placeholder="Email" type="email"/>
+<label class="absolute left-0 top-2 font-label-caps text-label-caps text-secondary transition-all peer-focus:-top-4 peer-focus:text-[10px] peer-focus:text-on-surface peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-[10px]" for="email">Email</label>
+</div>
+<div class="relative group mt-4">
+<textarea class="w-full bg-transparent border-0 border-b border-outline-variant/50 focus:border-on-surface focus:ring-0 px-0 py-2 font-body-md text-body-md text-on-surface transition-colors peer placeholder-transparent resize-none" id="message" placeholder="Message" rows="3"></textarea>
+<label class="absolute left-0 top-2 font-label-caps text-label-caps text-secondary transition-all peer-focus:-top-4 peer-focus:text-[10px] peer-focus:text-on-surface peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-[10px]" for="message">Message</label>
+</div>
+<button class="mt-stack-md px-8 py-4 bg-transparent border border-outline-variant hover:border-tertiary hover:text-tertiary text-on-surface transition-all duration-400 font-label-caps text-label-caps uppercase tracking-widest text-center self-start" type="button">
+                            Schedule Viewing
+                        </button>
+</form>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack-lg bg-surface-container-lowest border-t border-outline-variant/10 flex flex-col items-center gap-stack-md px-margin-desktop">
+<div class="font-headline-md text-headline-md text-on-surface">
+            Alojamiento BA
+        </div>
+<div class="flex gap-stack-md font-label-caps text-label-caps text-on-surface-variant">
+<a class="hover:text-on-surface transition-colors ease-in-out duration-400" href="#">Privacy Policy</a>
+<a class="hover:text-on-surface transition-colors ease-in-out duration-400" href="#">Terms of Service</a>
+<a class="hover:text-on-surface transition-colors ease-in-out duration-400" href="#">Press</a>
+<a class="hover:text-on-surface transition-colors ease-in-out duration-400" href="#">Contact</a>
+</div>
+<div class="font-label-caps text-label-caps text-tertiary mt-stack-md">
+            © 2024 Alojamiento Buenos Aires. All Rights Reserved.
+        </div>
+</footer>
+<script>
+        // Simple Intersection Observer for fade-in animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in-up').forEach((el) => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body></html>

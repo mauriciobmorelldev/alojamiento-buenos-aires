@@ -281,8 +281,9 @@ const PropertyVideo = ({ url, title }: { url: string; title: string }) => {
 };
 
 export default function DetallePropiedadPage() {
-  const params = useParams<{ id: string | string[] }>();
-  const propertyId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const params = useParams<{ id?: string | string[]; slug?: string | string[] }>();
+  const rawPropertyParam = params?.id ?? params?.slug;
+  const propertyId = Array.isArray(rawPropertyParam) ? rawPropertyParam[0] : rawPropertyParam;
 
   const { state, isReady } = useInmoStore();
   const {
@@ -435,7 +436,7 @@ export default function DetallePropiedadPage() {
         title="No pudimos abrir esta ficha"
         message="Puede que la publicacion haya sido pausada, reservada o que el link ya no este disponible."
         actions={[
-          { href: "/propiedades", label: "Volver al catalogo" },
+          { href: "/departamentos", label: "Volver al catalogo" },
           { href: "/", label: "Ir al inicio", variant: "secondary" },
         ]}
       />
@@ -482,7 +483,7 @@ export default function DetallePropiedadPage() {
       <main className="pt-5">
         <div className="mx-auto max-w-screen-2xl px-6 lg:px-8">
           <Link
-            href="/propiedades"
+            href="/departamentos"
             className="mb-5 inline-flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 text-sm font-bold text-primary"
           >
             <span className="material-symbols-outlined text-base">arrow_back</span>

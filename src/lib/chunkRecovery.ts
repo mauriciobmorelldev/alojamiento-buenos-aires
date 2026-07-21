@@ -1,4 +1,4 @@
-const CHUNK_RELOAD_KEY = "connexa:chunk-reload-attempted";
+const CHUNK_RELOAD_KEY = "aba:chunk-reload-attempted";
 
 export const isChunkLoadError = (error: unknown) => {
   const message =

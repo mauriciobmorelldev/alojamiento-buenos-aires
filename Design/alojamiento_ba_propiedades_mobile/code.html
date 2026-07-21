@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Alojamiento BA - Listings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#bfc6dc",
+                        "primary-container": "#101828",
+                        "on-tertiary-fixed": "#291801",
+                        "background": "#131313",
+                        "outline-variant": "#45474c",
+                        "on-primary-container": "#798195",
+                        "on-tertiary": "#412d11",
+                        "on-primary-fixed": "#141b2c",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "surface": "#131313",
+                        "secondary": "#c9c6c2",
+                        "primary-fixed": "#dbe2f9",
+                        "on-primary": "#293041",
+                        "tertiary": "#e2c19b",
+                        "on-secondary-fixed-variant": "#474743",
+                        "inverse-primary": "#565e71",
+                        "surface-variant": "#353535",
+                        "on-tertiary-fixed-variant": "#594325",
+                        "tertiary-container": "#251500",
+                        "outline": "#8f9097",
+                        "secondary-fixed": "#e5e2dd",
+                        "on-surface-variant": "#c6c6cd",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-bright": "#393939",
+                        "error-container": "#93000a",
+                        "surface-container-highest": "#353535",
+                        "surface-tint": "#bfc6dc",
+                        "surface-container-low": "#1c1b1b",
+                        "on-primary-fixed-variant": "#3f4759",
+                        "surface-container": "#20201f",
+                        "on-tertiary-container": "#997d5a",
+                        "surface-container-lowest": "#0e0e0e",
+                        "inverse-on-surface": "#313030",
+                        "on-background": "#e5e2e1",
+                        "surface-dim": "#131313",
+                        "on-secondary-fixed": "#1c1c19",
+                        "on-secondary-container": "#b7b5b0",
+                        "on-surface": "#e5e2e1",
+                        "on-secondary": "#31302d",
+                        "secondary-fixed-dim": "#c9c6c2",
+                        "primary": "#bfc6dc",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#e2c19b",
+                        "inverse-surface": "#e5e2e1",
+                        "secondary-container": "#474743",
+                        "tertiary-fixed": "#ffddb6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "section-gap": "160px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "80px",
+                        "margin-mobile": "24px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Playfair Display"],
+                        "label-caps": ["Inter"],
+                        "accent-italic": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["48px", { "lineHeight": "56px", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "accent-italic": ["24px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "display-lg": ["80px", { "lineHeight": "92px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["32px", { "lineHeight": "40px", "fontWeight": "500" }],
+                        "display-lg-mobile": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .glass-panel {
+            background-color: rgba(16, 24, 40, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .img-zoom {
+            transition: transform 0.6s ease-in-out;
+        }
+        .property-card:hover .img-zoom {
+            transform: scale(1.05);
+        }
+
+        /* Hide scrollbar for filter container */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md relative min-h-screen overflow-x-hidden">
+<!-- Top Navigation (Mobile Adapted) -->
+<header class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl bg-transparent flat no shadows flex justify-between items-center px-margin-mobile h-24">
+<div class="font-headline-md text-headline-md text-on-surface tracking-tight">Alojamiento BA</div>
+<button class="text-primary hover:text-tertiary transition-colors duration-400">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</button>
+</header>
+<!-- Filter Bar (Sticky below Nav) -->
+<div class="fixed top-24 w-full z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant/10">
+<div class="flex overflow-x-auto no-scrollbar gap-stack-sm px-margin-mobile py-stack-sm items-center h-16">
+<button class="flex-shrink-0 flex items-center gap-1 px-4 py-2 rounded-full border border-outline-variant/20 bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface">
+<span class="font-label-caps text-label-caps">Neighborhood</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-1 px-4 py-2 rounded-full border border-outline-variant/20 bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface">
+<span class="font-label-caps text-label-caps">Rooms</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-1 px-4 py-2 rounded-full border border-outline-variant/20 bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface">
+<span class="font-label-caps text-label-caps">Price</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex-shrink-0 ml-auto flex items-center gap-1 px-4 py-2 text-tertiary">
+<span class="material-symbols-outlined text-lg">tune</span>
+<span class="font-label-caps text-label-caps">Filters</span>
+</button>
+</div>
+</div>
+<!-- Main Content: Property Catalog -->
+<main class="pt-[160px] pb-section-gap px-0 md:px-margin-desktop max-w-[1440px] mx-auto grid grid-cols-1 gap-1">
+<!-- Header Text (Optional for context) -->
+<div class="px-margin-mobile mb-stack-lg">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile mb-2">Curated Listings</h1>
+<p class="font-body-md text-on-surface-variant">Discover the narrative of Buenos Aires through its finest architecture.</p>
+</div>
+<!-- Property Card 1 -->
+<article class="property-card relative w-full h-[530px] md:h-[707px] overflow-hidden group cursor-pointer">
+<img class="absolute inset-0 w-full h-full object-cover img-zoom" data-alt="A luxurious minimalist living room in a modern Buenos Aires apartment. Floor-to-ceiling windows offer a cinematic view of the city skyline at dusk. The interior features elegant, dark-toned furniture with subtle bronze accents, creating a high-contrast, premium aesthetic. Warm, cinematic lighting highlights the rich textures of the materials." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIisIMuGjhyGuIS2AABFJCsTzrt1PQHLlO8jkjmgFR0Pvqy3FW5cT1gWmazlwnSrg8AIdd5cAVlzY15GxaLkg0gLXD2O9kbzx5tySIFf6VqHQP54MawDsyJpDvs7ZcjaFJCoXVHpUlB9HPLhdeH4ujux7LjGLror--VQH5QWFoOeYtDvY_sO6SjOPjDOmqgjfZ4eBiG7hWbCY-7ITISJnHchSYdhkoiq7jVGON3RFu1mRVmnrAZ8c"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-margin-mobile flex flex-col justify-end">
+<div class="flex justify-between items-end">
+<div>
+<span class="font-label-caps text-label-caps text-secondary-container mb-2 block">Recoleta</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Palacio Duhau Penthouse</h2>
+<div class="flex gap-4 font-label-caps text-label-caps text-on-surface-variant">
+<span>4 BEDS</span>
+<span>3 BATHS</span>
+<span>$3,500 / MO</span>
+</div>
+</div>
+<button class="w-12 h-12 rounded-full border border-tertiary flex items-center justify-center text-on-surface hover:bg-tertiary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Property Card 2 -->
+<article class="property-card relative w-full h-[530px] md:h-[707px] overflow-hidden group cursor-pointer mt-1">
+<img class="absolute inset-0 w-full h-full object-cover img-zoom" data-alt="An expansive, sunlit courtyard in a historic San Telmo mansion, Buenos Aires. The architecture features rustic stone walls and classic ironwork, juxtaposed with sleek, modern outdoor furniture. Tall green plants add life to the stark, cinematic composition. The scene is bathed in natural, high-key light, emphasizing a luxury minimalist lifestyle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8F6pG5IMEKfVVzCdWOk2y0HtFIZlBNMjkpjmzjxwKq-9y6MpkPSGMqWiINMJ464Tvl0ozVDUOmhGh7sBJbC2i_wK2GphbpNS2GzsyqCU59Rp8eIRKFCfcqB1ex2vV8ynEoWKiwQZKUa5erhbT3EdfHAX1XZimWk8lp8FDw48Tu3meEcIWgB7HcXbUpQ2Gc5vJ_TYjhDaKyuwP_JtGijrO1BbahpVeBZuE2WiCEmhOudFOXknnHWI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-margin-mobile flex flex-col justify-end">
+<div class="flex justify-between items-end">
+<div>
+<span class="font-label-caps text-label-caps text-secondary-container mb-2 block">San Telmo</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Casa Histórica San Juan</h2>
+<div class="flex gap-4 font-label-caps text-label-caps text-on-surface-variant">
+<span>3 BEDS</span>
+<span>2 BATHS</span>
+<span>$2,800 / MO</span>
+</div>
+</div>
+<button class="w-12 h-12 rounded-full border border-tertiary flex items-center justify-center text-on-surface hover:bg-tertiary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Property Card 3 -->
+<article class="property-card relative w-full h-[530px] md:h-[707px] overflow-hidden group cursor-pointer mt-1">
+<img class="absolute inset-0 w-full h-full object-cover img-zoom" data-alt="A sleek, high-end modern kitchen in a Puerto Madero high-rise. Dark matte cabinetry contrasts with stark white marble countertops. A large window framing the waterfront creates a cinematic, high-contrast backdrop. Minimalist design elements, subtle warm lighting under cabinets, and a raw, architectural feel define this luxury space." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtB94wCxpifPOc7dJqpOvowlLXy-LBfQVR1zxCtU8kqfoYqJwOIZEcM02eQFe8YwKxxAJr7qXRjIacasBUim9EyVeht_A39eqfbdnvTOXP60EieaRxbpFY1PZn3eW0IuxmUrsjcrJ6QCxpRW795PvF9vKOzV0_Gez87gmqlbD09v1i8UN-FRM9UF-fntkXS9aY9XAP6G_jrvYluQsjhoxEJHIKIxB0VnTkyjKDvxLBIRlxkw5a0Pk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-margin-mobile flex flex-col justify-end">
+<div class="flex justify-between items-end">
+<div>
+<span class="font-label-caps text-label-caps text-secondary-container mb-2 block">Puerto Madero</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Madero Skyline Loft</h2>
+<div class="flex gap-4 font-label-caps text-label-caps text-on-surface-variant">
+<span>2 BEDS</span>
+<span>2.5 BATHS</span>
+<span>$4,200 / MO</span>
+</div>
+</div>
+<button class="w-12 h-12 rounded-full border border-tertiary flex items-center justify-center text-on-surface hover:bg-tertiary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</main>
+<!-- SideNavBar (Suppressed on Mobile, but included for semantic logic if resized to md) -->
+<nav class="hidden md:flex bg-surface-container-lowest h-full w-80 border-r border-outline-variant/10 flat no shadows fixed left-0 top-0 flex-col p-stack-lg z-30 pt-32">
+<div class="mb-stack-lg">
+<div class="w-16 h-16 rounded-full bg-surface-container-high mb-4 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A subtle, high-contrast portrait of a professional in shadows, suitable for a luxury minimal avatar. Dark background, sharp features, evoking a cinematic editorial feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4oyQ7DVFaX1lbClBhM7WqqcHArpRbhriIB1Z3RCbhNu5sb_TjYr9PZn1K3DD6-_lo7Ts-QIucNsF1PRaWbNp5bs4jfyg5dMEMIW1GksfgmHffON0WQ91QwHT4Lna-XnHgAAd4etsgUISXtORSUcB7oFA2PkvXMsdLIzeIojG1U5fWINR_X26DRwEUVOppjgVZjneKJ4qY9HZI-GPQJPQkzL240vvJC0z8IJnRr3RqZSR1DIogci0"/>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Welcome</h3>
+<p class="font-body-md text-on-surface-variant mt-1">Your curated BA selection</p>
+</div>
+<ul class="flex flex-col gap-2 flex-grow">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-md text-body-md">Home</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-primary-fixed bg-primary-fixed hover:bg-surface-container-high transition-all ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-body-md text-body-md">Listings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-body-md text-body-md">Culture</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-body-md text-body-md">Saved</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-body-md text-body-md">Contact</span>
+</a>
+</li>
+</ul>
+<button class="mt-auto w-full py-3 px-4 border border-tertiary text-on-surface font-label-caps text-label-caps hover:bg-tertiary/10 transition-colors">
+            Schedule Viewing
+        </button>
+</nav>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-surface-container-lowest/90 backdrop-blur-md pb-safe border-t border-outline-variant/10 z-50">
+<ul class="flex justify-around items-center h-16">
+<li>
+<a class="flex flex-col items-center p-2 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] mt-1 font-label-caps">Home</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center p-2 text-tertiary" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">domain</span>
+<span class="text-[10px] mt-1 font-label-caps">Listings</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center p-2 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-2xl">bookmark</span>
+<span class="text-[10px] mt-1 font-label-caps">Saved</span>
+</a>
+</li>
+</ul>
+</nav>
+</body></html>

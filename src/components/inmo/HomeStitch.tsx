@@ -233,7 +233,7 @@ export default function HomeStitch() {
           <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8">
             <motion.div
               variants={staggerGroup}
-              className="connexa-mark mb-6 flex max-w-3xl items-end overflow-hidden text-on-primary sm:mb-8"
+              className="aba-legacy-mark mb-6 flex max-w-3xl items-end overflow-hidden text-on-primary sm:mb-8"
             >
               <motion.span
                 variants={brandNameMotion}
@@ -495,7 +495,7 @@ export default function HomeStitch() {
               <span className="material-symbols-outlined text-3xl text-primary">forum</span>
               <p className="mt-4 text-sm font-bold text-primary">Consultar sin exponer datos</p>
               <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                Enviá tu consulta desde la ficha y Connexa responde por el canal correcto.
+                Enviá tu consulta desde la ficha y Alojamiento Buenos Aires responde por el canal correcto.
               </p>
             </motion.div>
           </div>
@@ -611,7 +611,7 @@ export default function HomeStitch() {
                 return (
                   <MotionLink
                     key={item.id}
-                    href={`/propiedades/${item.id}`}
+                    href={`/departamentos/${item.id}`}
                     target="_blank"
                     rel="noreferrer"
                     initial={{ opacity: 0, y: 36, scale: 0.97 }}
@@ -821,7 +821,7 @@ export default function HomeStitch() {
                       whileHover={{ y: -5, scale: 1.01 }}
                     >
                       <Link
-                        href={`/propiedades/${item.id}`}
+                        href={`/departamentos/${item.id}`}
                         target="_blank"
                         rel="noreferrer"
                         className="block rounded-3xl bg-surface-container-low p-4"

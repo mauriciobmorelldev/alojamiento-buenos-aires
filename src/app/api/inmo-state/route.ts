@@ -3,6 +3,7 @@ import type { InmoState } from "@/lib/inmoData";
 import { defaultState } from "@/lib/inmoData";
 import {
   readInmoState,
+  readPublicEditorialPosts,
   readPublicHomeListings,
   readPublicListingsPage,
   readPublicShell,
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
 
     if (scope !== "admin") {
       const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
-      const [shell, listings] = await Promise.all([
+      const [shell, listings, editorial] = await Promise.all([
         readThroughCache(`public:shell:${mode}:compat:v1`, PUBLIC_CACHE_TTL.shell, () =>
           readPublicShell(mode)
         ),
@@ -36,15 +37,19 @@ export async function GET(request: Request) {
             ? readPublicHomeListings
             : () => readPublicListingsPage({ page: 1, pageSize: 12 })
         ),
+        readThroughCache("public:editorial:compat:v1", PUBLIC_CACHE_TTL.shell, readPublicEditorialPosts),
       ]);
       const source =
-        shell.value.source === "supabase" || listings.value.source === "supabase"
+        shell.value.source === "supabase" ||
+        listings.value.source === "supabase" ||
+        editorial.value.source === "supabase"
           ? "supabase"
           : "fallback";
 
       const publicPayload = {
         ...shell.value.data,
         ...listings.value.data,
+        ...editorial.value.data,
         homeContent: {
           ...(shell.value.data.homeContent ?? {}),
           ...(listings.value.data.homeContent ?? {}),
@@ -59,7 +64,11 @@ export async function GET(request: Request) {
             "x-inmo-state-source": source,
             "x-inmo-state-scope": `public-compat-${mode}`,
             "x-inmo-cache":
-              shell.hit && listings.hit ? "hit" : shell.hit || listings.hit ? "partial" : "miss",
+              shell.hit && listings.hit && editorial.hit
+                ? "hit"
+                : shell.hit || listings.hit || editorial.hit
+                  ? "partial"
+                  : "miss",
             "x-inmo-state-duration-ms": String(Date.now() - startedAt),
             "Cache-Control": PUBLIC_CACHE_CONTROL.shell,
             "X-Robots-Tag": "noindex, nofollow, noarchive",

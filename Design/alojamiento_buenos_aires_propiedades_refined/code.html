@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Property Catalog | Alojamiento Buenos Aires</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-container-high": "#2a2a2a",
+                "secondary-fixed-dim": "#c9c6c2",
+                "surface-container-lowest": "#0e0e0e",
+                "primary-container": "#101828",
+                "on-tertiary-container": "#997d5a",
+                "tertiary": "#e2c19b",
+                "on-tertiary": "#412d11",
+                "on-background": "#e5e2e1",
+                "outline-variant": "#45474c",
+                "surface-container-highest": "#353535",
+                "tertiary-fixed": "#ffddb6",
+                "surface-container": "#20201f",
+                "on-surface": "#e5e2e1",
+                "on-tertiary-fixed-variant": "#594325",
+                "on-secondary-fixed-variant": "#474743",
+                "surface-variant": "#353535",
+                "on-tertiary-fixed": "#291801",
+                "on-primary-container": "#798195",
+                "surface-tint": "#bfc6dc",
+                "on-error-container": "#ffdad6",
+                "tertiary-container": "#251500",
+                "surface-container-low": "#1c1b1b",
+                "surface-dim": "#131313",
+                "primary": "#bfc6dc",
+                "secondary-fixed": "#e5e2dd",
+                "on-surface-variant": "#c6c6cd",
+                "inverse-on-surface": "#313030",
+                "inverse-primary": "#565e71",
+                "error": "#ffb4ab",
+                "surface-bright": "#393939",
+                "primary-fixed": "#dbe2f9",
+                "background": "#131313",
+                "tertiary-fixed-dim": "#e2c19b",
+                "outline": "#8f9097",
+                "on-secondary-container": "#b7b5b0",
+                "secondary-container": "#474743",
+                "on-primary-fixed-variant": "#3f4759",
+                "on-secondary-fixed": "#1c1c19",
+                "on-error": "#690005",
+                "on-primary-fixed": "#141b2c",
+                "on-primary": "#293041",
+                "inverse-surface": "#e5e2e1",
+                "primary-fixed-dim": "#bfc6dc",
+                "on-secondary": "#31302d",
+                "surface": "#131313",
+                "secondary": "#c9c6c2",
+                "error-container": "#93000a"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "stack-sm": "8px",
+                "stack-lg": "32px",
+                "section-gap": "160px",
+                "margin-mobile": "24px",
+                "gutter": "24px",
+                "stack-md": "16px",
+                "margin-desktop": "80px"
+        },
+        "fontFamily": {
+                "headline-lg-mobile": [
+                        "Playfair Display"
+                ],
+                "display-lg-mobile": [
+                        "Playfair Display"
+                ],
+                "accent-italic": [
+                        "Playfair Display"
+                ],
+                "body-lg": [
+                        "Inter"
+                ],
+                "label-caps": [
+                        "Inter"
+                ],
+                "headline-md": [
+                        "Playfair Display"
+                ],
+                "body-md": [
+                        "Inter"
+                ],
+                "headline-lg": [
+                        "Playfair Display"
+                ],
+                "display-lg": [
+                        "Playfair Display"
+                ]
+        },
+        "fontSize": {
+                "headline-lg-mobile": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "display-lg-mobile": [
+                        "48px",
+                        {
+                                "lineHeight": "52px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "accent-italic": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "label-caps": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.1em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-md": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "56px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "display-lg": [
+                        "80px",
+                        {
+                                "lineHeight": "92px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-x-hidden selection:bg-tertiary-fixed-dim selection:text-surface">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl border-b border-outline-variant/10">
+<div class="flex justify-between items-center px-margin-desktop py-6 w-full max-w-[1440px] mx-auto">
+<!-- Brand -->
+<a class="font-headline-md text-headline-md text-on-surface uppercase tracking-widest hover:opacity-80 transition-opacity ease-in-out duration-400" href="#">
+                Alojamiento Buenos Aires
+            </a>
+<!-- Navigation -->
+<nav class="hidden md:flex items-center space-x-8">
+<a class="font-label-caps text-label-caps text-tertiary-fixed-dim border-b border-tertiary-fixed-dim pb-1 transition-opacity ease-in-out duration-400" href="#">Properties</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300 ease-in-out" href="#">Neighborhoods</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300 ease-in-out" href="#">Magazine</a>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary transition-colors duration-300 ease-in-out" href="#">Owner</a>
+</nav>
+<!-- Trailing Action -->
+<div class="hidden md:block">
+<button class="font-label-caps text-label-caps text-on-surface border border-outline-variant/20 px-6 py-3 rounded-none hover:bg-tertiary-fixed-dim hover:text-surface hover:border-tertiary-fixed-dim transition-all ease-in-out duration-400 uppercase tracking-widest">
+                    Inquire
+                </button>
+</div>
+<!-- Mobile Menu Toggle (Minimal) -->
+<button class="md:hidden text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="pt-[120px] pb-section-gap min-h-screen max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+<!-- Filter Bar -->
+<section class="py-stack-lg border-b border-outline-variant/10 mb-[100px] sticky top-[95px] bg-background/95 backdrop-blur-md z-40">
+<div class="flex flex-wrap items-center justify-between gap-stack-md">
+<div class="flex items-center space-x-10 overflow-x-auto pb-2 w-full md:w-auto scrollbar-hide">
+<!-- Neighborhood Dropdown -->
+<div class="relative group min-w-max">
+<button class="flex items-center space-x-1 text-on-surface-variant hover:text-on-surface transition-colors font-label-caps text-label-caps uppercase">
+<span>Neighborhood</span>
+<span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+</button>
+</div>
+<!-- Rooms Dropdown -->
+<div class="relative group min-w-max">
+<button class="flex items-center space-x-1 text-on-surface-variant hover:text-on-surface transition-colors font-label-caps text-label-caps uppercase">
+<span>Rooms</span>
+<span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+</button>
+</div>
+<!-- Price Dropdown -->
+<div class="relative group min-w-max">
+<button class="flex items-center space-x-1 text-on-surface-variant hover:text-on-surface transition-colors font-label-caps text-label-caps uppercase">
+<span>Price</span>
+<span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+</button>
+</div>
+<!-- Amenities Dropdown -->
+<div class="relative group min-w-max">
+<button class="flex items-center space-x-1 text-on-surface-variant hover:text-on-surface transition-colors font-label-caps text-label-caps uppercase">
+<span>Amenities</span>
+<span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+</button>
+</div>
+</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">
+                    Showing 12 Properties
+                </div>
+</div>
+</section>
+<!-- Catalog Grid - Asymmetric/Editorial -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-x-gutter gap-y-[120px]">
+<!-- Property 1 (Large, spanning 8 cols) -->
+<article class="group cursor-pointer col-span-1 md:col-span-8">
+<div class="overflow-hidden mb-8 aspect-[16/9] relative bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 ease-in-out" data-alt="A sophisticated, high-contrast interior shot of a luxurious living room in a classical Parisian-style apartment in Recoleta, Buenos Aires." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPPvtVi5RoHdNHsDbzcR2Y08gGUJHeiHI0gYUM5-sfIrhsXwHWgwCMBDWfz5j59PECZvOkWjlQ2_pe4xUdUr58o_Lsnz4LNUsuTE_yycoRstt9VK5wmIvXH9KaN4lofmxD65A_LNB4Np6o3hHpDRCbp-P2MKKQWhLfo7lLy1IHaUmFe_flZJnu1TrWAqPvGhs_enPtMpcdZ4JchNQtW36BIA4MAmwJAfdPbEeo35H9piW3QfWayh4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+<button class="self-start font-label-caps text-label-caps text-surface bg-tertiary-fixed-dim px-6 py-3 hover:bg-white transition-colors">Inquire</button>
+</div>
+</div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim mb-3 tracking-widest uppercase">Recoleta</p>
+<h3 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2 leading-tight">Piso Señorial en Alvear</h3>
+<p class="font-headline-md text-headline-md text-on-surface-variant font-light italic">USD 4,500 / mo</p>
+</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant flex gap-4 md:text-right">
+<span>4 Ambientes</span>
+<span class="text-outline">|</span>
+<span>Balcón Terraza, Seguridad 24h</span>
+<span class="text-outline">|</span>
+<span class="text-tertiary">Available Now</span>
+</div>
+</div>
+</article>
+<!-- Property 2 (Medium, spanning 4 cols) -->
+<article class="group cursor-pointer col-span-1 md:col-span-4 md:mt-[80px]">
+<div class="overflow-hidden mb-6 aspect-[3/4] relative bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 ease-in-out" data-alt="An expansive, light-filled loft in Palermo Soho, Buenos Aires. Industrial chic meets luxury minimalism." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCP-ZLhhSutcQ4N_dpwy5UzYYEzplY8qFWBS9P7d8WnQUkCMZR0pfU7VXfuPpOlm3LPpRkHUrelhEB29uEEofBLMZmcF2RBRE-VqcexYylWHaK8HxnBYlQ1fbS8NO65oSR4PDzHtxibGo8A47IMCIypakJkoRZBacmCq90ev7TCIswpcYCLykVadfA4Uk65mo6xRh2rUlmDiUA-I5fDstf6AXs34evAxbfmNts-JxsJVPHbc3kNl3s"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<button class="self-start font-label-caps text-label-caps text-surface bg-tertiary-fixed-dim px-4 py-2 hover:bg-white transition-colors">Inquire</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-3">
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim tracking-widest uppercase">Palermo Soho</p>
+<span class="font-label-caps text-[10px] text-tertiary">Oct 15</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1 leading-tight">Loft de Artista</h3>
+<p class="font-headline-md text-[24px] text-on-surface-variant font-light italic mb-3">USD 3,200 / mo</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant/80">3 Amb. • Terraza Privada • Cochera</p>
+</div>
+</article>
+<!-- Property 3 (Medium, spanning 5 cols) -->
+<article class="group cursor-pointer col-span-1 md:col-span-5">
+<div class="overflow-hidden mb-6 aspect-[4/5] relative bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 ease-in-out" data-alt="A dramatic view of a beautifully restored colonial patio in San Telmo, Buenos Aires." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvQjH6_kECPNBWiJ-l3jVIL55Yx6y9dtUJM2EuB9FpfEkXZneo1-DYiIw6tTsgpZsWCXlD700oocIYl_hhb1OUVxQNpLrYLxfADj-xjc1ex2_JBQvsrxxbGy73MdsQpJe3j1-owL4s8NtMX0hp-95Kouf6e9GcmvfPwWDcKhJXQ2ITSAYk-AwPpv9DJu5ocsZpzfMLkiDElzmaar6IE1ZtE2hqNPX6Dn2dlk3TzAd0eqeO1sGo2IQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<button class="self-start font-label-caps text-label-caps text-surface bg-tertiary-fixed-dim px-4 py-2 hover:bg-white transition-colors">Inquire</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-3">
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim tracking-widest uppercase">San Telmo</p>
+<span class="font-label-caps text-[10px] text-tertiary">Nov 01</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1 leading-tight">Casa Colonial</h3>
+<p class="font-headline-md text-[24px] text-on-surface-variant font-light italic mb-3">USD 2,800 / mo</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant/80">4 Amb. • Patio Andaluz • Reciclada</p>
+</div>
+</article>
+<!-- Property 4 (Large, spanning 7 cols) -->
+<article class="group cursor-pointer col-span-1 md:col-span-7 md:-mt-[120px]">
+<div class="overflow-hidden mb-8 aspect-[4/3] relative bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 ease-in-out" data-alt="A minimalist, high-end modern apartment balcony overlooking the botanical gardens in Palermo, Buenos Aires at dusk." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6OUSTj5olfCyn6daOG-EA382GS4CgtFFp4A1HXw4yIvBcikuhApq2YS5ZGOu--s0Yo9oJHK2SvfVJj9KSwRL_TUYpwV68m2G8a78x3UNuXZueg0Mx6yLu7U_Y52CohwsdosuO07VF2gh8jHK7wwarqJwXPVgyR-M1BXEqSLwVQ4jEDRFqyCLduA9zP6_NbYPDUXygn5D_zNBGi6ygO50QNdhnfMSi7KKfAKVO71dUfwk4xPSoQdo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+<button class="self-start font-label-caps text-label-caps text-surface bg-tertiary-fixed-dim px-6 py-3 hover:bg-white transition-colors">Inquire</button>
+</div>
+</div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim mb-3 tracking-widest uppercase">Palermo Chico</p>
+<h3 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2 leading-tight">Vista al Botánico</h3>
+<p class="font-headline-md text-headline-md text-on-surface-variant font-light italic">USD 5,100 / mo</p>
+</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant flex gap-4 md:text-right">
+<span>3 Ambientes</span>
+<span class="text-outline">|</span>
+<span>Balcón Perimetral, Amenities</span>
+<span class="text-outline">|</span>
+<span class="text-tertiary">Available Now</span>
+</div>
+</div>
+</article>
+<!-- Property 5 (Spanning 6 cols) -->
+<article class="group cursor-pointer col-span-1 md:col-span-6">
+<div class="overflow-hidden mb-6 aspect-square relative bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 ease-in-out" data-alt="An interior shot of an ultra-modern penthouse in Puerto Madero, Buenos Aires." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWq7zBwy7NOyD6azH7f41Le06-E5W9n-UMStRiAI_mEjhDFQW2u7oOfSLLzfnwk9N64VQvcaRFRuy-cuc1cMlTOIFu-fBEdBMX1-FzempxzV8jSJzfMQvHyIy-qtFGe8Zh4o9qhY_V2YbztBr-21etjdMi3YbJdy5YSBx9SwazMGDPDB5dBh7a44KKiZXcJZ4rj8Legp2nRCNcM2flKmpCMFKhG9lkJioNuu8zv4zuvaty2_4-qtM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<button class="self-start font-label-caps text-label-caps text-surface bg-tertiary-fixed-dim px-4 py-2 hover:bg-white transition-colors">Inquire</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-3">
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim tracking-widest uppercase">Puerto Madero</p>
+<span class="font-label-caps text-[10px] text-tertiary">Dec 01</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1 leading-tight">Penthouse del Río</h3>
+<p class="font-headline-md text-[28px] text-on-surface-variant font-light italic mb-3">USD 8,000 / mo</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant/80">5 Amb. • Piso Completo • 2 Cocheras</p>
+</div>
+</article>
+<!-- Property 6 (Spanning 6 cols) -->
+<article class="group cursor-pointer col-span-1 md:col-span-6 md:mt-[160px]">
+<div class="overflow-hidden mb-6 aspect-[4/5] relative bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 ease-in-out" data-alt="A close-up architectural detail shot of a grand, classic French-style facade in Recoleta, Buenos Aires." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZ3TsBcUmGcAjAtUkTZiK9S-OYrkqBmCaN7QzMCiVPDMlWRPfjLO5NgaxbX0m8_bDmY0gFWEiYf7vLJYgSjQOCh5Hf4dinJcnZL1z3AISWCEueaVB9VCg370KyWCCDwGHybkpGZNrz9qWbs_a-0B0k08lCDp03cHZmrIwR8oRbWoXTp5MR-n6qU3dv1u8sr93DoudW8UYT8HH6TYuvLTto5lFR50mmQKOxnIDvdGM15Lbxsp1YQ6I"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<button class="self-start font-label-caps text-label-caps text-surface bg-tertiary-fixed-dim px-4 py-2 hover:bg-white transition-colors">Inquire</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-3">
+<p class="font-label-caps text-label-caps text-tertiary-fixed-dim tracking-widest uppercase">Recoleta</p>
+<span class="font-label-caps text-[10px] text-tertiary">Available Now</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1 leading-tight">Residencia Quintana</h3>
+<p class="font-headline-md text-[28px] text-on-surface-variant font-light italic mb-3">USD 6,200 / mo</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant/80">4 Amb. • Detalles de Época • Seguridad</p>
+</div>
+</article>
+</section>
+<!-- Load More -->
+<div class="mt-[160px] flex justify-center">
+<button class="font-label-caps text-label-caps text-on-surface border-b border-outline hover:border-tertiary-fixed-dim hover:text-tertiary-fixed-dim pb-1 transition-all uppercase tracking-widest">
+                View More Properties
+            </button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest w-full py-section-gap px-margin-desktop">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-7xl mx-auto">
+<div class="col-span-1 md:col-span-12 mb-stack-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">ALOJAMIENTO BUENOS AIRES</h2>
+</div>
+<div class="col-span-1 md:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-stack-lg">
+<div class="flex flex-col space-y-4">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Palermo</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Recoleta</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">San Telmo</a>
+</div>
+<div class="flex flex-col space-y-4">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Legal</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Contact</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors ease-in-out duration-500" href="#">Newsletter</a>
+</div>
+</div>
+<div class="col-span-1 md:col-span-4 mt-stack-lg md:mt-0 flex items-end md:justify-end">
+<p class="font-body-md text-body-md text-secondary">© 2024 ALOJAMIENTO BUENOS AIRES. THE CITY AS PROTAGONIST.</p>
+</div>
+</div>
+</footer>
+</body></html>

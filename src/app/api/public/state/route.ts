@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { defaultState, type InmoState } from "@/lib/inmoData";
 import {
   readPublicHomeListings,
+  readPublicEditorialPosts,
   readPublicListings,
   readPublicShell,
 } from "@/lib/server/inmoRepository";
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
     const startedAt = Date.now();
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") === "catalog" ? "catalog" : "home";
-    const [shell, listings] = await Promise.all([
+    const [shell, listings, editorial] = await Promise.all([
       readThroughCache(`public:state:shell:${mode}:v4`, PUBLIC_CACHE_TTL.shell, () =>
         readPublicShell(mode)
       ),
@@ -26,17 +27,21 @@ export async function GET(request: Request) {
         mode === "home" ? PUBLIC_CACHE_TTL.homeListings : PUBLIC_CACHE_TTL.catalogListings,
         mode === "home" ? readPublicHomeListings : readPublicListings
       ),
+      readThroughCache("public:state:editorial:v1", PUBLIC_CACHE_TTL.shell, readPublicEditorialPosts),
     ]);
     const payload = {
       ...shell.value.data,
       ...listings.value.data,
+      ...editorial.value.data,
       homeContent: {
         ...(shell.value.data.homeContent ?? {}),
         ...(listings.value.data.homeContent ?? {}),
       },
     } as Partial<InmoState>;
     const source =
-      shell.value.source === "supabase" || listings.value.source === "supabase"
+      shell.value.source === "supabase" ||
+      listings.value.source === "supabase" ||
+      editorial.value.source === "supabase"
         ? "supabase"
         : "fallback";
 
@@ -45,7 +50,11 @@ export async function GET(request: Request) {
         "x-inmo-state-source": source,
         "x-inmo-state-scope": `public-state-${mode}`,
         "x-inmo-cache":
-          shell.hit && listings.hit ? "hit" : shell.hit || listings.hit ? "partial" : "miss",
+          shell.hit && listings.hit && editorial.hit
+            ? "hit"
+            : shell.hit || listings.hit || editorial.hit
+              ? "partial"
+              : "miss",
         "x-inmo-state-duration-ms": String(Date.now() - startedAt),
         "Cache-Control": PUBLIC_CACHE_CONTROL.shell,
       },

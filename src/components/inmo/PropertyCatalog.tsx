@@ -135,7 +135,7 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
               <div className="flex flex-wrap gap-4">
                 <Link
                   className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:bg-primary-container"
-                  href="/propiedades"
+                  href="/departamentos"
                 >
                   Explorar catálogo
                 </Link>
@@ -317,7 +317,7 @@ export default function PropertyCatalog({ showHero = false }: PropertyCatalogPro
               return (
                 <Link
                   key={item.id}
-                  href={`/propiedades/${item.id}`}
+                  href={`/departamentos/${item.id}`}
                   className="group block overflow-hidden rounded-2xl bg-surface-container-lowest shadow-[0_40px_60px_-25px_rgba(27,27,28,0.2)] transition hover:-translate-y-1"
                 >
                   <div className="relative h-56 overflow-hidden bg-surface-container-high">

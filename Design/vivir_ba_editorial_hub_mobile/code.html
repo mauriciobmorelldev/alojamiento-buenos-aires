@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vivir Buenos Aires - Editorial Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#bfc6dc",
+                    "primary-container": "#101828",
+                    "on-tertiary-fixed": "#291801",
+                    "background": "#131313",
+                    "outline-variant": "#45474c",
+                    "on-primary-container": "#798195",
+                    "on-tertiary": "#412d11",
+                    "on-primary-fixed": "#141b2c",
+                    "on-error": "#690005",
+                    "error": "#ffb4ab",
+                    "surface": "#131313",
+                    "secondary": "#c9c6c2",
+                    "primary-fixed": "#dbe2f9",
+                    "on-primary": "#293041",
+                    "tertiary": "#e2c19b",
+                    "on-secondary-fixed-variant": "#474743",
+                    "inverse-primary": "#565e71",
+                    "surface-variant": "#353535",
+                    "on-tertiary-fixed-variant": "#594325",
+                    "tertiary-container": "#251500",
+                    "outline": "#8f9097",
+                    "secondary-fixed": "#e5e2dd",
+                    "on-surface-variant": "#c6c6cd",
+                    "surface-container-high": "#2a2a2a",
+                    "surface-bright": "#393939",
+                    "error-container": "#93000a",
+                    "surface-container-highest": "#353535",
+                    "surface-tint": "#bfc6dc",
+                    "surface-container-low": "#1c1b1b",
+                    "on-primary-fixed-variant": "#3f4759",
+                    "surface-container": "#20201f",
+                    "on-tertiary-container": "#997d5a",
+                    "surface-container-lowest": "#0e0e0e",
+                    "inverse-on-surface": "#313030",
+                    "on-background": "#e5e2e1",
+                    "surface-dim": "#131313",
+                    "on-secondary-fixed": "#1c1c19",
+                    "on-secondary-container": "#b7b5b0",
+                    "on-surface": "#e5e2e1",
+                    "on-secondary": "#31302d",
+                    "secondary-fixed-dim": "#c9c6c2",
+                    "primary": "#bfc6dc",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#e2c19b",
+                    "inverse-surface": "#e5e2e1",
+                    "secondary-container": "#474743",
+                    "tertiary-fixed": "#ffddb6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "stack-md": "16px",
+                    "section-gap": "160px",
+                    "stack-lg": "32px",
+                    "margin-desktop": "80px",
+                    "margin-mobile": "24px",
+                    "stack-sm": "8px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Playfair Display"],
+                    "label-caps": ["Inter"],
+                    "accent-italic": ["Playfair Display"],
+                    "display-lg": ["Playfair Display"],
+                    "headline-md": ["Playfair Display"],
+                    "display-lg-mobile": ["Playfair Display"],
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["48px", {"lineHeight": "56px", "fontWeight": "500"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "accent-italic": ["24px", {"lineHeight": "32px", "fontWeight": "400"}],
+                    "display-lg": ["80px", {"lineHeight": "92px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                    "display-lg-mobile": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "32px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .ken-burns {
+            animation: kenburns 20s ease-in-out infinite alternate;
+        }
+        @keyframes kenburns {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        .image-gradient {
+            background: linear-gradient(to top, rgba(19, 19, 19, 0.9) 0%, rgba(19, 19, 19, 0.4) 50%, rgba(19, 19, 19, 0) 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col md:hidden">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl bg-transparent flat no shadows flex justify-between items-center px-margin-mobile h-24 w-full">
+<a class="font-headline-md text-headline-md text-on-surface tracking-tight" href="#">Alojamiento BA</a>
+<div class="flex items-center gap-4">
+<button class="text-primary hover:text-tertiary transition-colors duration-400 ease-in-out">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow pb-24">
+<!-- Hero Section -->
+<section class="relative h-[707px] w-full overflow-hidden flex items-end">
+<div class="absolute inset-0 w-full h-full">
+<img alt="Buenos Aires Architecture" class="w-full h-full object-cover ken-burns" data-alt="A cinematic, wide-angle shot of a grand, historic architectural building in Buenos Aires at dusk. The warm, golden hour light reflects off the ornate stone facades, contrasting with deep, inky shadows. The scene embodies luxury minimalism and cinematic high-contrast, capturing the essence of the city as protagonist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkB42OCY7qYsFsMOn9BoJdAjT7PacSe8S3yb4yW4dcgPd4UVuNNzOMM6vkAzWum9cA0wI1N8nS7d8wg53djKXNSCg_Z_Sj64mr2YCd_97ZyXUoe9tgKJ1b9afUvh3qCIFMwCCKjGLbZc54gUNFhir-a6K_S4um7DThWRoy4mXMF5hAZhhBfCkKCP8UehQMePxxsWu_L_3FhGKhRP8w45Pl8y-nECGoHhkP5BwQZtepsZka-GgRPUk"/>
+<div class="absolute inset-0 image-gradient"></div>
+</div>
+<div class="relative z-10 p-margin-mobile w-full flex flex-col gap-stack-md">
+<span class="font-label-caps text-label-caps text-tertiary uppercase tracking-widest">Editorial</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-on-surface">Vivir Buenos Aires</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm">The pulse of the city, curated for the discerning eye. Explore architecture, art, and the art of living.</p>
+</div>
+</section>
+<!-- Category Scroller -->
+<section class="py-stack-lg border-b border-outline-variant/10">
+<div class="px-margin-mobile">
+<div class="flex gap-stack-lg overflow-x-auto no-scrollbar snap-x">
+<button class="snap-start font-label-caps text-label-caps text-tertiary border-b border-tertiary pb-1 whitespace-nowrap">All Stories</button>
+<button class="snap-start font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors whitespace-nowrap">Architecture</button>
+<button class="snap-start font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors whitespace-nowrap">Gastronomy</button>
+<button class="snap-start font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors whitespace-nowrap">Art &amp; Design</button>
+<button class="snap-start font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors whitespace-nowrap">Interviews</button>
+</div>
+</div>
+</section>
+<!-- Editorial Feed -->
+<section class="flex flex-col gap-margin-mobile pt-margin-mobile">
+<!-- Story 1: Large Featured -->
+<article class="px-margin-mobile flex flex-col gap-stack-md">
+<div class="relative aspect-[4/5] w-full overflow-hidden rounded-lg">
+<img alt="Recoleta Interior" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" data-alt="A striking interior shot of a minimalist, high-end apartment in Recoleta, Buenos Aires. Sunlight streams through tall, classic French windows, illuminating modern, sculptural furniture against historic chevron wood floors. The mood is serene, emphasizing architectural grit paired with high-fashion editorial aesthetics, using a high-contrast palette of deep blacks and pristine whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFZyXeSDvd-aW9XFKRitj9nDGMfposd9YvvcmwcPt6dlMta2eW2w027HnItDaw-Aoyf_ZNksNyDAvJfeKL66zLDtMyGKaFcRsIyaXoLJ_8wxVAFhiFUjWSJtIxod99xaC9LsxAeqv8NMH1bQRrLSHKc18eAlfM7j7dmydSljj1BY_704P2QzA3DEWfJ0IzRa0DZhJ4C9W9qtBAsMZSIsEx2ZpBOefuDltzVn7CTtB9RlcwfgNB6DY"/>
+<div class="absolute inset-0 image-gradient opacity-60"></div>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<span class="font-label-caps text-label-caps text-tertiary">Architecture &amp; Design</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface leading-tight">The Modern Renaissance of Recoleta Palaces</h2>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">How contemporary visionaries are stripping back the layers of Belle Époque mansions to reveal a raw, sophisticated minimalism.</p>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-tertiary mt-2 flex items-center gap-2 transition-colors w-fit" href="#">
+                        Read Story <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</article>
+<div class="px-margin-mobile"><hr class="border-outline-variant/20"/></div>
+<!-- Story 2 -->
+<article class="px-margin-mobile flex flex-col gap-stack-md">
+<div class="relative aspect-[16/9] w-full overflow-hidden rounded-lg">
+<img alt="Speakeasy Cocktail" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" data-alt="A moody, cinematic close-up of an artisanal cocktail sitting on a heavily veined dark marble bar counter in a hidden Buenos Aires speakeasy. The lighting is low and dramatic, focusing on the condensation on the glass and the deep amber hue of the drink. The background is a soft, dark blur, evoking luxury and exclusivity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0Eh-98PuMpeDvXnPRKA5BKwfckRZDbbHsSirITXMDh8ubti9YwrqiBfmqsj4toHK5U6pkaiSfOaqdcY5JkqxnAZ5jPquO4GPNxUgz5ou4hiDOawccCFoV-0yzLS3Eh0Tqp-WyKlIPx1iOFnmGXkvt7cANkKSsW9fLIXtyOwcjl6DpBlC7zOzrJVicKO6WE4xiBooKqq7dkXX57OfI8WpkZNOdk7hIxyL6ANgY1jZxH0UzTAzHhSk"/>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<span class="font-label-caps text-label-caps text-tertiary">Gastronomy</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface leading-tight">Behind the Heavy Velvet Curtains</h2>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Exploring the underground cocktail culture reshaping the city's nightlife with uncompromising quality.</p>
+</div>
+</article>
+<div class="px-margin-mobile"><hr class="border-outline-variant/20"/></div>
+<!-- Story 3 -->
+<article class="px-margin-mobile flex flex-col gap-stack-md">
+<div class="relative aspect-square w-full overflow-hidden rounded-lg">
+<img alt="Artist in Studio" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" data-alt="A high-contrast, black and white portrait of an avant-garde Argentine sculptor working in a vast, industrial loft studio flooded with natural light. Sparks fly from a metal grinder. The image captures raw texture, architectural grit, and artistic intensity, framed like a fashion editorial spread." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9cjUxJCE7kxF7uKCDQ0eiZBw-vzhxN2KWflBi9TArBo7bGXRDFVpdkfKwHC5hgAkCLXI-p-ndhLrt__wAdDwTytiNgl2PYAaTA8fWc9GnbFI_Vqtl4xVbN5F5oSUZWdAphwg4wxwlZ_sQmZfEO4DELlOERuVVdM9q_z3T7CrlF_hWONBTLpux7wW9p4B8wGt4f2gTR7MHZq0p6bWDW283PWIx_CLA_wX7vfZscqe_TMBdj0EK4oI"/>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<span class="font-label-caps text-label-caps text-tertiary">Interviews</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface leading-tight">Molding Metal and Memory</h2>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">A conversation with sculptress Elena Valdes on shaping the brutalist forms of tomorrow.</p>
+</div>
+</article>
+</section>
+<!-- The Lifestyle Collection Cross-link -->
+<section class="mt-section-gap mb-stack-lg bg-surface-container py-stack-lg relative overflow-hidden">
+<!-- Abstract background element -->
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-tertiary/5 rounded-full blur-3xl"></div>
+<div class="px-margin-mobile relative z-10 flex flex-col gap-stack-md items-center text-center">
+<span class="material-symbols-outlined text-4xl text-tertiary mb-2">key</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-accent-italic italic">The Lifestyle Collection</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Curated residences that embody the editorial spirit of Buenos Aires.</p>
+<div class="w-full aspect-[4/3] rounded-lg overflow-hidden relative group cursor-pointer border border-outline-variant/20">
+<img alt="Curated Residence" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="An expansive, cinematic view of a luxury penthouse terrace in Palermo, Buenos Aires at twilight. A modern, minimalist fire pit glows against sleek concrete seating. The city skyline is visible in the background under a deep violet sky. The scene is sophisticated, utilizing subtle tonal layering and a high-end luxury aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8he9fvsOGCIZMaXJd4UHzDBZ5OEKEFMrnjn55GVj-QuUsxOPjlVtyf4HHI-3k3sp6s0uSG71MqmvbObSDSjlxblQ5_xXYZGqyg1wOR4Rno0dsOjBunZAjYFWDD-aCol-H61LdQ7csK4YFcUtmfpiIJonyhHj09ZJpaLHaG20Yc8Q0JwUs-tehGlajEL2DRyVY8Zg2x27ZjgMwGpaxbVEpEYrDmFWcN8rtgfxvMM6lahK3NirGOtI"/>
+<div class="absolute inset-0 bg-surface/20 group-hover:bg-transparent transition-colors duration-400"></div>
+<div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+<div class="bg-surface/60 backdrop-blur-md p-3 rounded text-left border border-outline-variant/10">
+<div class="font-label-caps text-label-caps text-on-surface">Palermo Soho</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-1">The Glass Atrium</div>
+</div>
+</div>
+</div>
+<button class="mt-stack-md px-6 py-3 border border-tertiary/50 text-on-surface font-label-caps text-label-caps hover:bg-tertiary/10 transition-colors rounded-sm uppercase tracking-widest w-full">View Collection</button>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component translated to Mobile) -->
+<footer class="bg-surface-container-lowest w-full py-stack-lg border-t border-outline-variant/10 flex flex-col items-center gap-stack-md px-margin-mobile pb-32">
+<div class="font-headline-md text-headline-md text-on-surface mb-4">Alojamiento BA</div>
+<div class="flex flex-wrap justify-center gap-stack-md mb-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors ease-in-out duration-400" href="#">Privacy Policy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors ease-in-out duration-400" href="#">Terms of Service</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors ease-in-out duration-400" href="#">Press</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors ease-in-out duration-400" href="#">Contact</a>
+</div>
+<div class="font-label-caps text-label-caps text-tertiary">
+            © 2024 Alojamiento Buenos Aires. All Rights Reserved.
+        </div>
+</footer>
+<!-- Bottom Nav Bar Mobile Shell Fallback (simulated for destination 'Culture/Editorial') -->
+<div class="fixed bottom-0 w-full bg-surface/90 backdrop-blur-xl border-t border-outline-variant/10 flex justify-around items-center h-20 z-50 md:hidden pb-safe">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-caps text-[10px] tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">domain</span>
+<span class="font-label-caps text-[10px] tracking-wider">Listings</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-tertiary" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span class="font-label-caps text-[10px] tracking-wider">Culture</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">bookmark</span>
+<span class="font-label-caps text-[10px] tracking-wider">Saved</span>
+</a>
+</div>
+</body></html>

@@ -57,7 +57,7 @@ export default function AdminIntegracionesPage() {
   const [tokkoAudit, setTokkoAudit] = useState<TokkoAuditResult | null>(null);
   const [emailSettings, setEmailSettings] = useState<PublicEmailSettings>({
     mode: "preview",
-    from: "Connexa <no-reply@connexa.com>",
+    from: "Alojamiento Buenos Aires <no-reply@alojamientobuenosaires.com>",
     hasResendApiKey: false,
     configured: true,
   });
@@ -306,7 +306,7 @@ export default function AdminIntegracionesPage() {
               Sincronización de propiedades
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-on-surface-variant">
-              Cargá las credenciales de Tokko para importar propiedades publicadas en Tokko dentro de Connexa.
+              Cargá las credenciales de Tokko para importar propiedades publicadas en Tokko dentro de Alojamiento Buenos Aires.
             </p>
           </div>
 

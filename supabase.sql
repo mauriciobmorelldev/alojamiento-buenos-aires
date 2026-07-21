@@ -136,14 +136,22 @@ create table if not exists leads (
   name text not null,
   email text not null,
   phone text not null,
+  lead_type text not null default 'tenant' check (lead_type in ('tenant','owner','contact')),
   property_id text references properties(id) on delete set null,
   agent_id text references agents(id) on delete set null,
   client_id text references clients(id) on delete set null,
   status text not null check (status in ('nuevo','visita','reservado','cerrado')),
   notes text,
+  payload jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table leads
+  add column if not exists lead_type text not null default 'tenant';
+
+alter table leads
+  add column if not exists payload jsonb not null default '{}'::jsonb;
 
 create table if not exists lead_events (
   id text primary key,
@@ -172,6 +180,30 @@ create table if not exists tokko_sync_logs (
   finished_at timestamptz not null
 );
 
+create table if not exists editorial_posts (
+  id text primary key,
+  slug text not null unique,
+  title text not null,
+  excerpt text not null default '',
+  body text not null default '',
+  cover_image text not null default '',
+  category text not null default '',
+  meta_title text not null default '',
+  meta_description text not null default '',
+  published boolean not null default false,
+  published_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists newsletter_subscribers (
+  id text primary key,
+  email text not null unique,
+  name text not null default '',
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
 do $$
 begin
   if to_regclass('public.tocco_sync_logs') is not null then
@@ -193,3 +225,5 @@ create index if not exists idx_leads_client on leads(client_id);
 create index if not exists idx_favorites_client on property_favorites(client_id);
 create index if not exists idx_metrics_property on property_metrics(property_id);
 create index if not exists idx_tokko_sync_logs_started on tokko_sync_logs(started_at desc);
+create index if not exists idx_editorial_posts_published on editorial_posts(published, published_at desc);
+create index if not exists idx_newsletter_subscribers_created on newsletter_subscribers(created_at desc);

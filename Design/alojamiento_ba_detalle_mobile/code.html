@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Property Detail - Alojamiento BA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#bfc6dc",
+                        "primary-container": "#101828",
+                        "on-tertiary-fixed": "#291801",
+                        "background": "#131313",
+                        "outline-variant": "#45474c",
+                        "on-primary-container": "#798195",
+                        "on-tertiary": "#412d11",
+                        "on-primary-fixed": "#141b2c",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "surface": "#131313",
+                        "secondary": "#c9c6c2",
+                        "primary-fixed": "#dbe2f9",
+                        "on-primary": "#293041",
+                        "tertiary": "#e2c19b",
+                        "on-secondary-fixed-variant": "#474743",
+                        "inverse-primary": "#565e71",
+                        "surface-variant": "#353535",
+                        "on-tertiary-fixed-variant": "#594325",
+                        "tertiary-container": "#251500",
+                        "outline": "#8f9097",
+                        "secondary-fixed": "#e5e2dd",
+                        "on-surface-variant": "#c6c6cd",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-bright": "#393939",
+                        "error-container": "#93000a",
+                        "surface-container-highest": "#353535",
+                        "surface-tint": "#bfc6dc",
+                        "surface-container-low": "#1c1b1b",
+                        "on-primary-fixed-variant": "#3f4759",
+                        "surface-container": "#20201f",
+                        "on-tertiary-container": "#997d5a",
+                        "surface-container-lowest": "#0e0e0e",
+                        "inverse-on-surface": "#313030",
+                        "on-background": "#e5e2e1",
+                        "surface-dim": "#131313",
+                        "on-secondary-fixed": "#1c1c19",
+                        "on-secondary-container": "#b7b5b0",
+                        "on-surface": "#e5e2e1",
+                        "on-secondary": "#31302d",
+                        "secondary-fixed-dim": "#c9c6c2",
+                        "primary": "#bfc6dc",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#e2c19b",
+                        "inverse-surface": "#e5e2e1",
+                        "secondary-container": "#474743",
+                        "tertiary-fixed": "#ffddb6"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "section-gap": "160px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "80px",
+                        "margin-mobile": "24px",
+                        "stack-sm": "8px"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Playfair Display"],
+                        "label-caps": ["Inter"],
+                        "accent-italic": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-lg": ["48px", { lineHeight: "56px", fontWeight: "500" }],
+                        "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.1em", fontWeight: "600" }],
+                        "accent-italic": ["24px", { lineHeight: "32px", fontWeight: "400" }],
+                        "display-lg": ["80px", { lineHeight: "92px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-md": ["32px", { lineHeight: "40px", fontWeight: "500" }],
+                        "display-lg-mobile": ["48px", { lineHeight: "52px", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "headline-lg-mobile": ["32px", { lineHeight: "40px", fontWeight: "500" }],
+                        "body-lg": ["18px", { lineHeight: "32px", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased pb-[100px] selection:bg-tertiary selection:text-tertiary-container">
+<!-- Overlaid Mobile Top Actions -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile py-stack-md pointer-events-none">
+<button class="w-10 h-10 rounded-full bg-primary-container/40 backdrop-blur-[20px] border border-outline-variant/20 flex items-center justify-center text-on-surface pointer-events-auto transition-colors hover:border-tertiary/50">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex gap-stack-sm pointer-events-auto">
+<button class="w-10 h-10 rounded-full bg-primary-container/40 backdrop-blur-[20px] border border-outline-variant/20 flex items-center justify-center text-on-surface transition-colors hover:border-tertiary/50">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-primary-container/40 backdrop-blur-[20px] border border-outline-variant/20 flex items-center justify-center text-on-surface transition-colors hover:border-tertiary/50 hover:text-tertiary">
+<span class="material-symbols-outlined">favorite_border</span>
+</button>
+</div>
+</header>
+<!-- Hero Image Gallery (Single prominent image for mobile detail) -->
+<section class="relative w-full h-[574px] overflow-hidden">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 scale-105" data-alt="A stunning, cinematic low-angle photograph of a modernist luxury apartment interior in Buenos Aires. Floor-to-ceiling windows reveal a twilight cityscape. The interior features dark, rich woods, stark minimalist furniture, and subtle warm lighting contrasting with the cool blue dusk outside. High contrast, architectural photography, moody and sophisticated, evoking a sense of exclusive urban living." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDJ4mGTEPifujdBnymPvib0XPgTRj8r_Ffy6JnGjzRCisGTCR8S2c9csmMM5OT8Iz_ND4aKWrq83-lE2kubgaY0szDhJIOF6qxfeF3hbSffAL2Eu-g3AVVQ1_UrjZ745ZKXY4-ElEToyRGpzwSM1OZXcgplZ0ImNTmtunidIyl8S22yOElHS-ZBiw3JPfXHrZXpj_-2yfnVT8J4IwWCLOEhJc1XfNSSnnmc9eH1e5i4ZGy7MtQ57A"/>
+<!-- Subtle bottom gradient for text readability -->
+<div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent pointer-events-none"></div>
+</section>
+<!-- Header Section -->
+<section class="px-margin-mobile pt-stack-md pb-stack-lg relative -mt-4 z-10">
+<span class="font-label-caps text-label-caps text-tertiary uppercase tracking-widest block mb-2">Recoleta, Buenos Aires</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-on-surface mb-stack-sm leading-tight">The Alvear Penthouse</h1>
+<p class="font-headline-md text-headline-md text-on-surface-variant">$4,250,000</p>
+</section>
+<!-- Property Summary Bento Grid -->
+<section class="px-margin-mobile pb-stack-lg">
+<div class="grid grid-cols-2 gap-stack-sm">
+<div class="bg-surface-container border border-outline-variant/10 p-stack-md rounded-DEFAULT flex flex-col justify-center items-center gap-1">
+<span class="material-symbols-outlined text-tertiary mb-1">bed</span>
+<span class="font-headline-md text-headline-md text-on-surface text-2xl">4</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Bedrooms</span>
+</div>
+<div class="bg-surface-container border border-outline-variant/10 p-stack-md rounded-DEFAULT flex flex-col justify-center items-center gap-1">
+<span class="material-symbols-outlined text-tertiary mb-1">shower</span>
+<span class="font-headline-md text-headline-md text-on-surface text-2xl">4.5</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Bathrooms</span>
+</div>
+<div class="bg-surface-container border border-outline-variant/10 p-stack-md rounded-DEFAULT flex flex-col justify-center items-center gap-1">
+<span class="material-symbols-outlined text-tertiary mb-1">straighten</span>
+<span class="font-headline-md text-headline-md text-on-surface text-2xl">380</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Square Meters</span>
+</div>
+<div class="bg-surface-container border border-outline-variant/10 p-stack-md rounded-DEFAULT flex flex-col justify-center items-center gap-1">
+<span class="material-symbols-outlined text-tertiary mb-1">apartment</span>
+<span class="font-headline-md text-headline-md text-on-surface text-2xl">Duplex</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Property Type</span>
+</div>
+</div>
+</section>
+<!-- Editorial Description -->
+<section class="px-margin-mobile py-stack-md">
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+            Perched above the iconic French-style architecture of Recoleta, this dual-level residence offers a sanctuary of minimalist luxury. Meticulously curated materials and expansive volumes define a space where the city's chaotic energy is distilled into serene, elevated living. A rare proposition for the discerning aesthete.
+        </p>
+</section>
+<!-- Amenities Pills -->
+<section class="px-margin-mobile py-stack-md overflow-x-auto whitespace-nowrap hide-scrollbar">
+<div class="inline-flex gap-stack-sm">
+<span class="px-4 py-2 border border-outline-variant/20 rounded-full font-label-caps text-label-caps text-on-surface">Private Terrace</span>
+<span class="px-4 py-2 border border-outline-variant/20 rounded-full font-label-caps text-label-caps text-on-surface">Wine Cellar</span>
+<span class="px-4 py-2 border border-outline-variant/20 rounded-full font-label-caps text-label-caps text-on-surface">Concierge 24/7</span>
+<span class="px-4 py-2 border border-outline-variant/20 rounded-full font-label-caps text-label-caps text-on-surface">Smart Home</span>
+</div>
+</section>
+<!-- Spirit of the Neighborhood -->
+<section class="mt-stack-lg mb-stack-lg pt-stack-lg border-t border-outline-variant/10">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface px-margin-mobile mb-stack-md">Spirit of the Neighborhood</h2>
+<div class="w-full h-[397px] relative">
+<img class="w-full h-full object-cover grayscale-[20%]" data-alt="A moody, high-contrast street photography shot of a Parisian-style avenue in Recoleta, Buenos Aires at night. The scene is illuminated by dramatic, warm glowing streetlamps casting long shadows against grand, ornate facades. A solitary figure walks down the rain-slicked pavement. The aesthetic is raw, cinematic, and melancholic, capturing the historic soul and aristocratic grit of the city." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwwYdsmVYU3ZRAs3YexRgOUtLYXRvRHw-l1IDJLKzz-YZK3D6kxMYY8ZUBqD8Pr9Nu5ZkZZeFzea4054l0rfWff-Hu0lCzMF-sMDmpM24nMAJ7nZK60Wg7Bm6MlR_KlSZhD915rr-q4YdhqUhJ6JN-2qbLunA_6XFiPaYCC1TQUlhBTQE3I3d17abAoLNCKjvRY1N_PY5Nf3g15R0qwBOXcxmUdZu_cNKvKmtnyRIgBHYF7qkSWq0"/>
+</div>
+<div class="px-margin-mobile mt-stack-md">
+<p class="font-accent-italic text-accent-italic text-on-surface-variant italic leading-relaxed">
+                "Where Belle Époque grandeur meets contemporary restraint. The streets here don't just hold history; they dictate a rhythm of deliberate, refined existence."
+            </p>
+</div>
+</section>
+<!-- Premium Inquiry Form -->
+<section class="px-margin-mobile py-stack-lg border-t border-outline-variant/10">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-stack-lg">Request Private Viewing</h2>
+<form class="flex flex-col gap-stack-lg">
+<div class="relative">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 focus:border-tertiary focus:ring-0 px-0 py-2 font-body-md text-on-surface placeholder:text-transparent peer transition-colors" id="name" placeholder="Name" type="text"/>
+<label class="absolute left-0 -top-4 font-label-caps text-label-caps text-on-surface-variant transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-body-md peer-focus:-top-4 peer-focus:text-label-caps peer-focus:text-tertiary" for="name">Full Name</label>
+</div>
+<div class="relative">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 focus:border-tertiary focus:ring-0 px-0 py-2 font-body-md text-on-surface placeholder:text-transparent peer transition-colors" id="email" placeholder="Email" type="email"/>
+<label class="absolute left-0 -top-4 font-label-caps text-label-caps text-on-surface-variant transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-body-md peer-focus:-top-4 peer-focus:text-label-caps peer-focus:text-tertiary" for="email">Email Address</label>
+</div>
+<div class="relative">
+<textarea class="w-full bg-transparent border-0 border-b border-outline-variant/50 focus:border-tertiary focus:ring-0 px-0 py-2 font-body-md text-on-surface placeholder:text-transparent peer transition-colors resize-none" id="message" placeholder="Message" rows="3"></textarea>
+<label class="absolute left-0 -top-4 font-label-caps text-label-caps text-on-surface-variant transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-body-md peer-focus:-top-4 peer-focus:text-label-caps peer-focus:text-tertiary" for="message">Message (Optional)</label>
+</div>
+<button class="mt-4 border border-tertiary text-on-surface hover:bg-tertiary hover:text-surface px-stack-lg py-stack-md font-label-caps uppercase rounded-DEFAULT transition-all duration-400 w-full tracking-widest" type="button">
+                Submit Inquiry
+            </button>
+</form>
+</section>
+<!-- Footer Component from JSON -->
+<footer class="bg-surface-container-lowest text-tertiary font-label-caps text-label-caps w-full py-stack-lg border-t border-outline-variant/10 flat no shadows ease-in-out duration-400 flex flex-col items-center gap-stack-md px-margin-desktop">
+<h3 class="font-headline-md text-headline-md text-on-surface text-center mb-4">Alojamiento BA</h3>
+<nav class="flex flex-col items-center gap-stack-sm mb-4">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Press</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Contact</a>
+</nav>
+<p class="text-on-surface-variant text-center opacity-60">© 2024 Alojamiento Buenos Aires. All Rights Reserved.</p>
+</footer>
+<!-- Sticky Bottom Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-primary-container/80 backdrop-blur-[20px] border-t border-tertiary/20 px-margin-mobile py-stack-sm z-50 flex gap-stack-md items-center justify-between">
+<button class="flex-1 border border-tertiary text-on-surface hover:bg-tertiary hover:text-surface px-stack-md py-3 font-label-caps uppercase rounded-DEFAULT transition-all duration-400 text-center tracking-widest">
+            Inquire Now
+        </button>
+<button class="w-[52px] h-[52px] border border-outline-variant/50 text-on-surface hover:border-tertiary hover:text-tertiary flex items-center justify-center rounded-DEFAULT transition-colors duration-400">
+<span class="material-symbols-outlined">chat</span>
+</button>
+</div>
+</body></html>
