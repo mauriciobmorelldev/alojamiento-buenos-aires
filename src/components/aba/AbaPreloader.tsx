@@ -1,24 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { usePathname } from 'next/navigation';
 
 const PRELOADER_KEY = 'aba_preloader_seen_v5';
 const FULL_DURATION = 2200;
 const REDUCED_DURATION = 450;
-const TANGO_AUDIO_SRC = '/audio/por-una-cabeza.mp3';
-
-type AudioStatus = 'idle' | 'playing' | 'missing' | 'blocked';
+const AMBIENT_AUDIO_REQUEST_EVENT = 'aba:ambient-audio-request';
 
 export default function AbaPreloader() {
   const pathname = usePathname();
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const fadeTimerRef = useRef<number | null>(null);
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [audioStatus, setAudioStatus] = useState<AudioStatus>('idle');
+  const [audioRequested, setAudioRequested] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -57,73 +53,16 @@ export default function AbaPreloader() {
     };
   }, [mounted, pathname]);
 
-  useEffect(() => {
-    if (!mounted || visible || audioStatus !== 'playing') return;
-
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (fadeTimerRef.current) window.clearInterval(fadeTimerRef.current);
-
-    fadeTimerRef.current = window.setInterval(() => {
-      audio.volume = Math.max(0, audio.volume - 0.018);
-      if (audio.volume <= 0.01) {
-        audio.pause();
-        audio.currentTime = 0;
-        if (fadeTimerRef.current) window.clearInterval(fadeTimerRef.current);
-      }
-    }, 60);
-
-    return () => {
-      if (fadeTimerRef.current) window.clearInterval(fadeTimerRef.current);
-    };
-  }, [audioStatus, mounted, visible]);
-
-  const enableTango = async () => {
-    const audio = audioRef.current;
-    if (!audio || audioStatus === 'missing') return;
-
-    try {
-      if (fadeTimerRef.current) window.clearInterval(fadeTimerRef.current);
-      audio.volume = 0;
-      audio.currentTime = 0;
-      await audio.play();
-      setAudioStatus('playing');
-
-      let steps = 0;
-      fadeTimerRef.current = window.setInterval(() => {
-        steps += 1;
-        audio.volume = Math.min(0.16, steps * 0.016);
-        if (audio.volume >= 0.16 && fadeTimerRef.current) {
-          window.clearInterval(fadeTimerRef.current);
-        }
-      }, 80);
-    } catch {
-      setAudioStatus('blocked');
-    }
+  const enableTango = () => {
+    window.dispatchEvent(new Event(AMBIENT_AUDIO_REQUEST_EVENT));
+    setAudioRequested(true);
   };
-
-  const soundLabel =
-    audioStatus === 'playing'
-      ? 'Tango activo'
-      : audioStatus === 'missing'
-        ? 'Audio pendiente'
-        : audioStatus === 'blocked'
-          ? 'Tocar para activar'
-          : 'Activar tango';
+  const soundLabel = audioRequested ? 'Tango activo' : 'Activar tango';
 
   if (!mounted) return null;
 
   return (
     <>
-      <audio
-        ref={audioRef}
-        src={TANGO_AUDIO_SRC}
-        preload="metadata"
-        loop
-        onError={() => setAudioStatus('missing')}
-      />
-
       <AnimatePresence>
         {visible ? (
           <motion.div
@@ -156,7 +95,6 @@ export default function AbaPreloader() {
               className="aba-entry-preloader__sound"
               type="button"
               onClick={enableTango}
-              disabled={audioStatus === 'missing'}
               aria-label="Activar tango suave durante la carga"
             >
               <span aria-hidden="true">{'\u266a'}</span>

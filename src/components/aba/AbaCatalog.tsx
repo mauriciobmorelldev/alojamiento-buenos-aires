@@ -8,6 +8,7 @@ import { formatPrice } from '@/lib/pricing';
 import AbaNav from './AbaNav';
 import AbaScrollCinema from './AbaScrollCinema';
 import AbaWhatsAppFloat from './AbaWhatsAppFloat';
+import AbaOptimizedImage from './AbaOptimizedImage';
 import { abaCultureImages, abaPropertyMoodImages } from '@/lib/abaMedia';
 
 const fallbackImage = abaPropertyMoodImages[0];
@@ -139,7 +140,7 @@ export default function AbaCatalog({ initialState }: { initialState: Partial<Inm
               <article key={item.id} className={['aba-cinematic-card', articleClass].join(' ')} style={motionStyle}>
                 <Link href={listingHref(item)} className='group block'>
                   <div className={['overflow-hidden bg-black', imageClass].join(' ')}>
-                    <img src={listingImage(item)} alt={item.title} className='h-full w-full object-cover opacity-92 transition duration-700 group-hover:opacity-100' />
+                    <AbaOptimizedImage src={listingImage(item)} alt={item.title} width={isLarge ? 1100 : 760} height={isLarge ? 760 : 620} priority={index < 2} quality={74} sizes={isLarge ? '(max-width: 768px) 100vw, 58vw' : '(max-width: 768px) 100vw, 34vw'} className='h-full w-full object-cover opacity-92 transition duration-700 group-hover:opacity-100' />
                   </div>
                   <div className={isLarge ? 'relative mt-5 min-h-[130px]' : 'mt-4 grid gap-2'}>
                     <div className='flex items-center justify-between gap-4'>

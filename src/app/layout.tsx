@@ -3,6 +3,7 @@ import { Allura, Cormorant_Garamond, Inter, Manrope, Playfair_Display } from "ne
 import ChunkRecoveryReset from "@/components/providers/ChunkRecoveryReset";
 import MaterialSymbolsLoader from "@/components/providers/MaterialSymbolsLoader";
 import AbaPreloader from "@/components/aba/AbaPreloader";
+import AbaAmbientAudio from "@/components/aba/AbaAmbientAudio";
 import "./globals.css";
 
 const inter = Inter({
@@ -80,6 +81,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-on-background font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
         <ChunkRecoveryReset />
         <AbaPreloader />
+        <AbaAmbientAudio />
         {children}
         <MaterialSymbolsLoader />
       </body>

@@ -40,6 +40,26 @@ export const getOptimizedPublicImageUrl = (
   }
 };
 
+
+export const getSupabaseObjectPublicUrl = (src: string) => {
+  if (!src || src.startsWith("data:") || src.startsWith("blob:")) return src;
+
+  try {
+    const url = new URL(src);
+    if (!url.hostname.endsWith(".supabase.co")) return src;
+
+    const markerIndex = url.pathname.indexOf(STORAGE_RENDER_MARKER);
+    if (markerIndex < 0) return src;
+
+    const publicPath = url.pathname.slice(markerIndex + STORAGE_RENDER_MARKER.length);
+    url.pathname = `${url.pathname.slice(0, markerIndex)}${STORAGE_PUBLIC_MARKER}${publicPath}`;
+    url.search = "";
+    return url.toString();
+  } catch {
+    return src;
+  }
+};
+
 export const getOptimizedPublicImageSrcSet = (
   src: string,
   widths: number[],

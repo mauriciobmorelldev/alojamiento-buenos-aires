@@ -15,6 +15,7 @@ import AbaAboutBlock from "./AbaAboutBlock";
 import AbaHomeFocusMenu from "./AbaHomeFocusMenu";
 import { abaCultureImages, abaPropertyMoodImages } from "@/lib/abaMedia";
 import AbaWhatsAppFloat from "./AbaWhatsAppFloat";
+import AbaOptimizedImage from "./AbaOptimizedImage";
 
 const heroFallback = abaCultureImages[6];
 const palermoImage = abaCultureImages[19];
@@ -74,11 +75,11 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
       <section className="aba-home-hero aba-home-hero--collage relative overflow-hidden">
         <AbaNav transparent fixed />
         <div className="aba-home-hero__backdrop" aria-hidden="true">
-          <img src={heroImage} alt="" className="aba-home-hero__poster aba-ken-burns" />
+          <AbaOptimizedImage src={heroImage} alt="" width={1800} height={1200} priority quality={74} sizes="100vw" className="aba-home-hero__poster aba-ken-burns" />
           <div className="aba-home-hero__atmosphere">
             {heroAtmosphere.map((item) => (
               <figure key={item.src}>
-                <img src={item.src} alt="" loading="eager" />
+                <AbaOptimizedImage src={item.src} alt="" width={260} height={360} priority quality={66} sizes="110px" />
                 <figcaption>{item.label}</figcaption>
               </figure>
             ))}
@@ -110,7 +111,7 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
                 animate={{ opacity: 1, y: 0, rotate: index === 1 ? 1.4 : -1.4 }}
                 transition={{ duration: 0.75, delay: 0.22 + index * 0.12, ease: [0.16, 1, 0.3, 1] }}
               >
-                <img src={frame.src} alt="" />
+                <AbaOptimizedImage src={frame.src} alt="" width={620} height={760} priority={index === 0} quality={72} sizes="(max-width: 768px) 70vw, 24vw" />
                 <figcaption>{frame.label}</figcaption>
               </motion.figure>
             ))}
@@ -185,7 +186,7 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
               >
                 <Link href={"/departamentos/" + item.id} className="group block h-full">
                   <div className="aba-home-property-reveal__image">
-                    <img src={image} alt={item.title} />
+                    <AbaOptimizedImage src={image} alt={item.title} width={720} height={560} quality={72} sizes="(max-width: 768px) 100vw, 32vw" />
                   </div>
                   <div className="aba-home-property-reveal__copy">
                     <div className="flex items-center justify-between gap-4">
@@ -205,7 +206,7 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
 
       <section className="w-full">
         <div className="group relative flex h-[80vh] min-h-[560px] items-center overflow-hidden border-y border-white/10">
-          <img src={palermoImage} alt="Palermo" className="aba-ken-burns absolute inset-0 h-full w-full object-cover opacity-70" />
+          <AbaOptimizedImage src={palermoImage} alt="Palermo" width={1800} height={1100} quality={72} sizes="100vw" className="aba-ken-burns absolute inset-0 h-full w-full object-cover opacity-70" />
           <div className="absolute inset-0 bg-[#131313]/48 transition duration-700 group-hover:bg-[#131313]/28" />
           <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-20">
             <h2 className="aba-display text-white">Palermo</h2>

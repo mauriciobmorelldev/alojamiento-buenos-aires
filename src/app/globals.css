@@ -3813,7 +3813,7 @@ html[data-theme="dark"] .turno-slot {
 
 .aba-button::after,
 .aba-button-dark::after {
-  content: '→';
+  content: '\2192';
   margin-left: 0.25rem;
   transform: translateX(0);
   transition: transform 260ms ease;
@@ -5559,7 +5559,7 @@ html[data-theme="dark"] .turno-slot {
   color: #e2c19b;
   font-size: 0.9rem;
   line-height: 1;
-  content: '↗';
+  content: '\2197';
   box-shadow: inset 0 0 0 1px rgba(226, 193, 155, 0.26);
 }
 
@@ -6565,5 +6565,114 @@ html[data-theme="dark"] .turno-slot {
   .aba-nav-liquid__brand {
     font-size: clamp(0.98rem, 4.6vw, 1.22rem);
     letter-spacing: 0.06em;
+  }
+}
+
+/* ABA Connexa-inspired image performance pass */
+.aba-cinematic-card,
+.aba-home-property-reveal,
+.aba-editorial-image-wall__item,
+.aba-reveal-list__item {
+  content-visibility: auto;
+  contain-intrinsic-size: 560px;
+}
+
+.aba-home-property-reveal__image,
+.aba-editorial-image-wall__item,
+.aba-reveal-list__visual,
+.aba-image-collage__tile {
+  contain: layout paint;
+}
+
+.aba-public img {
+  backface-visibility: hidden;
+}
+
+@media (max-width: 760px) {
+  .aba-cinematic-card,
+  .aba-home-property-reveal,
+  .aba-editorial-image-wall__item,
+  .aba-reveal-list__item {
+    contain-intrinsic-size: 430px;
+  }
+}
+
+/* ABA ambient tango control */
+.aba-ambient-audio {
+  position: fixed;
+  right: clamp(1rem, 2.4vw, 1.65rem);
+  bottom: clamp(1rem, 2.4vw, 1.65rem);
+  z-index: 99992;
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(226, 193, 155, 0.34);
+  border-radius: 999px;
+  padding: 0;
+  background: linear-gradient(145deg, rgba(20, 20, 19, 0.78), rgba(6, 6, 6, 0.74));
+  color: rgba(255, 246, 233, 0.84);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 20px 64px -42px rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(18px) saturate(1.24);
+  -webkit-backdrop-filter: blur(18px) saturate(1.24);
+  opacity: 0.78;
+  transform: translateZ(0);
+  transition: transform 220ms ease, opacity 220ms ease, background 220ms ease, border-color 220ms ease;
+}
+
+.aba-ambient-audio__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: #e2c19b;
+}
+
+.aba-ambient-audio__icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.aba-ambient-audio b {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.aba-ambient-audio::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(226, 193, 155, 0.16);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.aba-ambient-audio:hover:not(:disabled),
+.aba-ambient-audio.is-playing {
+  border-color: rgba(226, 193, 155, 0.72);
+  background: linear-gradient(145deg, rgba(226, 193, 155, 0.18), rgba(12, 12, 12, 0.78));
+  color: #fff6e9;
+  opacity: 1;
+  transform: translate3d(0, -2px, 0);
+}
+
+.aba-ambient-audio:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+@media (max-width: 720px) {
+  .aba-ambient-audio {
+    right: 0.9rem;
+    bottom: 0.9rem;
+    width: 42px;
+    height: 42px;
   }
 }

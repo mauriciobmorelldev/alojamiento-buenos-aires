@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/pricing';
 import AbaNav from './AbaNav';
 import AbaScrollCinema from './AbaScrollCinema';
 import AbaWhatsAppFloat from './AbaWhatsAppFloat';
+import AbaOptimizedImage from './AbaOptimizedImage';
 import { abaCultureImages, abaPropertyMoodImages } from '@/lib/abaMedia';
 import { findNeighborhoodByName } from '@/lib/abaContent';
 
@@ -63,7 +64,7 @@ export default function AbaPropertyDetail({ property }: { property: Listing }) {
       <AbaNav dark />
       <section className='relative min-h-[760px] overflow-hidden bg-black md:min-h-[900px]'>
         <button type='button' onClick={() => setZoomIndex(selectedImage)} className='absolute inset-0 cursor-zoom-in' aria-label='Ampliar imagen principal'>
-          <img src={heroImage} alt={property.title} className='aba-ken-burns h-full w-full object-cover opacity-62' />
+          <AbaOptimizedImage src={heroImage} alt={property.title} width={1800} height={1200} priority quality={76} sizes='100vw' className='aba-ken-burns h-full w-full object-cover opacity-62' />
         </button>
         <div className='absolute inset-0 bg-gradient-to-b from-black/30 via-black/36 to-[#131313]' />
         <div className='absolute bottom-16 left-0 right-0 z-10 px-6 md:px-20'>
@@ -71,7 +72,7 @@ export default function AbaPropertyDetail({ property }: { property: Listing }) {
             <div className='grid gap-4 sm:grid-cols-4 md:w-[78%]'>
               {images.slice(0, 4).map((image, index) => (
                 <button key={image + index} type='button' onClick={() => setSelectedImage(index)} className={['aspect-[1.45/1] overflow-hidden border bg-black transition', selectedImage === index ? 'border-white' : 'border-white/12 hover:border-white/45'].join(' ')} aria-label={'Ver imagen ' + (index + 1)}>
-                  <img src={image} alt='' className='h-full w-full object-cover opacity-90' />
+                  <AbaOptimizedImage src={image} alt='' width={420} height={290} priority={index < 3} quality={68} sizes='(max-width: 768px) 25vw, 18vw' className='h-full w-full object-cover opacity-90' />
                 </button>
               ))}
             </div>
@@ -104,7 +105,7 @@ export default function AbaPropertyDetail({ property }: { property: Listing }) {
       </section>
 
       <section className='relative overflow-hidden bg-[#101010] px-6 py-28 md:px-20'>
-        <img src={barrioImage} alt='' className='absolute inset-0 h-full w-full object-cover opacity-18' />
+        <AbaOptimizedImage src={barrioImage} alt='' width={1600} height={900} quality={66} sizes='100vw' className='absolute inset-0 h-full w-full object-cover opacity-18' />
         <div className='absolute inset-0 bg-gradient-to-r from-[#101010] via-[#101010]/86 to-[#101010]/68' />
         <div className='relative z-10 mx-auto grid max-w-[1440px] gap-12 md:grid-cols-12 md:items-center'>
           <div className='md:col-span-5'>
@@ -113,7 +114,7 @@ export default function AbaPropertyDetail({ property }: { property: Listing }) {
             <Link href={neighborhoodHref} className='mt-8 inline-flex border-b border-white pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white'>Explorar barrio</Link>
           </div>
           <div className='md:col-span-6 md:col-start-7'>
-            <img src={images[1] || heroImage} alt='' className='aspect-[1.18/1] w-full object-cover' />
+            <AbaOptimizedImage src={images[1] || heroImage} alt='' width={900} height={760} quality={72} sizes='(max-width: 768px) 100vw, 48vw' className='aspect-[1.18/1] w-full object-cover' />
           </div>
         </div>
       </section>
