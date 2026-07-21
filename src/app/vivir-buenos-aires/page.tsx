@@ -109,7 +109,12 @@ export default async function VivirBuenosAiresPage() {
                   <p className='aba-label text-[#e2c19b]'>{post.category}</p>
                   <h3 className='mt-3 font-editorial text-3xl leading-tight text-white md:text-4xl'>{post.title}</h3>
                   <p className='mt-3 text-sm leading-6 text-white/62'>{post.excerpt}</p>
-                  <span className='mt-6 text-[0.62rem] font-black uppercase tracking-[0.18em] text-white/80'>Leer nota →</span>
+                  <span className='mt-6 inline-flex items-center gap-2 text-[0.62rem] font-black uppercase tracking-[0.18em] text-white/80'>
+  Leer nota
+  <svg className='h-3 w-3' viewBox='0 0 18 18' fill='none' aria-hidden='true'>
+    <path d='M5 13L13 5M7 5h6v6' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+  </svg>
+</span>
                 </div>
               </Link>
             ))}
@@ -149,7 +154,12 @@ export default async function VivirBuenosAiresPage() {
                 <h3 className='mt-4 max-w-xl font-editorial text-4xl leading-none text-white md:text-5xl'>Departamentos amoblados para habitar Buenos Aires desde adentro.</h3>
                 <p className='mt-5 max-w-lg text-sm leading-7 text-white/62'>Contratos claros de 3 meses a 2 años, orientación por barrio y una curaduría pensada para estudiantes, profesionales y familias.</p>
               </div>
-              <span className='mt-8 text-[0.62rem] font-black uppercase tracking-[0.18em] text-white/80'>Explorar catálogo →</span>
+              <span className='mt-8 inline-flex items-center gap-2 text-[0.62rem] font-black uppercase tracking-[0.18em] text-white/80'>
+  Explorar catálogo
+  <svg className='h-3 w-3' viewBox='0 0 18 18' fill='none' aria-hidden='true'>
+    <path d='M5 13L13 5M7 5h6v6' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+  </svg>
+</span>
             </div>
             <div className='relative min-h-[360px] overflow-hidden'>
               <img src={abaPropertyMoodImages[0]} alt='Interior amoblado en Buenos Aires' className='absolute inset-0 h-full w-full object-cover opacity-88 transition duration-700 group-hover:scale-105' />

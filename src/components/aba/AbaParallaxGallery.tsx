@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useScroll, useSpring, useTransform } from 'motion/react';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSiteMotion } from '@/components/providers/MotionProvider';
 
 type AbaParallaxGalleryProps = {
@@ -21,7 +21,17 @@ export default function AbaParallaxGallery({
 }: AbaParallaxGalleryProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const { reducedMotion } = useSiteMotion();
+  const [isMobile, setIsMobile] = useState(false);
+  const motionDisabled = reducedMotion || isMobile;
   const normalizedImages = useMemo(() => images.slice(0, 8), [images]);
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 760px)');
+    const update = () => setIsMobile(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start end', 'end start'],
@@ -32,12 +42,12 @@ export default function AbaParallaxGallery({
     mass: 0.45,
     restDelta: 0.001,
   });
-  const introY = useTransform(smoothProgress, [0, 1], reducedMotion ? ['0%', '0%'] : ['4%', '-4%']);
-  const ySoft = useTransform(smoothProgress, [0, 1], reducedMotion ? ['0%', '0%'] : ['-5%', '5%']);
-  const yReverse = useTransform(smoothProgress, [0, 1], reducedMotion ? ['0%', '0%'] : ['5%', '-5%']);
-  const ySmall = useTransform(smoothProgress, [0, 1], reducedMotion ? ['0%', '0%'] : ['-2.5%', '2.5%']);
-  const scaleSoft = useTransform(smoothProgress, [0, 0.5, 1], reducedMotion ? [1, 1, 1] : [1.01, 1.035, 1.015]);
-  const scaleStill = useTransform(smoothProgress, [0, 1], reducedMotion ? [1, 1] : [1.015, 1.025]);
+  const introY = useTransform(smoothProgress, [0, 1], motionDisabled ? ['0%', '0%'] : ['4%', '-4%']);
+  const ySoft = useTransform(smoothProgress, [0, 1], motionDisabled ? ['0%', '0%'] : ['-5%', '5%']);
+  const yReverse = useTransform(smoothProgress, [0, 1], motionDisabled ? ['0%', '0%'] : ['5%', '-5%']);
+  const ySmall = useTransform(smoothProgress, [0, 1], motionDisabled ? ['0%', '0%'] : ['-2.5%', '2.5%']);
+  const scaleSoft = useTransform(smoothProgress, [0, 0.5, 1], motionDisabled ? [1, 1, 1] : [1.01, 1.035, 1.015]);
+  const scaleStill = useTransform(smoothProgress, [0, 1], motionDisabled ? [1, 1] : [1.015, 1.025]);
 
   const motionStyles = [
     { y: ySoft, scale: scaleSoft },
@@ -55,7 +65,7 @@ export default function AbaParallaxGallery({
     >
       <motion.div
         className='aba-parallax-section__intro'
-        style={reducedMotion ? undefined : { y: introY }}
+        style={motionDisabled ? undefined : { y: introY }}
       >
         <div className='max-w-4xl'>
           <p className='aba-label text-[#e2c19b]'>{eyebrow}</p>
@@ -70,14 +80,14 @@ export default function AbaParallaxGallery({
           <motion.figure
             key={src + index}
             className={'aba-editorial-image-wall__item aba-editorial-image-wall__item--' + ((index % 4) + 1)}
-            style={reducedMotion ? undefined : motionStyles[index % motionStyles.length]}
-            initial={reducedMotion ? false : { opacity: 0, filter: 'blur(10px)' }}
-            whileInView={reducedMotion ? undefined : { opacity: 1, filter: 'blur(0px)' }}
+            style={motionDisabled ? undefined : motionStyles[index % motionStyles.length]}
+            initial={motionDisabled ? false : { opacity: 0, filter: 'blur(10px)' }}
+            whileInView={motionDisabled ? undefined : { opacity: 1, filter: 'blur(0px)' }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.62, delay: Math.min(index * 0.035, 0.16), ease: [0.16, 1, 0.3, 1] }}
           >
             <img src={encodeURI(src)} alt='' loading='lazy' decoding='async' />
-            <figcaption>BA ? {String(index + 1).padStart(2, '0')}</figcaption>
+            <figcaption>Buenos Aires {String(index + 1).padStart(2, '0')}</figcaption>
           </motion.figure>
         ))}
       </div>

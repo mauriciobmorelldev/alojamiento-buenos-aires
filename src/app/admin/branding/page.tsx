@@ -1492,7 +1492,7 @@ export default function AdminBrandingPage() {
 
             <div className="grid gap-4 rounded-3xl bg-surface-container-low p-5 sm:grid-cols-[1fr_1.2fr]">
               <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-                Tipo de cambio USD → ARS
+                Tipo de cambio USD a ARS
                 <input
                   type="number"
                   min="1"

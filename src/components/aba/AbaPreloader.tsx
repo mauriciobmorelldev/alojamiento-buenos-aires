@@ -97,7 +97,11 @@ export default function AbaPreloader() {
               onClick={enableTango}
               aria-label="Activar tango suave durante la carga"
             >
-              <span aria-hidden="true">{'\u266a'}</span>
+              <span aria-hidden="true" className="aba-entry-preloader__sound-icon">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M9 18.5a2.5 2.5 0 1 1-1.2-2.14V5.75l9.7-2.2v11.2a2.5 2.5 0 1 1-1.2-2.14V7.05l-7.3 1.66v9.79Z" />
+                </svg>
+              </span>
               {soundLabel}
             </button>
 
