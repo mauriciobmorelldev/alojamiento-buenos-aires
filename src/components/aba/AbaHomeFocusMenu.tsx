@@ -6,7 +6,7 @@ import { abaCultureImages, abaPropertyMoodImages } from "@/lib/abaMedia";
 
 const focusItems = [
   {
-    title: "Agenda de la semana",
+    title: "Lo inmediato. Lo que está pasando ahora en la ciudad",
     eyebrow: "Qué pasa ahora",
     text: "Una selección curada de planes, muestras, noches, cafés y recorridos para entrar rápido en ritmo porteño.",
     href: "/vivir-buenos-aires?categoria=agenda",
@@ -15,21 +15,21 @@ const focusItems = [
   {
     title: "Editorial",
     eyebrow: "La ciudad escrita",
-    text: "Crónicas, ensayos y miradas de autores sobre barrios, arquitectura, rituales y escenas de Buenos Aires.",
+    text: "Crónicas, ensayos y miradas sobre Buenos Aires. Sin fecha de vencimiento.",
     href: "/vivir-buenos-aires",
     image: abaCultureImages[10],
   },
   {
     title: "Descubrí Buenos Aires",
     eyebrow: "Barrios y guías",
-    text: "Palermo, Recoleta, San Telmo y otros mapas sensibles para elegir dónde vivir con contexto real.",
+    text: "Palermo, Recoleta, San Telmo y muchos barrios más para elegir dónde vivir.",
     href: "/barrios",
     image: abaCultureImages[7],
   },
   {
     title: "Vida porteña",
     eyebrow: "Vivir desde adentro",
-    text: "Cafés, librerías, bodegones, transporte, costumbres y pequeñas decisiones que hacen hogar una estadía.",
+    text: "Cafés, librerías, bodegones y la vida cultural porteña, todo el año.",
     href: "/vivir-buenos-aires?categoria=vida-portena",
     image: abaPropertyMoodImages[1],
   },

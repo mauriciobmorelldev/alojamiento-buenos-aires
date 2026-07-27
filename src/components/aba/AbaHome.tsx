@@ -98,7 +98,7 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
             </p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
               <Link href="/departamentos" className="aba-button-dark w-full sm:w-auto">Ver propiedades</Link>
-              <Link href="/vivir-buenos-aires" className="aba-button w-full sm:w-auto">Leer la ciudad</Link>
+              <Link href="/vivir-buenos-aires" className="aba-button w-full sm:w-auto">Descubrí la ciudad</Link>
             </div>
           </div>
 
@@ -126,9 +126,9 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
       </section>
 
       <section className="aba-design-section text-center">
-        <h2 className="aba-headline mx-auto max-w-3xl text-white">“La ciudad es la protagonista.”</h2>
+        <h2 className="aba-headline mx-auto max-w-3xl text-white">“La ciudad también es la protagonista.”</h2>
         <p className="mx-auto mt-8 max-w-xl text-base leading-7 text-white/62">
-          Nuestros espacios son el umbral. Departamentos amoblados con estética sobria, contrato claro y contexto cultural para sumergirse en el ritmo porteño.
+          Nuestros departamentos son el punto de partida. Amoblados y contratos claros. Lo que sigue: Buenos Aires.
         </p>
       </section>
 
@@ -138,16 +138,16 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
 
       <AbaImageCollage
         eyebrow="Buenos Aires en capas"
-        title="Antes de elegir departamento, hay que sentir el barrio."
-        text="Cafés, librerías, avenidas, interiores y rituales diarios conectan cada propiedad con una manera concreta de vivir la ciudad."
+        title="Antes de elegir departamento, elegí el barrio."
+        text="Cada barrio de Buenos Aires funciona como un pequeño país, con su propia identidad, su ritmo de vida y su esencia inconfundible."
         images={cityCollage}
-        cta={<Link href="/vivir-buenos-aires" className="aba-button">Explorar magazine</Link>}
+        cta={<Link href="/vivir-buenos-aires" className="aba-button">Explorar arte y cultura</Link>}
       />
 
       <AbaScrollCinema
         kicker="De la ciudad a la llave"
-        title="Elegir dónde vivir también es una escena."
-        description="Tres momentos precisos: llegar al pulso, encontrar una pausa y empezar a sentirse parte."
+        title="Elegir dónde vivir también es elegir quién querés ser."
+        description="Tres momentos precisos: vivir el ritmo de la ciudad, encontrar pausa y empezar a sentirse parte."
         frames={[
           { image: abaCultureImages[6], eyebrow: "Avenida", title: "Llegar al pulso", text: "La primera impresión no es un plano: es luz, movimiento, escala y cercanía con lo que pasa todos los días." },
           { image: abaPropertyMoodImages[1], eyebrow: "Interior", title: "Encontrar pausa", text: "La propiedad aparece como refugio: equipada, clara y lista para una estadía de 3 meses a 2 años." },
@@ -158,7 +158,7 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
       <AbaParallaxGallery
         eyebrow="Archivo vivo"
         title="Una ciudad para mirar antes de elegir llave."
-        text="Imágenes reales de cafés, avenidas, interiores y rituales porteños se mueven a distintas velocidades para cortar la repetición y construir atmósfera."
+        text="La atmósfera de Buenos Aires en su día a día. Imágenes reales de una ciudad que no necesita maquillaje."
         images={parallaxArchive}
       />
       <section className="aba-design-section bg-[#0e0e0e]">
@@ -222,7 +222,7 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
         <div className="aba-card mx-auto flex max-w-4xl flex-col items-center p-12 text-center md:p-24">
           <h2 className="aba-headline text-white">Publique su propiedad con nosotros.</h2>
           <p className="mt-6 max-w-xl text-base leading-7 text-white/62">
-            Buscamos espacios con carácter e historia para un público que llega a Buenos Aires por estudio, trabajo, cultura o una nueva etapa.
+            Buscamos propiedades con carácter e historia para gestionar con el mismo cuidado que si fueran propias.
           </p>
           <Link href="/contacto?tipo=propietario" className="aba-button mt-10">Contáctenos</Link>
         </div>

@@ -52,12 +52,12 @@ export default async function VivirBuenosAiresPage() {
         <div className='absolute inset-0 bg-[linear-gradient(90deg,rgba(12,10,9,0.86)_0%,rgba(12,10,9,0.36)_58%,rgba(12,10,9,0.18)_100%),linear-gradient(to_top,#120f0d_0%,transparent_62%)]' />
         <div className='relative z-10 mx-auto grid min-h-[92svh] max-w-[1600px] grid-cols-12 content-end gap-6 px-5 pb-16 pt-36 md:px-16 md:pb-20'>
           <div className='col-span-11 md:col-span-9'>
-            <p className='aba-label mb-6 text-[#d8ae7d]'>Magazine cultural</p>
+            <p className='aba-label mb-6 text-[#d8ae7d]'>Arte y cultura</p>
             <h1 className='max-w-[10ch] font-editorial text-[clamp(4.5rem,10vw,10rem)] leading-[0.78] text-[#f3eee5]'>
               Vivir Buenos Aires
             </h1>
             <p className='mt-8 max-w-2xl border-l border-[#d8ae7d]/70 pl-5 text-base leading-8 text-[#f3eee5]/76 md:text-lg'>
-              El pulso cultural de la ciudad, contado desde barrios, cafés, arquitectura y rituales porteños para elegir dónde vivir con algo más que un mapa.
+              El ritmo cultural de la ciudad, contado desde barrios, cafés, arquitectura y rituales porteños para elegir dónde vivir con algo más que un mapa.
             </p>
           </div>
           <div className='aba-magazine-hero__edition col-span-1 flex items-end text-[0.58rem] font-black uppercase tracking-[0.22em] text-[#d8ae7d]'>

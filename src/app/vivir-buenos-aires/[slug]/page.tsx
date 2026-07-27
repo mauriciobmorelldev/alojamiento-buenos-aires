@@ -209,7 +209,7 @@ export default async function EditorialPostPage({ params }: PageProps) {
             </figcaption>
           </figure>
 
-          <h2 className="aba-headline mb-8 mt-16 text-white">La materia viva de Buenos Aires</h2>
+          <h2 className="aba-headline mb-8 mt-16 text-white">Cada barrio, su propia versión de Buenos Aires</h2>
           <p className="mb-8 text-lg leading-9 text-white/70">
             {restParagraphs[0] || "Cada barrio propone una relación distinta con la ciudad: algunos invitan a caminar, otros a estudiar, otros a construir una rutina alrededor de cafés, parques, universidades y teatros."}
           </p>
