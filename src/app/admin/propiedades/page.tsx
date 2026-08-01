@@ -29,6 +29,7 @@ import {
 import { uploadAdminMedia } from "@/lib/adminMedia";
 import { useInmoStore } from "@/lib/inmoStore";
 import { readAdminSession } from "@/lib/session";
+import { SHOW_TOKKO_ADMIN } from "@/lib/featureFlags";
 import { isLocalVideoReference, isSupportedVideoUrl } from "@/lib/video";
 
 const toggleAttributeSelection = (
@@ -584,7 +585,7 @@ export default function AdminPropertiesPage() {
           </h3>
         </div>
         <div className="flex flex-wrap gap-2">
-          {isOwner && tokkoInventoryCount > 0 ? (
+          {SHOW_TOKKO_ADMIN && isOwner && tokkoInventoryCount > 0 ? (
             <button
               type="button"
               onClick={handleCleanTokkoListings}
@@ -628,7 +629,7 @@ export default function AdminPropertiesPage() {
         </div>
       </section>
 
-      {isOwner ? (
+      {SHOW_TOKKO_ADMIN && isOwner ? (
         <section className="mt-4 grid gap-3 rounded-3xl bg-surface-container-low p-4 md:grid-cols-3">
           <div className="rounded-2xl bg-surface-container-lowest p-4">
             <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
@@ -901,7 +902,7 @@ export default function AdminPropertiesPage() {
           {isOwner ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-                Panel del colaborador
+                Panel del colaborado
                 <select
                   className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface focus:border-primary focus:outline-none"
                   value={assignedAdminId}
@@ -976,7 +977,7 @@ export default function AdminPropertiesPage() {
                         : "bg-background/80 text-primary"
                     }`}
                   >
-                    Cover
+                    Cove
                   </button>
                 </div>
               ))}
@@ -1036,7 +1037,7 @@ export default function AdminPropertiesPage() {
                       onClick={() => handleListingVideoRemove(index)}
                       className="text-error"
                     >
-                      Quitar
+                      Quita
                     </button>
                   </div>
                 ))}
@@ -1167,7 +1168,7 @@ export default function AdminPropertiesPage() {
 
         <div className="mt-6 grid gap-3 rounded-3xl border border-outline-variant/20 bg-surface-container-low p-4 lg:grid-cols-[1.7fr_1fr_1fr_1fr_1fr]">
           <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-            Buscar
+            Busca
             <input
               value={inventoryQuery}
               onChange={(event) => setInventoryQuery(event.target.value)}
@@ -1223,7 +1224,7 @@ export default function AdminPropertiesPage() {
               {isOwner ? <option value="unpinned">No fijadas</option> : null}
             </select>
           </label>
-          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+          {SHOW_TOKKO_ADMIN ?           <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
             Origen
             <select
               value={inventorySource}
@@ -1236,7 +1237,7 @@ export default function AdminPropertiesPage() {
               <option value="tokko">Tokko</option>
               <option value="manual">Manual</option>
             </select>
-          </label>
+          </label> : null}
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-on-surface-variant">
@@ -1286,7 +1287,7 @@ export default function AdminPropertiesPage() {
                   <p className="mt-1 text-[10px] uppercase tracking-widest text-on-surface-variant">
                     {statusLabels[listing.status]}
                   </p>
-                  {tokkoSku ? (
+                  {SHOW_TOKKO_ADMIN && tokkoSku ? (
                     <p className="mt-2 inline-flex rounded-full bg-surface-container-lowest px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
                       SKU Tokko: {tokkoSku}
                     </p>
@@ -1320,14 +1321,14 @@ export default function AdminPropertiesPage() {
                     onClick={() => handleListingEdit(listing)}
                     className="text-primary"
                   >
-                    Editar
+                    Edita
                   </button>
                   <button
                     type="button"
                     onClick={() => handleListingDelete(listing.id)}
                     className="text-error"
                   >
-                    Eliminar
+                    Elimina
                   </button>
                 </div>
               </article>
@@ -1356,7 +1357,7 @@ export default function AdminPropertiesPage() {
                 disabled={safeInventoryPage === 1}
                 className="rounded-full border border-outline-variant/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-primary disabled:opacity-40"
               >
-                Anterior
+                Anterio
               </button>
               <button
                 type="button"

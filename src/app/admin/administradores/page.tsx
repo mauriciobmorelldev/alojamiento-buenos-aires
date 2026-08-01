@@ -53,6 +53,17 @@ export default function AdminAdministradoresPage() {
       return;
     }
 
+    const editingAdmin = editingAdminId
+      ? adminUsers.find((admin) => admin.id === editingAdminId)
+      : null;
+    if (
+      editingAdmin?.role === "owner" && editingAdmin.active && ownerCount <= 1 &&
+      (adminForm.role !== "owner" || !adminForm.active)
+    ) {
+      setFormError("Debe existir al menos un administrador Owner activo.");
+      return;
+    }
+
     updateState((prev) => {
       if (editingAdminId) {
         return {
@@ -174,7 +185,7 @@ export default function AdminAdministradoresPage() {
           {editingAdminId ? "Editar administrador" : "Nuevo administrador"}
         </h3>
         <p className="mt-2 text-xs text-on-surface-variant">
-          Creá usuarios owner o colaboradores. El colaborador solo puede crear y modificar sus propias propiedades.
+          Creá owners, colaboradores para propiedades o escritores con acceso exclusivo a Editorial.
         </p>
 
         <form className="mt-6 grid gap-4 sm:max-w-3xl" onSubmit={handleAdminSubmit}>
@@ -219,7 +230,7 @@ export default function AdminAdministradoresPage() {
               </label>
             ) : (
               <div className="rounded-xl border border-outline-variant/30 bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
-                El colaborador no carga WhatsApp público.
+                Este rol no carga WhatsApp público.
               </div>
             )}
           </div>
@@ -244,7 +255,10 @@ export default function AdminAdministradoresPage() {
                 onChange={(event) =>
                   setAdminForm((prev) => ({
                     ...prev,
-                    role: event.target.value === "owner" ? "owner" : "colaborador",
+                    role:
+                      event.target.value === "owner" || event.target.value === "escritor"
+                        ? event.target.value
+                        : "colaborador",
                     phone: event.target.value === "owner" ? prev.phone : "",
                   }))
                 }
@@ -252,6 +266,7 @@ export default function AdminAdministradoresPage() {
               >
                 <option value="owner">Owner</option>
                 <option value="colaborador">Colaborador</option>
+                <option value="escritor">Escritor editorial</option>
               </select>
             </label>
             <label className="grid gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">

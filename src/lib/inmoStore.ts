@@ -35,7 +35,7 @@ const clearRemoteStateCache = () => {
 
 const trimAdminPayloadForMode = (
   data: Partial<InmoState>,
-  mode: "home" | "catalog" | "branding" | "dashboard" | "properties" | "leads" | "settings"
+  mode: "home" | "catalog" | "branding" | "editorial" | "dashboard" | "properties" | "leads" | "settings"
 ) => {
   if (mode === "settings" || mode === "branding") {
     const {
@@ -153,6 +153,7 @@ const fetchRemoteState = async (
     | "catalog"
     | "branding"
     | "dashboard"
+    | "editorial"
     | "properties"
     | "leads"
     | "settings" = "home"
@@ -181,6 +182,25 @@ const fetchRemoteState = async (
           | "supabase"
           | "fallback"
           | null,
+      };
+    }
+
+    if (mode === "editorial") {
+      const adminSession = readAdminSession();
+      const response = await fetch("/api/admin/editorial", {
+        cache: "no-store",
+        headers: {
+          ...(adminSession?.adminId ? { "x-admin-id": adminSession.adminId } : {}),
+        },
+      });
+      if (!response.ok) return null;
+      const payload = (await response.json()) as {
+        data?: Partial<InmoState>;
+        source?: "supabase" | "fallback";
+      };
+      return {
+        data: payload.data ?? {},
+        source: payload.source ?? "fallback",
       };
     }
 
@@ -323,21 +343,23 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
         pathname?.startsWith("/registro")
           ? "admin"
           : "public";
-      const mode = pathname?.startsWith("/admin/branding")
-        ? "branding"
-        : pathname === "/admin"
-          ? "dashboard"
-          : pathname?.startsWith("/admin/propiedades") ||
-              pathname?.startsWith("/admin/inventario") ||
-              pathname?.startsWith("/admin/inventory")
-            ? "properties"
-            : pathname?.startsWith("/admin/leads")
-              ? "leads"
-              : pathname?.startsWith("/admin")
-                ? "settings"
-                : pathname?.startsWith("/propiedades") || pathname?.startsWith("/departamentos")
-                  ? "catalog"
-                  : "home";
+      const mode = pathname?.startsWith("/admin/editorial")
+        ? "editorial"
+        : pathname?.startsWith("/admin/branding")
+          ? "branding"
+          : pathname === "/admin"
+            ? "dashboard"
+            : pathname?.startsWith("/admin/propiedades") ||
+                pathname?.startsWith("/admin/inventario") ||
+                pathname?.startsWith("/admin/inventory")
+              ? "properties"
+              : pathname?.startsWith("/admin/leads")
+                ? "leads"
+                : pathname?.startsWith("/admin")
+                  ? "settings"
+                  : pathname?.startsWith("/propiedades") || pathname?.startsWith("/departamentos")
+                    ? "catalog"
+                    : "home";
       if (initialState && scope === "public") {
         const mergedInitial = mergeState(defaultState, initialState);
         inMemoryState = mergedInitial;

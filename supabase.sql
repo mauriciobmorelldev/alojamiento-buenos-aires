@@ -31,6 +31,7 @@ create table if not exists roles (
 insert into roles (id, label, permissions)
 values
   ('owner', 'Administrador principal', '["*"]'::jsonb),
+  ('escritor', 'Escritor editorial', '["editorial:manage"]'::jsonb),
   ('colaborador', 'Colaborador', '["properties:create","properties:own"]'::jsonb),
   ('client', 'Cliente final', '["profile:own","favorites:own","leads:own"]'::jsonb)
 on conflict (id) do update set label = excluded.label, permissions = excluded.permissions;

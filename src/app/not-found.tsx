@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import AbaNav from '@/components/aba/AbaNav';
 import AbaWhatsAppFloat from '@/components/aba/AbaWhatsAppFloat';
+import AbaFooter from '@/components/aba/AbaFooter';
 import { abaCultureImages } from '@/lib/abaMedia';
 
 export default function NotFound() {
@@ -19,10 +20,11 @@ export default function NotFound() {
           <div className="mt-10 flex flex-wrap gap-4">
             <Link href="/departamentos" className="aba-button">Ver propiedades</Link>
             <Link href="/barrios" className="aba-button-dark">Explorar barrios</Link>
-            <Link href="/vivir-buenos-aires" className="aba-button-dark">Ir al magazine</Link>
+            <Link href="/vivir-buenos-aires" className="aba-button-dark">Ir a Arte y Cultura</Link>
           </div>
         </div>
       </section>
+      <AbaFooter />
       <AbaWhatsAppFloat />
     </main>
   );

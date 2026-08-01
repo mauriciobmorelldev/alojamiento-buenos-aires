@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { abaNeighborhoods } from '@/lib/abaContent';
 import AbaNav from '@/components/aba/AbaNav';
 import AbaWhatsAppFloat from '@/components/aba/AbaWhatsAppFloat';
+import AbaFooter from '@/components/aba/AbaFooter';
 
 export const metadata = {
   title: 'Barrios de Buenos Aires - Alojamiento Buenos Aires',
@@ -20,9 +21,9 @@ export default function BarriosPage() {
         <div className='relative z-10 mx-auto grid max-w-[1440px] gap-10 md:grid-cols-12 md:items-end'>
           <div className='md:col-span-7'>
             <p className='aba-label mb-6'>Barrios</p>
-            <h1 className='aba-display text-white'>Elegir donde vivir Buenos Aires.</h1>
+            <h1 className='aba-display text-white'>Cómo se traduce en una mudanza.</h1>
             <p className='mt-6 max-w-2xl text-lg leading-8 text-white/70'>
-              Guías iniciales para mostrar al cliente cómo la plataforma cruza propiedades con rutina, movilidad, cultura y vida alrededor.
+              Elegir bien es elegir una rutina posible.
             </p>
           </div>
           <div className='border border-[#e2c19b]/55 bg-[#131313]/70 p-7 backdrop-blur-xl md:col-span-4 md:col-start-9'>
@@ -72,6 +73,7 @@ export default function BarriosPage() {
           </p>
         </div>
       </section>
+      <AbaFooter />
       <AbaWhatsAppFloat />
     </main>
   );

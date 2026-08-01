@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import AdminShell from "@/components/inmo/admin/AdminShell";
+import { SHOW_TOKKO_ADMIN } from "@/lib/featureFlags";
 import { readAdminSession } from "@/lib/session";
 import { useInmoStore } from "@/lib/inmoStore";
 
@@ -44,6 +45,7 @@ const defaultSettings: PublicTokkoSettings = {
 };
 
 export default function AdminIntegracionesPage() {
+  if (!SHOW_TOKKO_ADMIN) return null;
   const { updateState } = useInmoStore();
   const [settings, setSettings] = useState<PublicTokkoSettings>(defaultSettings);
   const [apiKey, setApiKey] = useState("");
@@ -300,7 +302,7 @@ export default function AdminIntegracionesPage() {
         >
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-              Tokko Broker
+              Tokko Broke
             </p>
             <h2 className="mt-3 text-2xl font-headline font-extrabold text-primary">
               Sincronización de propiedades

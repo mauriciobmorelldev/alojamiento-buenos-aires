@@ -12,7 +12,7 @@ export default function Loading() {
         <div className="aba-loader__rail">
           <span>Propiedades</span>
           <span>Barrios</span>
-          <span>Magazine</span>
+          <span>Arte y Cultura</span>
         </div>
       </div>
     </main>

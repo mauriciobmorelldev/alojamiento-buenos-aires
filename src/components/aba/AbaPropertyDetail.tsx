@@ -8,6 +8,7 @@ import AbaNav from './AbaNav';
 import AbaScrollCinema from './AbaScrollCinema';
 import AbaWhatsAppFloat from './AbaWhatsAppFloat';
 import AbaOptimizedImage from './AbaOptimizedImage';
+import AbaFooter from './AbaFooter';
 import { abaCultureImages, abaPropertyMoodImages } from '@/lib/abaMedia';
 import { findNeighborhoodByName } from '@/lib/abaContent';
 
@@ -162,11 +163,7 @@ export default function AbaPropertyDetail({ property }: { property: Listing }) {
         </div>
       </section>
 
-      <footer className='border-t border-white/8 bg-[#0b0b0b] px-6 py-12 text-center md:px-20'>
-        <Link href='/' className='font-editorial text-2xl text-white'>Alojamiento BA</Link>
-        <nav className='mt-6 flex flex-wrap justify-center gap-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white/48'><Link href='/contacto'>Privacidad</Link><Link href='/contacto'>Términos</Link><Link href='/contacto'>Prensa</Link><Link href='/contacto'>Contacto</Link></nav>
-        <p className='mt-6 text-[10px] text-white/38'>© 2026 Alojamiento Buenos Aires. Todos los derechos reservados.</p>
-      </footer>
+      <AbaFooter />
 
       {zoomImage ? (
         <div className='fixed inset-0 z-[1000] bg-[#070604]/95 p-4 backdrop-blur-md sm:p-8'>

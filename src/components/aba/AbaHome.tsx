@@ -13,9 +13,10 @@ import AbaScrollCinema from "./AbaScrollCinema";
 import AbaParallaxGallery from "./AbaParallaxGallery";
 import AbaAboutBlock from "./AbaAboutBlock";
 import AbaHomeFocusMenu from "./AbaHomeFocusMenu";
-import { abaCultureImages, abaPropertyMoodImages } from "@/lib/abaMedia";
+import { abaCityVideos, abaCultureImages, abaPropertyMoodImages } from "@/lib/abaMedia";
 import AbaWhatsAppFloat from "./AbaWhatsAppFloat";
 import AbaOptimizedImage from "./AbaOptimizedImage";
+import AbaFooter from "./AbaFooter";
 
 const heroFallback = abaCultureImages[6];
 const palermoImage = abaCultureImages[19];
@@ -76,6 +77,7 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
         <AbaNav transparent fixed />
         <div className="aba-home-hero__backdrop" aria-hidden="true">
           <AbaOptimizedImage src={heroImage} alt="" width={1800} height={1200} priority quality={74} sizes="100vw" className="aba-home-hero__poster aba-ken-burns" />
+          <video className="aba-home-hero__video" src={abaCityVideos[0]} poster={heroImage} autoPlay muted loop playsInline preload="metadata" tabIndex={-1} />
           <div className="aba-home-hero__atmosphere">
             {heroAtmosphere.map((item) => (
               <figure key={item.src}>
@@ -89,13 +91,13 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
         <div className="relative z-10 mx-auto grid min-h-[100svh] max-w-[1600px] grid-cols-12 content-end gap-6 px-5 pb-12 pt-32 md:content-center md:px-16 md:pb-16 md:pt-32">
           <div className="col-span-12 md:col-span-7">
             <p className="aba-label mb-7 text-[#e2c19b]">Alquiler temporario · Buenos Aires</p>
-            <h1 className="aba-home-hero__title text-white">
-              Buenos Aires,
-              <em>desde adentro.</em>
+            <h1 className="aba-home-hero__title text-white" style={{ maxWidth: "10ch", fontSize: "clamp(3.6rem, 7.6vw, 8.2rem)", lineHeight: 0.84 }}>
+              Nadie busca solo un lugar para vivir en Buenos Aires.
             </h1>
             <p className="mt-9 max-w-xl text-base leading-8 text-white/72 md:ml-1 md:text-lg">
-              Departamentos amoblados, barrios leídos con precisión y una llegada pensada para estadías de 3 meses a 2 años.
+              Departamentos amoblados en los barrios emblemáticos de Buenos Aires.
             </p>
+            <p className="aba-label mt-4 text-[#e2c19b]">Estadías de 3 meses a 2 años</p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
               <Link href="/departamentos" className="aba-button-dark w-full sm:w-auto">Ver propiedades</Link>
               <Link href="/vivir-buenos-aires" className="aba-button w-full sm:w-auto">Descubrí la ciudad</Link>
@@ -238,29 +240,7 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
         </div>
       </section>
 
-      <footer className="w-full border-t border-white/10 bg-[#0e0e0e] px-6 py-24 md:px-20">
-        <div className="mx-auto grid max-w-7xl grid-cols-12 gap-6">
-          <div className="col-span-12 md:col-span-4">
-            <div className="font-editorial text-4xl leading-tight text-white">Alojamiento Buenos Aires</div>
-            <p className="mt-6 text-sm leading-6 text-white/48">© 2026 Alojamiento Buenos Aires. La ciudad como protagonista.</p>
-          </div>
-          <div className="col-span-12 grid grid-cols-2 gap-8 md:col-span-8 md:grid-cols-4">
-            {[
-              ["Barrios", "Palermo", "Recoleta", "San Telmo"],
-              ["Propiedades", "Catálogo", "Pet friendly", "Amoblados"],
-              ["Magazine", "Qué hacer", "Comer y beber", "Cultura"],
-              ["Contacto", "Consultar", "Publicar", "WhatsApp"],
-            ].map((group) => (
-              <div key={group[0]} className="flex flex-col gap-4">
-                <span className="aba-label">{group[0]}</span>
-                {group.slice(1).map((item) => (
-                  <span key={item} className="text-sm text-white/58">{item}</span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <AbaFooter />
       <AbaWhatsAppFloat phone={state.theme.whatsappPhone} message={state.theme.whatsappMessage} />
     </main>
   );

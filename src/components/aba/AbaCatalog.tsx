@@ -9,6 +9,7 @@ import AbaNav from './AbaNav';
 import AbaScrollCinema from './AbaScrollCinema';
 import AbaWhatsAppFloat from './AbaWhatsAppFloat';
 import AbaOptimizedImage from './AbaOptimizedImage';
+import AbaFooter from './AbaFooter';
 import { abaCultureImages, abaPropertyMoodImages } from '@/lib/abaMedia';
 
 const fallbackImage = abaPropertyMoodImages[0];
@@ -182,18 +183,7 @@ export default function AbaCatalog({ initialState }: { initialState: Partial<Inm
           { image: abaCultureImages[3], eyebrow: 'Rutina', title: 'Cafés, libros y caminatas', text: 'El catálogo empieza a contar cómo se vive alrededor de cada propiedad.' },
         ]}
       />
-      <footer className='border-t border-white/8 bg-[#0e0e0e] px-6 py-28 md:px-20'>
-        <div className='mx-auto grid max-w-[1440px] gap-12 md:grid-cols-12'>
-          <div className='md:col-span-6'>
-            <Link href='/' className='font-editorial text-4xl uppercase tracking-[0.04em] text-white'>Alojamiento Buenos Aires</Link>
-          </div>
-          <div className='grid grid-cols-2 gap-8 text-sm text-white/62 md:col-span-4'>
-            <nav className='grid gap-3'><Link href='/barrios/palermo'>Palermo</Link><Link href='/barrios/recoleta'>Recoleta</Link><Link href='/barrios/san-telmo'>San Telmo</Link></nav>
-            <nav className='grid gap-3'><Link href='/contacto'>Legal</Link><Link href='/contacto'>Contacto</Link><Link href='/vivir-buenos-aires'>Newsletter</Link></nav>
-          </div>
-          <p className='self-end text-xs uppercase tracking-[0.12em] text-white/58 md:col-span-2'>© 2026 Alojamiento Buenos Aires.</p>
-        </div>
-      </footer>
+      <AbaFooter />
       <AbaWhatsAppFloat phone={state.theme.whatsappPhone} message={state.theme.whatsappMessage} />
     </main>
   );

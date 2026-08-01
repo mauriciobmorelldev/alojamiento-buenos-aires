@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import type {
-  AdminRole,
   Listing,
   PriceCurrency,
   PriceUnit,
   PropertyStatus,
   PropertyType,
 } from "@/lib/inmoData";
+import { normalizeAdminRole } from "@/lib/inmoData";
 import { deleteListing, upsertListing } from "@/lib/server/inmoRepository";
 import { deleteRemovedListingMedia } from "@/lib/server/mediaStorage";
 import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
@@ -73,12 +73,13 @@ const getAdmin = async (request: Request) => {
     .eq("kind", "admin")
     .maybeSingle();
   const admin = profile.data;
-  return admin?.active
-    ? {
-        id: admin.id as string,
-        role: (admin.role === "owner" ? "owner" : "colaborador") as AdminRole,
-      }
-    : null;
+  if (!admin?.active) return null;
+  const role = normalizeAdminRole(admin.role);
+  if (role === "escritor") return null;
+  return {
+    id: admin.id as string,
+    role,
+  };
 };
 
 const readListing = async (id: string) => {

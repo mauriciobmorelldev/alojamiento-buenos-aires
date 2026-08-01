@@ -112,6 +112,10 @@ export async function GET(request: Request) {
         }
       );
     }
+    if (admin.role === "escritor") {
+      return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    }
+
 
     return NextResponse.json({
       ...result.data,

@@ -1,5 +1,7 @@
 "use client";
 
+import type { AdminRole } from "./inmoData";
+
 export const ADMIN_SESSION_KEY = "inmo-admin-session/v1";
 export const CLIENT_SESSION_KEY = "inmo-client-session/v1";
 const ADMIN_SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000;
@@ -8,6 +10,7 @@ const ADMIN_SESSION_IDLE_MS = 10 * 60 * 1000;
 export type AdminSession = {
   adminId: string;
   email: string;
+  role?: AdminRole;
   issuedAt: string;
   lastActiveAt?: string;
   expiresAt?: string;

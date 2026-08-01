@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import AdminShell from "@/components/inmo/admin/AdminShell";
 import type { EditorialPost } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
+import { readAdminSession } from "@/lib/session";
 
 const emptyPost = (): EditorialPost => {
   const now = new Date().toISOString();
@@ -38,6 +39,7 @@ export default function AdminEditorialPage() {
   const [form, setForm] = useState<EditorialPost>(emptyPost);
   const [editingId, setEditingId] = useState("");
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const posts = useMemo(
     () =>
@@ -54,8 +56,16 @@ export default function AdminEditorialPage() {
       slug: key === "title" && !editingId ? slugify(String(value)) : prev.slug,
     }));
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
+    setMessage("");
+    const adminId = readAdminSession()?.adminId;
+    if (!adminId) {
+      setMessage("La sesión venció. Volvé a ingresar.");
+      return;
+    }
+    setSaving(true);
+    try {
     const now = new Date().toISOString();
     const nextPost: EditorialPost = {
       ...form,
@@ -66,15 +76,38 @@ export default function AdminEditorialPage() {
       updatedAt: now,
     };
 
+    const response = await fetch("/api/admin/editorial", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-id": adminId,
+      },
+      body: JSON.stringify(nextPost),
+    });
+    const result = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      error?: string;
+    } | null;
+    if (!response.ok || !result?.ok) {
+      setMessage(result?.error || "No se pudo guardar el artículo.");
+      return;
+    }
+
+
     updateState((prev) => ({
       ...prev,
       editorialPosts: editingId
         ? prev.editorialPosts.map((post) => (post.id === editingId ? nextPost : post))
         : [nextPost, ...prev.editorialPosts],
-    }));
+    }), { persist: false });
     setForm(emptyPost());
     setEditingId("");
     setMessage("Artículo guardado.");
+    } catch {
+      setMessage("No se pudo conectar con el servidor editorial.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const edit = (post: EditorialPost) => {
@@ -84,11 +117,37 @@ export default function AdminEditorialPage() {
     document.getElementById("editorial-form")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const remove = (postId: string) => {
-    updateState((prev) => ({
-      ...prev,
-      editorialPosts: prev.editorialPosts.filter((post) => post.id !== postId),
-    }));
+  const remove = async (postId: string) => {
+    setMessage("");
+    const adminId = readAdminSession()?.adminId;
+    if (!adminId) {
+      setMessage("La sesión venció. Volvé a ingresar.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/admin/editorial?id=${encodeURIComponent(postId)}`, {
+        method: "DELETE",
+        headers: { "x-admin-id": adminId },
+      });
+      const result = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+      } | null;
+      if (!response.ok || !result?.ok) {
+        setMessage(result?.error || "No se pudo eliminar el artículo.");
+        return;
+      }
+      updateState((prev) => ({
+        ...prev,
+        editorialPosts: prev.editorialPosts.filter((post) => post.id !== postId),
+      }), { persist: false });
+      setMessage("Artículo eliminado.");
+    } catch {
+      setMessage("No se pudo conectar con el servidor editorial.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -117,8 +176,8 @@ export default function AdminEditorialPage() {
             Publicado
           </label>
           <div className="flex flex-wrap gap-3">
-            <button className="rounded-xl bg-primary px-5 py-3 text-xs font-black uppercase tracking-widest text-on-primary">
-              Guardar artículo
+            <button disabled={saving} className="rounded-xl bg-primary px-5 py-3 text-xs font-black uppercase tracking-widest text-on-primary disabled:cursor-wait disabled:opacity-60">
+              {saving ? "Guardando..." : "Guardar artículo"}
             </button>
             {editingId ? (
               <button type="button" onClick={() => { setForm(emptyPost()); setEditingId(""); }} className="rounded-xl border border-outline-variant/40 px-5 py-3 text-xs font-black uppercase tracking-widest text-primary">
@@ -142,10 +201,10 @@ export default function AdminEditorialPage() {
               <p className="mt-2 text-xs text-on-surface-variant">/{post.slug}</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => edit(post)} className="rounded-xl bg-primary px-4 py-2 text-xs font-black uppercase tracking-widest text-on-primary">
+              <button disabled={saving} onClick={() => edit(post)} className="rounded-xl bg-primary px-4 py-2 text-xs font-black uppercase tracking-widest text-on-primary disabled:opacity-50">
                 Editar
               </button>
-              <button onClick={() => remove(post.id)} className="rounded-xl border border-outline-variant/40 px-4 py-2 text-xs font-black uppercase tracking-widest text-primary">
+              <button disabled={saving} onClick={() => void remove(post.id)} className="rounded-xl border border-outline-variant/40 px-4 py-2 text-xs font-black uppercase tracking-widest text-primary disabled:opacity-50">
                 Eliminar
               </button>
             </div>

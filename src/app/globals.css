@@ -7067,3 +7067,17 @@ html[data-theme="dark"] .turno-slot {
     bottom: calc(env(safe-area-inset-bottom) + 4.8rem);
   }
 }
+.inmo-admin .admin-nav-link.is-active,
+.inmo-admin .admin-nav-link.is-active *,
+.inmo-admin .admin-nav-link:hover,
+.inmo-admin .admin-nav-link:hover *,
+.inmo-admin .admin-nav-link:focus-visible,
+.inmo-admin .admin-nav-link:focus-visible * {
+  color: #ffffff !important;
+}
+
+.inmo-admin .admin-nav-link:focus-visible {
+  background-color: #243044;
+  outline: 2px solid #d7b66f;
+  outline-offset: 2px;
+}

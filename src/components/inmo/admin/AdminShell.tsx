@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { useInmoStore } from "@/lib/inmoStore";
+import { normalizeAdminRole, type AdminRole } from "@/lib/inmoData";
 import {
   clearAdminSession,
   readAdminSession,
@@ -19,6 +20,7 @@ import {
   type AdminSession,
 } from "@/lib/session";
 import { buildThemeStyles } from "@/lib/theme";
+import { SHOW_TOKKO_ADMIN } from "@/lib/featureFlags";
 
 export type AdminSection =
   | "dashboard"
@@ -67,10 +69,14 @@ const navItems: Array<{
   },
   { id: "branding", label: "Branding y Home", href: "/admin/branding", icon: "palette" },
   { id: "filtros", label: "Filtros", href: "/admin/filtros", icon: "tune" },
-  { id: "integraciones", label: "Integraciones", href: "/admin/integraciones", icon: "sync_alt" },
 ];
 
 const ADMIN_IDLE_TIMEOUT_MS = 10 * 60 * 1000;
+const getAdminLandingPath = (role: AdminRole) =>
+  role === "escritor"
+    ? "/admin/editorial"
+    : role === "colaborador" ? "/admin/propiedades" : "/admin";
+
 
 export default function AdminShell({
   activeSection,
@@ -114,7 +120,7 @@ export default function AdminShell({
           unread: !readNotificationIds.includes(`lead-${lead.id}`),
         };
       });
-    const tokkoLog = state.tokkoSyncLogs[0]
+    const tokkoLog = SHOW_TOKKO_ADMIN && state.tokkoSyncLogs[0]
       ? [{
           id: `tokko-${state.tokkoSyncLogs[0].id}`,
           title: "Sincronización Tokko",
@@ -185,7 +191,8 @@ export default function AdminShell({
   const hasAuthedAdmin = Boolean(authedAdmin);
   const visibleNavItems = useMemo(() => {
     if (authedAdmin?.role === "owner") return navItems;
-    return navItems.filter((item) => item.id === "propiedades");
+    const allowedSection = authedAdmin?.role === "escritor" ? "editorial" : "propiedades";
+    return navItems.filter((item) => item.id === allowedSection);
   }, [authedAdmin?.role]);
 
   const subtitleText = useMemo(() => {
@@ -224,14 +231,16 @@ export default function AdminShell({
     } | null;
 
     if (response.ok && result?.ok && !result.requiresOtp && result.admin) {
+      const adminRole = normalizeAdminRole(result.admin.role);
       const nextSession = {
         adminId: result.admin.id,
         email: result.admin.email,
+        role: adminRole,
         issuedAt: new Date().toISOString(),
       };
       writeAdminSession(nextSession);
       setSession(nextSession);
-      window.location.href = result.admin.role === "colaborador" ? "/admin/propiedades" : "/admin";
+      window.location.href = getAdminLandingPath(adminRole);
       return;
     }
 
@@ -287,14 +296,16 @@ export default function AdminShell({
       setLoginError(result?.error || "Código incorrecto.");
       return;
     }
+    const adminRole = normalizeAdminRole(result.admin.role);
     const nextSession = {
       adminId: result.admin.id,
       email: result.admin.email,
       issuedAt: new Date().toISOString(),
+      role: adminRole,
     };
     writeAdminSession(nextSession);
     setSession(nextSession);
-    window.location.href = result.admin.role === "colaborador" ? "/admin/propiedades" : "/admin";
+    window.location.href = getAdminLandingPath(adminRole);
   };
 
   const handleLogout = () => {
@@ -419,7 +430,7 @@ export default function AdminShell({
                       type="submit"
                       className="mt-2 w-full rounded-full bg-white px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-black shadow-[0_20px_40px_-25px_rgba(7,22,13,0.6)] transition hover:bg-[#d7b66f]"
                     >
-                      Continuar
+                      Continua
                     </button>
                     <Link
                       href="/"
@@ -508,7 +519,10 @@ export default function AdminShell({
     );
   }
 
-  if (authedAdmin.role !== "owner" && activeSection !== "propiedades") {
+  if (
+    (authedAdmin.role === "colaborador" && activeSection !== "propiedades") ||
+    (authedAdmin.role === "escritor" && activeSection !== "editorial")
+  ) {
     return (
       <div
         style={themeStyles}
@@ -520,13 +534,16 @@ export default function AdminShell({
               Acceso limitado
             </p>
             <h1 className="mt-3 text-3xl font-headline font-extrabold text-primary">
-              Tu rol colaborador solo puede gestionar propiedades propias.
+              {authedAdmin.role === "escritor"
+                ? "Tu rol escritor sólo puede gestionar el contenido editorial."
+                : "Tu rol colaborador sólo puede gestionar propiedades propias."
+              }
             </h1>
             <Link
-              href="/admin/propiedades"
+              href={authedAdmin.role === "escritor" ? "/admin/editorial" : "/admin/propiedades"}
               className="mt-6 inline-flex rounded-full bg-primary px-6 py-3 text-xs font-bold uppercase tracking-widest text-on-primary"
             >
-              Ir a propiedades
+              {authedAdmin.role === "escritor" ? "Ir a Editorial" : "Ir a propiedades"}
             </Link>
           </div>
         </div>
@@ -535,6 +552,7 @@ export default function AdminShell({
   }
 
   const isOwnerAdmin = authedAdmin.role === "owner";
+  const canCreateProperty = authedAdmin.role !== "escritor";
 
   return (
     <div
@@ -561,10 +579,15 @@ export default function AdminShell({
                 key={item.id}
                 className={
                   active
-                    ? "bg-[#243044] text-white rounded-lg shadow-sm px-4 py-3 ml-2 mr-2 flex items-center gap-3 text-sm font-semibold transition-all translate-x-1"
-                    : "text-[#697386] px-4 py-3 ml-2 mr-2 flex items-center gap-3 text-sm font-semibold hover:bg-[#f8f6f1] hover:text-[#243044] transition-all"
+                    ? "admin-nav-link is-active bg-[#243044] text-white rounded-lg shadow-sm px-4 py-3 ml-2 mr-2 flex items-center gap-3 text-sm font-semibold transition-all translate-x-1"
+                    : "admin-nav-link text-[#697386] px-4 py-3 ml-2 mr-2 flex items-center gap-3 text-sm font-semibold hover:bg-[#243044] hover:text-white transition-all"
                 }
                 href={item.href}
+                aria-current={active ? "page" : undefined}
+                style={active ? {
+                  color: "#ffffff",
+                  WebkitTextFillColor: "#ffffff",
+                } : undefined}
               >
                 <span className="material-symbols-outlined" data-icon={item.icon}>
                   {item.icon}
@@ -575,18 +598,20 @@ export default function AdminShell({
           })}
         </nav>
 
-        <div className="px-4 mb-4">
-          <Link
-            href="/admin/propiedades#form-propiedad"
-            className="w-full bg-primary text-on-primary py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-            style={{ color: "var(--color-on-primary)" }}
-          >
-            <span className="material-symbols-outlined text-sm" data-icon="add">
-              add
-            </span>
-            {isOwnerAdmin ? "Nueva Propiedad" : "Nuevo inmueble"}
-          </Link>
-        </div>
+        {canCreateProperty ? (
+          <div className="px-4 mb-4">
+            <Link
+              href="/admin/propiedades#form-propiedad"
+              className="w-full bg-primary text-on-primary py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+              style={{ color: "var(--color-on-primary)" }}
+            >
+              <span className="material-symbols-outlined text-sm" data-icon="add">
+                add
+              </span>
+              {isOwnerAdmin ? "Nueva Propiedad" : "Nuevo inmueble"}
+            </Link>
+          </div>
+        ) : null}
 
         <div className="pt-4 border-t border-outline-variant/20 space-y-1">
           <div className="px-6 mb-4 flex items-center gap-3">
@@ -602,7 +627,7 @@ export default function AdminShell({
           </div>
 
           <Link
-            className="text-[#697386] px-4 py-2 ml-2 mr-2 flex items-center gap-3 text-xs font-semibold hover:bg-[#f8f6f1] hover:text-[#243044] transition-all"
+            className="text-[#697386] px-4 py-2 ml-2 mr-2 flex items-center gap-3 text-xs font-semibold hover:bg-[#243044] hover:text-white transition-all"
             href="/"
           >
             <span className="material-symbols-outlined text-lg" data-icon="open_in_new">
@@ -613,7 +638,7 @@ export default function AdminShell({
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full text-[#697386] px-4 py-2 ml-2 mr-2 mb-2 flex items-center gap-3 text-xs font-semibold hover:bg-[#f8f6f1] hover:text-[#243044] transition-all"
+            className="w-full text-[#697386] px-4 py-2 ml-2 mr-2 mb-2 flex items-center gap-3 text-xs font-semibold hover:bg-[#243044] hover:text-white transition-all"
           >
             <span className="material-symbols-outlined text-lg" data-icon="logout">
               logout
@@ -776,7 +801,7 @@ export default function AdminShell({
               onClick={handleLogout}
               className="sm:hidden rounded-full border border-outline-variant/40 px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-primary"
             >
-              Salir
+              Sali
             </button>
             <Link
               className="hidden sm:flex items-center gap-2 rounded-full border border-outline-variant/30 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-primary"
@@ -830,7 +855,7 @@ export default function AdminShell({
                 onClick={() => setShowMobileNav(false)}
                 className="rounded-full border border-outline-variant/30 px-2 py-1 text-xs font-semibold text-primary"
               >
-                Cerrar
+                Cerra
               </button>
             </div>
             <div className="mt-6 grid gap-2 rounded-2xl bg-surface-container-low p-4">
@@ -839,7 +864,15 @@ export default function AdminShell({
                   key={item.id}
                   href={item.href}
                   onClick={() => setShowMobileNav(false)}
-                  className="rounded-xl px-4 py-3 text-sm font-semibold text-primary transition-all hover:-translate-y-0.5 hover:bg-surface-container-high"
+                  className={`admin-nav-link rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:-translate-y-0.5 hover:bg-[#243044] hover:text-white ${
+                    item.id === activeSection
+                      ? "is-active bg-[#243044] text-white"
+                      : "text-primary"
+                  }`}
+                  aria-current={item.id === activeSection ? "page" : undefined}
+                  style={item.id === activeSection
+                    ? { color: "#ffffff", WebkitTextFillColor: "#ffffff" }
+                    : undefined}
                 >
                   {item.label}
                 </Link>

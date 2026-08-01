@@ -11,7 +11,7 @@ const leftLinks = [
 ];
 
 const rightLinks = [
-  { label: "Magazine", href: "/vivir-buenos-aires", match: "vivir-buenos-aires" },
+  { label: "Arte y Cultura", href: "/vivir-buenos-aires", match: "vivir-buenos-aires" },
   { label: "Propietarios", href: "/contacto?tipo=propietario", match: "propietario" },
   { label: "Consultar", href: "/contacto", match: "contacto" },
 ];

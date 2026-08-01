@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AbaNav from '@/components/aba/AbaNav';
 import AbaWhatsAppFloat from '@/components/aba/AbaWhatsAppFloat';
+import AbaFooter from '@/components/aba/AbaFooter';
 import { readPublicHomeListings } from '@/lib/server/inmoRepository';
 import { formatPrice } from '@/lib/pricing';
 import { abaNeighborhoods, findNeighborhood, normalizeAbaSlug } from '@/lib/abaContent';
@@ -158,6 +159,7 @@ export default async function BarrioDetailPage({ params }: PageProps) {
           ))}
         </div>
       </section>
+      <AbaFooter />
 
       <AbaWhatsAppFloat />
     </main>

@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import AbaNav from "@/components/aba/AbaNav";
 import AbaWhatsAppFloat from "@/components/aba/AbaWhatsAppFloat";
+import AbaFooter from "@/components/aba/AbaFooter";
 
 const leadTypeLabels = {
   tenant: "Busco departamento",
@@ -145,9 +146,7 @@ export default function ContactoPage() {
         </div>
       </section>
       <AbaWhatsAppFloat />
-      <footer className="border-t border-white/10 px-5 py-8 text-center text-[10px] font-bold uppercase tracking-[0.22em] text-white/42 sm:px-8">
-        Alojamiento Buenos Aires · Propiedades · Vivir Buenos Aires · Contacto
-      </footer>
+      <AbaFooter />
     </main>
   );
 }

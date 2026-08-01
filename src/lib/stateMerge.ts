@@ -260,7 +260,10 @@ export const mergeState = (
           admin.password ||
           base.adminUsers.find((item) => item.id === admin.id)?.password ||
           "",
-        role: admin.role === "owner" ? "owner" : "colaborador",
+        role:
+          admin.role === "owner" || admin.role === "escritor"
+            ? admin.role
+            : "colaborador",
         phone: admin.phone ?? "",
       }))
     : base.adminUsers,

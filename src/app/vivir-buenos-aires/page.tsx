@@ -6,6 +6,7 @@ import AbaNewsletterForm from '@/components/aba/AbaNewsletterForm';
 import AbaLiteraryPrelude from '@/components/aba/AbaLiteraryPrelude';
 import AbaImageRevealList from '@/components/aba/AbaImageRevealList';
 import AbaWhatsAppFloat from '@/components/aba/AbaWhatsAppFloat';
+import AbaFooter from '@/components/aba/AbaFooter';
 import { abaCultureImages, abaPropertyMoodImages } from '@/lib/abaMedia';
 
 export const revalidate = 120;
@@ -54,10 +55,10 @@ export default async function VivirBuenosAiresPage() {
           <div className='col-span-11 md:col-span-9'>
             <p className='aba-label mb-6 text-[#d8ae7d]'>Arte y cultura</p>
             <h1 className='max-w-[10ch] font-editorial text-[clamp(4.5rem,10vw,10rem)] leading-[0.78] text-[#f3eee5]'>
-              Vivir Buenos Aires
+              La ciudad escrita.
             </h1>
             <p className='mt-8 max-w-2xl border-l border-[#d8ae7d]/70 pl-5 text-base leading-8 text-[#f3eee5]/76 md:text-lg'>
-              El ritmo cultural de la ciudad, contado desde barrios, cafés, arquitectura y rituales porteños para elegir dónde vivir con algo más que un mapa.
+              Editorial. Crónicas, ensayos y miradas sobre Buenos Aires. Sin fecha de vencimiento.
             </p>
           </div>
           <div className='aba-magazine-hero__edition col-span-1 flex items-end text-[0.58rem] font-black uppercase tracking-[0.22em] text-[#d8ae7d]'>
@@ -168,7 +169,7 @@ export default async function VivirBuenosAiresPage() {
           </Link>
         </div>
       </section>
-      <section className='px-6 py-24 md:px-16'>
+      <section id='newsletter' className='px-6 py-24 md:px-16'>
         <div className='mx-auto grid max-w-4xl gap-8 border border-[#e2c19b]/35 bg-[#151515] p-8 text-center shadow-[0_40px_120px_-80px_rgba(226,193,155,0.7)] md:p-12'>
           <p className='mx-auto flex h-11 w-11 items-center justify-center border border-[#e2c19b]/60 text-[#e2c19b]'>✉</p>
           <div>
@@ -182,23 +183,7 @@ export default async function VivirBuenosAiresPage() {
         </div>
       </section>
 
-      <footer className='border-t border-white/10 bg-[#0b0b0b] px-6 py-16 md:px-16'>
-        <div className='mx-auto grid max-w-[1440px] gap-10 md:grid-cols-[1.2fr_1fr_1fr] md:items-end'>
-          <div>
-            <h2 className='font-editorial text-4xl leading-none text-white md:text-5xl'>ALOJAMIENTO<br />BUENOS AIRES</h2>
-            <p className='mt-5 max-w-sm text-[0.68rem] font-bold uppercase tracking-[0.12em] text-white/46'>© 2026 Alojamiento Buenos Aires. La ciudad como protagonista.</p>
-          </div>
-          <div className='grid grid-cols-2 gap-3 text-sm text-white/68'>
-            <Link href='/vivir-buenos-aires/barrios'>Barrios</Link>
-            <Link href='/contacto'>Contacto</Link>
-            <Link href='/vivir-buenos-aires/comer-beber'>Comer y beber</Link>
-            <Link href='/vivir-buenos-aires'>Newsletter</Link>
-            <Link href='/vivir-buenos-aires/cultura-entretenimiento'>Cultura</Link>
-            <Link href='/departamentos'>Propiedades</Link>
-          </div>
-          <p className='text-sm leading-7 text-white/52 md:text-right'>Magazine, propiedades y consultas conectadas al backend actual, listo para crecer desde el admin.</p>
-        </div>
-      </footer>
+      <AbaFooter />
 
       <AbaWhatsAppFloat />
     </main>

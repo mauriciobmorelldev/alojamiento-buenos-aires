@@ -1,7 +1,7 @@
 import {
   defaultState,
+  normalizeAdminRole,
   STATE_VERSION,
-  type AdminRole,
   type EditorialPost,
   type InmoState,
   type Listing,
@@ -471,7 +471,7 @@ export const readPublicShell = async (
         name: "",
         email: "",
         password: "",
-        role: (profile.role === "owner" ? "owner" : "colaborador") as AdminRole,
+        role: normalizeAdminRole(profile.role),
         phone: "",
         active: Boolean(profile.active),
       })),
@@ -1147,7 +1147,7 @@ export const readInmoState = async (
         name: profile.name,
         email: profile.email,
         password: profile.password ?? "",
-        role: (profile.role === "owner" ? "owner" : "colaborador") as AdminRole,
+        role: normalizeAdminRole(profile.role),
         phone: profile.phone ?? "",
         active: Boolean(profile.active),
       })),
@@ -1479,6 +1479,34 @@ export const writeInmoState = async (state: InmoState) => {
     }
   }
 
+  clearResponseCache();
+  return { source: "supabase" as const };
+};
+
+export const upsertEditorialPost = async (post: EditorialPost) => {
+  const supabase = getSupabaseWriteClient();
+  if (!supabase || !isSupabaseWriteConfigured()) {
+    return { source: "fallback" as const };
+  }
+
+  assertSupabaseOk(
+    await supabase.from("editorial_posts").upsert(toEditorialPostRow(post)),
+    "upsert editorial post"
+  );
+  clearResponseCache();
+  return { source: "supabase" as const };
+};
+
+export const deleteEditorialPost = async (postId: string) => {
+  const supabase = getSupabaseWriteClient();
+  if (!supabase || !isSupabaseWriteConfigured()) {
+    return { source: "fallback" as const };
+  }
+
+  assertSupabaseOk(
+    await supabase.from("editorial_posts").delete().eq("id", postId),
+    "delete editorial post"
+  );
   clearResponseCache();
   return { source: "supabase" as const };
 };

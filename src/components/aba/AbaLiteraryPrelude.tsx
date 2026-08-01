@@ -49,7 +49,7 @@ export default function AbaLiteraryPrelude() {
           <div className='absolute inset-0 bg-[linear-gradient(to_top,rgba(16,12,9,0.72),transparent_52%),linear-gradient(90deg,rgba(16,12,9,0.25),transparent_44%)]' />
           <div className='absolute bottom-7 left-7 max-w-sm border-l border-[#d8ae7d]/70 pl-5'>
             <p className='font-editorial text-2xl leading-tight text-[#f3eee5]'>
-              “Leer una ciudad es aprender a habitarla.”
+              “Señoras, señores, Buenos Aires es el único lugar donde siempre está a punto de pasar algo.”
             </p>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function AbaLiteraryPrelude() {
         >
           <img src={encodeURI(abaLiteraryImages[0])} alt='Librería porteña repleta de libros' className='aspect-[4/5] w-full object-cover' />
           <figcaption className='border-l border-[#d8ae7d] py-5 pl-5 font-editorial text-2xl text-[#f3eee5]'>
-            “Leer una ciudad es aprender a habitarla.”
+            “Señoras, señores, Buenos Aires es el único lugar donde siempre está a punto de pasar algo.”
           </figcaption>
         </motion.figure>
         <div className='grid grid-cols-2 gap-3 px-5 pb-20 pt-8'>

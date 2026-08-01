@@ -7,6 +7,7 @@ import { propertyTypeLabels, statusLabels } from "@/lib/inmoData";
 import { useInmoStore } from "@/lib/inmoStore";
 import { formatPrice, getListingComparablePriceInArs } from "@/lib/pricing";
 import { readAdminSession } from "@/lib/session";
+import { SHOW_TOKKO_ADMIN } from "@/lib/featureFlags";
 
 export default function AdminDashboardPage() {
   const { state, updateState } = useInmoStore();
@@ -494,6 +495,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
+        {SHOW_TOKKO_ADMIN ? (
         <div className="rounded-3xl bg-surface-container-lowest p-8 shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)]">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -543,7 +545,8 @@ export default function AdminDashboardPage() {
               ))
             )}
           </div>
-        </div>
+          </div>
+        ) : null}
       </section>
 
       <section className="mt-8 rounded-3xl bg-surface-container-lowest p-8 shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)]">
@@ -587,7 +590,7 @@ export default function AdminDashboardPage() {
       <section className="mt-8 grid gap-4 lg:grid-cols-2">
         <div className="rounded-3xl bg-surface-container-lowest p-8 shadow-[0_40px_60px_-15px_rgba(27,27,28,0.04)]">
           <h3 className="text-xl font-headline font-bold text-primary">
-            Rendimiento por corredor
+            Rendimiento por corredorr
           </h3>
           <div className="mt-6 grid gap-3">
             {agentPerformance.length === 0 ? (

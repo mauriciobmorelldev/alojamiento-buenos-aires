@@ -1,4 +1,4 @@
-import { type AdminRole } from "@/lib/inmoData";
+import { normalizeAdminRole } from "@/lib/inmoData";
 import { readInmoState } from "@/lib/server/inmoRepository";
 import {
   getSupabaseServerClient,
@@ -46,7 +46,7 @@ export const getAdminFromRequest = async (request: Request) => {
           name: profile.name,
           email: profile.email,
           password: "",
-          role: (profile.role === "owner" ? "owner" : "colaborador") as AdminRole,
+          role: normalizeAdminRole(profile.role),
           phone: profile.phone ?? "",
           active: true,
         },

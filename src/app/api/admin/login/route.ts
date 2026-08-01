@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { normalizeAdminRole } from "@/lib/inmoData";
 import { createAdminOtpChallenge } from "@/lib/server/adminOtp";
 import { readInmoState } from "@/lib/server/inmoRepository";
 import {
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
           id: profile.id,
           email: profile.email,
           name: profile.name,
-          role: profile.role === "colaborador" ? "colaborador" : "owner",
+          role: normalizeAdminRole(profile.role),
         },
       });
     }

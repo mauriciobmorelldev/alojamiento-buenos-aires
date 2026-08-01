@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AbaNav from "@/components/aba/AbaNav";
 import AbaWhatsAppFloat from "@/components/aba/AbaWhatsAppFloat";
+import AbaFooter from "@/components/aba/AbaFooter";
 import { readPublicEditorialPosts, readPublicHomeListings } from "@/lib/server/inmoRepository";
 import { formatPrice } from "@/lib/pricing";
 import {
@@ -256,22 +257,7 @@ export default async function EditorialPostPage({ params }: PageProps) {
         </section>
       </article>
 
-      <footer className="w-full bg-[#0e0e0e] px-6 py-28 md:px-20">
-        <div className="mx-auto grid max-w-7xl grid-cols-12 gap-6">
-          <div className="col-span-12 mb-12 md:col-span-4 md:mb-0">
-            <Link href="/" className="font-editorial text-4xl uppercase leading-tight tracking-[0.08em] text-white">Alojamiento<br />Buenos Aires</Link>
-            <p className="mt-8 text-xs leading-6 text-white/50">© 2026 Alojamiento Buenos Aires. La ciudad como protagonista.</p>
-          </div>
-          <div className="col-span-6 md:col-span-2 md:col-start-7">
-            <h4 className="aba-label mb-6">Barrios</h4>
-            <ul className="grid gap-4 text-sm text-white/58"><li>Palermo</li><li>Recoleta</li><li>San Telmo</li></ul>
-          </div>
-          <div className="col-span-6 md:col-span-2">
-            <h4 className="aba-label mb-6">Información</h4>
-            <ul className="grid gap-4 text-sm text-white/58"><li>Legal</li><li>Contacto</li><li>Newsletter</li></ul>
-          </div>
-        </div>
-      </footer>
+      <AbaFooter />
       <AbaWhatsAppFloat />
     </main>
   );

@@ -300,7 +300,12 @@ export type HomeContent = {
   footer: FooterContent;
 };
 
-export type AdminRole = "owner" | "colaborador";
+export type AdminRole = "owner" | "colaborador" | "escritor";
+
+export const normalizeAdminRole = (role: unknown): AdminRole => {
+  if (role === "owner" || role === "escritor") return role;
+  return "colaborador";
+};
 
 export type AdminUser = {
   id: string;
