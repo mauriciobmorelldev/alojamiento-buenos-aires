@@ -14,6 +14,25 @@ const noStoreHeaders = {
 
 const canManageEditorial = (role: string) => role === "owner" || role === "escritor";
 
+const isOptionalString = (value: unknown) => value === undefined || typeof value === "string";
+
+const hasValidContentBlocks = (value: unknown) =>
+  value === undefined ||
+  (Array.isArray(value) &&
+    value.every((item) => {
+      if (!item || typeof item !== "object") return false;
+      const block = item as Record<string, unknown>;
+      return (
+        typeof block.id === "string" &&
+        (block.type === "text" || block.type === "image") &&
+        typeof block.text === "string" &&
+        typeof block.image === "string" &&
+        typeof block.alt === "string" &&
+        typeof block.caption === "string" &&
+        (block.layout === "wide" || block.layout === "left" || block.layout === "right")
+      );
+    }));
+
 const isEditorialPost = (value: unknown): value is EditorialPost => {
   if (!value || typeof value !== "object") return false;
   const post = value as Record<string, unknown>;
@@ -24,6 +43,10 @@ const isEditorialPost = (value: unknown): value is EditorialPost => {
     typeof post.excerpt === "string" &&
     typeof post.body === "string" &&
     typeof post.coverImage === "string" &&
+    isOptionalString(post.authorName) &&
+    isOptionalString(post.authorPhoto) &&
+    isOptionalString(post.authorSignature) &&
+    hasValidContentBlocks(post.contentBlocks) &&
     typeof post.category === "string" &&
     typeof post.metaTitle === "string" &&
     typeof post.metaDescription === "string" &&

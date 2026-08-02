@@ -13,6 +13,7 @@ import {
   type PropertyStatus,
   type PropertyType,
 } from "@/lib/inmoData";
+import { decodeEditorialBody, encodeEditorialBody } from "@/lib/editorialContent";
 import {
   getSupabaseServerClient,
   getSupabaseWriteClient,
@@ -330,28 +331,38 @@ type NewsletterSubscriberRow = {
   created_at?: string | null;
 };
 
-const mapEditorialPostRow = (post: EditorialPostRow): EditorialPost => ({
-  id: post.id,
-  slug: post.slug,
-  title: post.title,
-  excerpt: post.excerpt ?? "",
-  body: post.body ?? "",
-  coverImage: sanitizePublicImage(post.cover_image, 1_100_000),
-  category: post.category ?? "",
-  metaTitle: post.meta_title ?? post.title,
-  metaDescription: post.meta_description ?? post.excerpt ?? "",
-  published: Boolean(post.published),
-  publishedAt: post.published_at ?? "",
-  createdAt: post.created_at ?? "",
-  updatedAt: post.updated_at ?? "",
-});
+const mapEditorialPostRow = (post: EditorialPostRow): EditorialPost => {
+  const decoded = decodeEditorialBody(post.body ?? "");
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt ?? "",
+    body: decoded.body,
+    coverImage: sanitizePublicImage(post.cover_image, 1_100_000),
+    authorName: decoded.authorName,
+    authorPhoto: sanitizePublicImage(decoded.authorPhoto, 1_100_000),
+    authorSignature: sanitizePublicImage(decoded.authorSignature, 1_100_000),
+    contentBlocks: decoded.contentBlocks.map((block) => ({
+      ...block,
+      image: block.type === "image" ? sanitizePublicImage(block.image, 1_100_000) : "",
+    })),
+    category: post.category ?? "",
+    metaTitle: post.meta_title ?? post.title,
+    metaDescription: post.meta_description ?? post.excerpt ?? "",
+    published: Boolean(post.published),
+    publishedAt: post.published_at ?? "",
+    createdAt: post.created_at ?? "",
+    updatedAt: post.updated_at ?? "",
+  };
+};
 
 const toEditorialPostRow = (post: EditorialPost) => ({
   id: post.id,
   slug: post.slug,
   title: post.title,
   excerpt: post.excerpt,
-  body: post.body,
+  body: encodeEditorialBody(post),
   cover_image: post.coverImage,
   category: post.category,
   meta_title: post.metaTitle,

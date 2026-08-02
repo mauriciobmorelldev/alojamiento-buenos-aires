@@ -428,6 +428,16 @@ export type Listing = {
   attributes: Record<string, string[]>;
 };
 
+export type EditorialContentBlock = {
+  id: string;
+  type: "text" | "image";
+  text: string;
+  image: string;
+  alt: string;
+  caption: string;
+  layout: "wide" | "left" | "right";
+};
+
 export type EditorialPost = {
   id: string;
   slug: string;
@@ -435,6 +445,10 @@ export type EditorialPost = {
   excerpt: string;
   body: string;
   coverImage: string;
+  authorName?: string;
+  authorPhoto?: string;
+  authorSignature?: string;
+  contentBlocks?: EditorialContentBlock[];
   category: string;
   metaTitle: string;
   metaDescription: string;

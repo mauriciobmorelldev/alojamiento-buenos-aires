@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useInmoStore } from "@/lib/inmoStore";
 
 const footerGroups = [
   { title: "Explorar", links: [{ label: "Propiedades", href: "/departamentos" }, { label: "Barrios", href: "/barrios" }, { label: "Arte y Cultura", href: "/vivir-buenos-aires" }] },
@@ -7,6 +10,11 @@ const footerGroups = [
 ];
 
 export default function AbaFooter() {
+  const { state } = useInmoStore();
+  const socialLinks = (state.homeContent.footer?.socialLinks ?? []).filter(
+    (link) => link.active && link.href.trim() && link.label.trim()
+  );
+
   return (
     <footer className="w-full border-t border-white/10 bg-[#0b0b0b] px-6 py-16 text-white md:px-16 md:py-20">
       <div className="mx-auto grid max-w-[1440px] gap-14 md:grid-cols-[1.2fr_1.8fr]">
@@ -15,6 +23,21 @@ export default function AbaFooter() {
             Alojamiento<br />Buenos Aires
           </Link>
           <p className="mt-6 max-w-sm text-sm leading-7 text-white/52">Departamentos amoblados y una lectura sensible de la ciudad para elegir cómo vivir Buenos Aires.</p>
+          {socialLinks.length ? (
+            <div className="mt-8 flex flex-wrap gap-3" aria-label="Redes sociales">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.id}
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-10 items-center border-b border-white/20 py-2 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/70 transition hover:border-[#e2c19b] hover:text-[#e2c19b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e2c19b]"
+                >
+                  {social.label}
+                </a>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3">
           {footerGroups.map((group) => (

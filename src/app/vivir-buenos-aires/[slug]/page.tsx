@@ -7,15 +7,13 @@ import AbaFooter from "@/components/aba/AbaFooter";
 import { readPublicEditorialPosts, readPublicHomeListings } from "@/lib/server/inmoRepository";
 import { formatPrice } from "@/lib/pricing";
 import {
-  abaEditorialSections,
   abaNeighborhoods,
-  filterPostsBySection,
   findEditorialSection,
   mergeEditorialPosts,
 } from "@/lib/abaContent";
 import { abaCultureImages, abaPropertyMoodImages } from "@/lib/abaMedia";
+import type { EditorialContentBlock, EditorialPost } from "@/lib/inmoData";
 
-const interiorBreakoutFallback = abaPropertyMoodImages[0];
 const detailFallback = abaPropertyMoodImages[1];
 
 type PageProps = {
@@ -157,6 +155,70 @@ function EditorialSectionPage({ slug }: { slug: string }) {
   );
 }
 
+const legacyBlocks = (post: EditorialPost): EditorialContentBlock[] =>
+  post.body
+    .split(/\n+/)
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .map((text, index) => ({
+      id: `legacy-${index}`,
+      type: "text",
+      text,
+      image: "",
+      alt: "",
+      caption: "",
+      layout: "wide",
+    }));
+
+function EditorialArticleBody({ post }: { post: EditorialPost }) {
+  const blocks = post.contentBlocks?.length ? post.contentBlocks : legacyBlocks(post);
+  const firstTextBlockId = blocks.find(
+    (block) => block.type === "text" && block.text.trim()
+  )?.id;
+
+  return (
+    <div className="flow-root">
+      {blocks.map((block) => {
+        if (block.type === "image") {
+          if (!block.image) return null;
+          const positionClass =
+            block.layout === "left"
+              ? "md:float-left md:mr-10 md:w-[48%]"
+              : block.layout === "right"
+                ? "md:float-right md:ml-10 md:w-[48%]"
+                : "clear-both md:-mx-[12vw] md:w-[calc(100%+24vw)]";
+          return (
+            <figure key={block.id} className={`my-12 overflow-hidden ${positionClass}`}>
+              <img src={block.image} alt={block.alt} className="max-h-[760px] w-full object-cover" />
+              {block.caption ? (
+                <figcaption className="mt-3 border-l border-[var(--aba-bronze)] pl-4 text-[10px] font-bold uppercase leading-5 tracking-[0.16em] text-white/48">
+                  {block.caption}
+                </figcaption>
+              ) : null}
+            </figure>
+          );
+        }
+
+        const paragraphs = block.text.split(/\n+/).map((text) => text.trim()).filter(Boolean);
+        return paragraphs.map((paragraph, index) => {
+          const isFirst = block.id === firstTextBlockId && index === 0;
+          return (
+            <p
+              key={block.id + "-" + index}
+              className={[
+                "mb-8 text-lg leading-9 text-white/70",
+                isFirst ? "first-letter:float-left first-letter:mr-3 first-letter:font-editorial first-letter:text-7xl first-letter:text-white" : "",
+              ].join(" ")}
+            >
+              {paragraph}
+            </p>
+          );
+        });
+      })}
+    </div>
+  );
+}
+
 export default async function EditorialPostPage({ params }: PageProps) {
   const { slug } = await params;
   const section = findEditorialSection(slug);
@@ -168,10 +230,6 @@ export default async function EditorialPostPage({ params }: PageProps) {
   const [{ data: listingData }, posts] = await Promise.all([readPublicHomeListings(), getPosts()]);
   const relatedProperty = (listingData.listings ?? []).find((item) => item.status === "disponible");
   const relatedPosts = posts.filter((item) => item.slug !== post.slug).slice(0, 3);
-  const paragraphs = post.body.split(/\n+/).map((line) => line.trim()).filter(Boolean);
-  const firstParagraph = paragraphs[0] || post.excerpt;
-  const secondParagraph = paragraphs[1] || "Buenos Aires no se entiende solo por sus direcciones. Se entiende por la luz de sus avenidas, por sus edificios, por los cafés de esquina y por la manera en que cada barrio propone una rutina distinta.";
-  const restParagraphs = paragraphs.slice(2);
   const publishedDate = formatDate(post.publishedAt || post.createdAt);
   const coverImage = post.coverImage || abaCultureImages[16];
   const relatedImage = relatedProperty?.images[relatedProperty.coverIndex] || relatedProperty?.images[0] || detailFallback;
@@ -189,6 +247,7 @@ export default async function EditorialPostPage({ params }: PageProps) {
             <div className="mb-6 flex flex-wrap items-center justify-center gap-4">
               <span className="aba-label">{post.category}</span>
               {publishedDate ? <><span className="h-1 w-1 rounded-full bg-white/32" /><span className="aba-label text-white/56">{publishedDate}</span></> : null}
+              {post.authorName ? <><span className="h-1 w-1 rounded-full bg-white/32" /><span className="aba-label text-white/56">Por {post.authorName}</span></> : null}
               <span className="h-1 w-1 rounded-full bg-white/32" />
               <span className="aba-label text-white/56">8 min lectura</span>
             </div>
@@ -198,35 +257,20 @@ export default async function EditorialPostPage({ params }: PageProps) {
         </header>
 
         <section className="mx-auto max-w-3xl px-6 py-28 md:px-0">
-          <p className="mb-8 text-lg leading-9 text-white/70 first-letter:float-left first-letter:mr-3 first-letter:font-editorial first-letter:text-7xl first-letter:text-white">
-            {firstParagraph}
-          </p>
-          <p className="mb-14 text-lg leading-9 text-white/70">{secondParagraph}</p>
+          <EditorialArticleBody post={post} />
 
-          <figure className="relative my-16 h-[614px] overflow-hidden md:-mx-[20vw]">
-            <img src={interiorBreakoutFallback} alt="Interior editorial en Buenos Aires" className="h-full w-full object-cover" />
-            <figcaption className="absolute bottom-4 right-4 border border-white/10 bg-[#131313]/45 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md">
-              La luz, el volumen y la ciudad como parte de la experiencia.
-            </figcaption>
-          </figure>
+          {post.authorName || post.authorPhoto || post.authorSignature ? (
+            <aside className="clear-both my-16 grid gap-6 border-y border-white/10 py-10 sm:grid-cols-[auto_1fr] sm:items-center">
+              {post.authorPhoto ? <img src={post.authorPhoto} alt={post.authorName ? "Foto de " + post.authorName : "Autor del artículo"} className="h-24 w-24 rounded-full object-cover grayscale-[0.15]" /> : null}
+              <div>
+                <p className="aba-label text-white/45">Escrito por</p>
+                {post.authorName ? <p className="mt-2 font-editorial text-3xl text-white">{post.authorName}</p> : null}
+                {post.authorSignature ? <img src={post.authorSignature} alt={post.authorName ? "Firma de " + post.authorName : "Firma del autor"} className="mt-4 max-h-16 max-w-[220px] object-contain object-left invert" /> : null}
+              </div>
+            </aside>
+          ) : null}
 
-          <h2 className="aba-headline mb-8 mt-16 text-white">Cada barrio, su propia versión de Buenos Aires</h2>
-          <p className="mb-8 text-lg leading-9 text-white/70">
-            {restParagraphs[0] || "Cada barrio propone una relación distinta con la ciudad: algunos invitan a caminar, otros a estudiar, otros a construir una rutina alrededor de cafés, parques, universidades y teatros."}
-          </p>
-
-          <blockquote className="my-12 border-l-2 border-[var(--aba-bronze)] py-2 pl-8">
-            <p className="font-editorial text-2xl italic leading-snug text-[var(--aba-bronze)]">
-              “No elegimos solo un departamento; elegimos el volumen de ciudad que queremos sentir todos los días.”
-            </p>
-            <footer className="mt-4 text-[10px] font-bold uppercase tracking-[0.22em] text-white/48">Alojamiento Buenos Aires</footer>
-          </blockquote>
-
-          {restParagraphs.slice(1).map((paragraph) => (
-            <p key={paragraph} className="mb-8 text-lg leading-9 text-white/70">{paragraph}</p>
-          ))}
-
-          <div className="my-16 flex flex-col items-center gap-8 border border-white/10 bg-[#1c1b1b] p-8 md:flex-row md:p-12">
+          <div className="clear-both my-16 flex flex-col items-center gap-8 border border-white/10 bg-[#1c1b1b] p-8 md:flex-row md:p-12">
             <div className="w-full md:w-1/2">
               <img src={relatedImage} alt={relatedProperty?.title || "Departamento en Buenos Aires"} className="h-[400px] w-full object-cover" />
             </div>

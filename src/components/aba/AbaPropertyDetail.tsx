@@ -11,6 +11,7 @@ import AbaOptimizedImage from './AbaOptimizedImage';
 import AbaFooter from './AbaFooter';
 import { abaCultureImages, abaPropertyMoodImages } from '@/lib/abaMedia';
 import { findNeighborhoodByName } from '@/lib/abaContent';
+import { useInmoStore } from '@/lib/inmoStore';
 
 const fallbackImage = abaPropertyMoodImages[0];
 const barrioImage = abaCultureImages[16];
@@ -33,6 +34,7 @@ const iconFor = (text: string) => {
 };
 
 export default function AbaPropertyDetail({ property }: { property: Listing }) {
+  const { state } = useInmoStore();
   const [status, setStatus] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
   const [zoomIndex, setZoomIndex] = useState<number | null>(null);
@@ -44,6 +46,15 @@ export default function AbaPropertyDetail({ property }: { property: Listing }) {
   const specs = [property.rooms + ' ambientes', property.area + ' m2', formatPrice(property.price, property.priceUnit, property.currency), amenities.includes('Seguridad 24h') ? 'Seguridad 24h' : 'Contrato claro'];
   const neighborhoodGuide = findNeighborhoodByName(property.neighborhood);
   const neighborhoodHref = neighborhoodGuide ? '/barrios/' + neighborhoodGuide.slug : '/barrios';
+  const approximateLocation = property.neighborhood + ', Ciudad Autónoma de Buenos Aires, Argentina';
+  const mapQuery = encodeURIComponent(approximateLocation);
+  const mapEmbedHref = 'https://maps.google.com/maps?q=' + mapQuery + '&z=14&output=embed';
+  const mapLinkHref = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
+  const whatsappPhone = (state.theme.whatsappPhone ?? '').replace(/[^\d]/g, '');
+  const whatsappMessage = 'Hola, quiero consultar por ' + property.title + '.';
+  const whatsappHref = whatsappPhone
+    ? 'https://wa.me/' + whatsappPhone + '?text=' + encodeURIComponent(whatsappMessage)
+    : '/contacto';
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -120,6 +131,30 @@ export default function AbaPropertyDetail({ property }: { property: Listing }) {
         </div>
       </section>
 
+      <section className='bg-[#171614] px-6 py-24 md:px-20'>
+        <div className='mx-auto grid max-w-[1440px] gap-10 md:grid-cols-12 md:items-center'>
+          <div className='md:col-span-4'>
+            <p className='aba-label text-[var(--aba-bronze)]'>Ubicación aproximada</p>
+            <h2 className='mt-4 font-editorial text-5xl leading-none text-white'>{property.neighborhood}</h2>
+            <p className='mt-6 max-w-sm text-sm leading-7 text-white/62'>Mostramos el área del barrio para cuidar la privacidad de la propiedad. La dirección exacta se comparte al coordinar la visita.</p>
+            <a href={mapLinkHref} target='_blank' rel='noreferrer' className='mt-8 inline-flex items-center gap-2 border-b border-white/30 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition hover:border-[var(--aba-bronze)] hover:text-[var(--aba-bronze)]'>
+              Abrir mapa
+              <span className='material-symbols-outlined text-base' aria-hidden='true'>north_east</span>
+            </a>
+          </div>
+          <div className='overflow-hidden border border-white/10 bg-[#0b0b0b] md:col-span-7 md:col-start-6'>
+            <iframe
+              title={'Ubicación aproximada en ' + property.neighborhood}
+              src={mapEmbedHref}
+              loading='lazy'
+              referrerPolicy='no-referrer-when-downgrade'
+              className='h-[380px] w-full border-0 grayscale-[0.25] md:h-[480px]'
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </section>
+
       <section className='mx-auto grid max-w-[1440px] gap-12 px-6 py-28 md:grid-cols-12 md:px-20'>
         <div className='md:col-span-4'>
           <h2 className='font-editorial text-4xl text-white'>Detalles refinados</h2>
@@ -150,7 +185,9 @@ export default function AbaPropertyDetail({ property }: { property: Listing }) {
           <div className='md:col-span-5'>
             <h2 className='font-editorial text-5xl text-white'>Consultar</h2>
             <p className='mt-5 max-w-sm text-sm leading-7 text-white/68'>Para coordinar una visita privada o pedir más detalles, dejanos tu consulta. También podés escribirnos por WhatsApp.</p>
-            <Link href={'https://wa.me/?text=' + encodeURIComponent('Hola, quiero consultar por ' + property.title)} className='mt-8 inline-flex border border-white/28 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white hover:border-white'>Contactar por WhatsApp</Link>
+            <div className='mt-8 flex justify-end'>
+              <a href={whatsappHref} target={whatsappPhone ? '_blank' : undefined} rel={whatsappPhone ? 'noreferrer' : undefined} className='inline-flex border border-white/28 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition hover:border-white hover:bg-white hover:text-[#171614]'>Contactar por WhatsApp</a>
+            </div>
           </div>
           <form onSubmit={submit} className='grid gap-5 md:col-span-6 md:col-start-7'>
             <input name='name' required placeholder='Nombre' className='border-b border-white/14 bg-transparent py-3 text-sm text-white outline-none placeholder:text-white/45 focus:border-[var(--aba-bronze)]' />
@@ -173,7 +210,7 @@ export default function AbaPropertyDetail({ property }: { property: Listing }) {
           <div className='absolute inset-x-0 bottom-5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-white/45'>{(zoomIndex ?? selectedImage) + 1} / {images.length}</div>
         </div>
       ) : null}
-      <AbaWhatsAppFloat message={'Hola, quiero consultar por ' + property.title + '.'} />
+      <AbaWhatsAppFloat phone={state.theme.whatsappPhone} message={whatsappMessage} />
     </main>
   );
 }
