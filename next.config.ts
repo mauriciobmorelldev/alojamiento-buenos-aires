@@ -39,6 +39,16 @@ const nextConfig: NextConfig = {
       ],
     });
 
+    headers.push({
+      source: "/aba-media/:path*.mp4",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=604800, stale-while-revalidate=86400",
+        },
+      ],
+    });
+
     return headers;
   },
 };

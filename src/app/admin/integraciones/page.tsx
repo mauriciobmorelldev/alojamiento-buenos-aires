@@ -46,6 +46,11 @@ const defaultSettings: PublicTokkoSettings = {
 
 export default function AdminIntegracionesPage() {
   if (!SHOW_TOKKO_ADMIN) return null;
+
+  return <AdminIntegracionesContent />;
+}
+
+function AdminIntegracionesContent() {
   const { updateState } = useInmoStore();
   const [settings, setSettings] = useState<PublicTokkoSettings>(defaultSettings);
   const [apiKey, setApiKey] = useState("");

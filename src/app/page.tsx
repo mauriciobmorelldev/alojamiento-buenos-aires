@@ -8,7 +8,7 @@ import {
 } from "@/lib/server/inmoRepository";
 import { mergeState } from "@/lib/stateMerge";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export default async function HomePage() {
   const [{ value: shell }, { value: listings }, { value: editorial }] = await Promise.all([

@@ -2,8 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+
+const subscribeToClient = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 const leftLinks = [
   { label: "Propiedades", href: "/departamentos", match: "departamentos" },
@@ -27,11 +31,11 @@ export default function AbaNav({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const contactType = searchParams.get("tipo");
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setPortalTarget(document.body);
-  }, []);
+  const canUsePortal = useSyncExternalStore(
+    subscribeToClient,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
 
   const isActive = (match: string) => {
     if (match === "propietario") return pathname === "/contacto" && contactType === "propietario";
@@ -87,7 +91,7 @@ export default function AbaNav({
 
   return (
     <>
-      {portalTarget ? createPortal(header, portalTarget) : null}
+      {canUsePortal ? createPortal(header, document.body) : null}
       {needsSpacer ? <div className="aba-nav-spacer" aria-hidden="true" /> : null}
     </>
   );

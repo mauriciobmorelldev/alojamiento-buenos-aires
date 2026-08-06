@@ -81,12 +81,6 @@ const resolveDisplayAddress = (property: Listing) =>
 const resolveLocation = (property: Listing) =>
   firstAttributeValue(property.attributes, ["location"]);
 
-const resolveOperationLocation = (property: Listing) =>
-  firstAttributeValue(property.attributes, [
-    "operation_location",
-    "full_location",
-  ]);
-
 const fallbackImages = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDDAgcQ1jH-fIHqf_1_ZpyWhB5OgV3FjRjRnpql6lTJVWDtzGO6uOOup5LqkSCn2KKr5FZT69TKFGv9opxa-EtnkAhHAFONQKnnGSxg-kpoXjvTZd2_zb_M0iY4cdZDsbE31W35JVc6NtFBpzRAIJ3fzBoiXjTRbt76CbQqkPo_uMsnGWzj1yfw1KLkJl-CTvkOXdNQwFmLYckq3fv_U2TWQex40VRDPn80Z1xtb0tEJczaLIblLpxrFYmY9rVwD_c7FEWmHPHXIg",
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDI0K-3EhAsC26dD0_BayXjOCzeNuH20nxavwc4HLYyK1W8lmuyKoiNzSfyrjyS-T-oTiWd1HAvTSQG4R1JQrUZSjvWhWhLPKIErJI1sx8gjlWrwQumL4CKJ1-SJnVea2epp1jyuZ-pbSSiN09GVnDH2NouRR0pr7_1cvzrxCLdkp33_zUYVry2zh716dnQRPQansaLiUNHVZxz8kvq-qEq35qC1ciJztFsnuiUcECmtlHSgSDt4b9Fgu9NaPipKH8mp-uWLNphw",
@@ -457,7 +451,6 @@ export default function DetallePropiedadPage() {
       ? property.neighborhood
       : "";
   const displayLocation = resolveLocation(property);
-  const displayOperationLocation = resolveOperationLocation(property);
 
   const handleDownloadPdf = async () => {
     setPdfError("");

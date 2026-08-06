@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 const AUDIO_SRC = "/audio/por-una-cabeza.mp3";
 const STORAGE_KEY = "aba_ambient_audio_enabled";
@@ -9,16 +9,23 @@ const TARGET_VOLUME = 0.075;
 
 type AudioState = "idle" | "playing" | "muted" | "blocked" | "missing";
 
+const subscribeToClient = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export default function AbaAmbientAudio() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const fadeRef = useRef<number | null>(null);
   const revealRef = useRef<number | null>(null);
-  const [mounted, setMounted] = useState(false);
   const [ready, setReady] = useState(false);
   const [audioState, setAudioState] = useState<AudioState>("idle");
+  const isClient = useSyncExternalStore(
+    subscribeToClient,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
 
   useEffect(() => {
-    setMounted(true);
     const firstFrame = window.requestAnimationFrame(() => {
       revealRef.current = window.requestAnimationFrame(() => setReady(true));
     });
@@ -29,14 +36,14 @@ export default function AbaAmbientAudio() {
     };
   }, []);
 
-  const clearFade = () => {
+  const clearFade = useCallback(() => {
     if (fadeRef.current) {
       window.clearInterval(fadeRef.current);
       fadeRef.current = null;
     }
-  };
+  }, []);
 
-  const fadeTo = (target: number, onDone?: () => void) => {
+  const fadeTo = useCallback((target: number, onDone?: () => void) => {
     const audio = audioRef.current;
     if (!audio) return;
     clearFade();
@@ -52,11 +59,11 @@ export default function AbaAmbientAudio() {
 
       audio.volume = Math.max(0, Math.min(TARGET_VOLUME, audio.volume + Math.sign(diff) * 0.008));
     }, 70);
-  };
+  }, [clearFade]);
 
-  const startAudio = async () => {
+  const startAudio = useCallback(async () => {
     const audio = audioRef.current;
-    if (!audio || audioState === "missing") return;
+    if (!audio || audio.error) return;
 
     try {
       audio.volume = Math.min(audio.volume, TARGET_VOLUME);
@@ -67,7 +74,7 @@ export default function AbaAmbientAudio() {
     } catch {
       setAudioState("blocked");
     }
-  };
+  }, [fadeTo]);
 
   const muteAudio = () => {
     const audio = audioRef.current;
@@ -90,28 +97,28 @@ export default function AbaAmbientAudio() {
   };
 
   useEffect(() => {
-    if (!mounted) return;
-
     const shouldResume = window.localStorage.getItem(STORAGE_KEY) === "true";
     const requestStart = () => {
       void startAudio();
     };
 
     window.addEventListener(REQUEST_EVENT, requestStart);
-
-    if (shouldResume) {
-      void startAudio();
-    } else {
-      setAudioState("muted");
-    }
+    const initializationFrame = window.requestAnimationFrame(() => {
+      if (shouldResume) {
+        void startAudio();
+      } else {
+        setAudioState("muted");
+      }
+    });
 
     return () => {
+      window.cancelAnimationFrame(initializationFrame);
       window.removeEventListener(REQUEST_EVENT, requestStart);
       clearFade();
     };
-  }, [mounted]);
+  }, [clearFade, startAudio]);
 
-  if (!mounted || !ready) return null;
+  if (!isClient || !ready) return null;
 
   const isPlaying = audioState === "playing";
   const label =

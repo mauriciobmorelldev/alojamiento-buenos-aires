@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { usePathname } from 'next/navigation';
 
@@ -9,19 +9,23 @@ const FULL_DURATION = 2200;
 const REDUCED_DURATION = 450;
 const AMBIENT_AUDIO_REQUEST_EVENT = 'aba:ambient-audio-request';
 
+const subscribeToClient = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export default function AbaPreloader() {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
   const [audioRequested, setAudioRequested] = useState(false);
+  const isClient = useSyncExternalStore(
+    subscribeToClient,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted || pathname?.startsWith('/admin')) return;
+    if (!isClient || pathname?.startsWith('/admin')) return;
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isHome = pathname === '/';
@@ -31,11 +35,8 @@ export default function AbaPreloader() {
 
     const duration = reduceMotion ? REDUCED_DURATION : FULL_DURATION;
     let frame = 0;
-    const startedAt = performance.now();
-
-    setVisible(true);
-    setProgress(0);
-    if (!isHome) window.sessionStorage.setItem(PRELOADER_KEY, 'true');
+    let timer = 0;
+    let startedAt = 0;
 
     const tick = (time: number) => {
       const elapsed = Math.min(time - startedAt, duration);
@@ -44,14 +45,20 @@ export default function AbaPreloader() {
       if (elapsed < duration) frame = window.requestAnimationFrame(tick);
     };
 
-    frame = window.requestAnimationFrame(tick);
-    const timer = window.setTimeout(() => setVisible(false), duration + 90);
+    frame = window.requestAnimationFrame((time) => {
+      startedAt = time;
+      setVisible(true);
+      setProgress(0);
+      if (!isHome) window.sessionStorage.setItem(PRELOADER_KEY, 'true');
+      frame = window.requestAnimationFrame(tick);
+      timer = window.setTimeout(() => setVisible(false), duration + 90);
+    });
 
     return () => {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(timer);
     };
-  }, [mounted, pathname]);
+  }, [isClient, pathname]);
 
   const enableTango = () => {
     window.dispatchEvent(new Event(AMBIENT_AUDIO_REQUEST_EVENT));
@@ -59,7 +66,7 @@ export default function AbaPreloader() {
   };
   const soundLabel = audioRequested ? 'Tango activo' : 'Activar tango';
 
-  if (!mounted) return null;
+  if (!isClient) return null;
 
   return (
     <>

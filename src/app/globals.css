@@ -5297,7 +5297,7 @@ html[data-theme="dark"] .turno-slot {
   z-index: 1;
   opacity: 0.78;
   filter: saturate(0.92) contrast(1.08) brightness(0.82);
-  transform: scale(1.045);
+  transform: scale(1);
 }
 
 .aba-home-hero__backdrop::after {
@@ -6932,7 +6932,7 @@ html[data-theme="dark"] .turno-slot {
     opacity: 1 !important;
     filter: saturate(0.98) contrast(1.04) brightness(0.92) !important;
     object-position: center top;
-    transform: scale(1.01) !important;
+    transform: scale(1) !important;
   }
 
   .aba-home-hero__backdrop::after {
@@ -7087,7 +7087,7 @@ html[data-theme="dark"] .turno-slot {
   .aba-home-hero__video {
     opacity: 1 !important;
     filter: saturate(1.02) contrast(1.04) brightness(0.94) !important;
-    transform: scale(1.01) !important;
+    transform: scale(1) !important;
   }
 
   .aba-home-hero__backdrop::after {

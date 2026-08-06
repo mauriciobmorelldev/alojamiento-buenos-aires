@@ -20,18 +20,18 @@ const pruneCache = (now: number) => {
 };
 
 export const PUBLIC_CACHE_TTL = {
-  shell: 120_000,
-  homeListings: 60_000,
-  catalogListings: 60_000,
-  property: 120_000,
+  shell: 900_000,
+  homeListings: 600_000,
+  catalogListings: 600_000,
+  property: 900_000,
 };
 
 export const PUBLIC_CACHE_CONTROL = {
-  shell: "public, max-age=60, s-maxage=120, stale-while-revalidate=300",
-  homeListings: "public, max-age=30, s-maxage=60, stale-while-revalidate=180",
-  catalogListings: "public, max-age=30, s-maxage=60, stale-while-revalidate=180",
-  property: "public, max-age=60, s-maxage=120, stale-while-revalidate=300",
-  notFound: "public, max-age=30, s-maxage=60",
+  shell: "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
+  homeListings: "public, max-age=120, s-maxage=600, stale-while-revalidate=3600",
+  catalogListings: "public, max-age=120, s-maxage=600, stale-while-revalidate=3600",
+  property: "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
+  notFound: "public, max-age=60, s-maxage=300",
 };
 
 export const readThroughCache = async <T>(

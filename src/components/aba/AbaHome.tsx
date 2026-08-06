@@ -53,20 +53,20 @@ const cardNarratives = [
 
 export default function AbaHome({ initialState }: { initialState: Partial<InmoState> }) {
   const { state } = useInmoStore(initialState);
-  const { homeContent, listings, theme } = state;
+  const { listings } = state;
   const featuredListings = useMemo(
     () => listings.filter((item) => item.status === "disponible").slice(0, 3),
     [listings]
   );
-  const heroImage = theme.heroImage || homeContent.buenosAires?.heroImage || heroFallback;
   return (
     <main className="aba-public aba-motion-scope">
       <section className="aba-home-hero aba-home-hero--collage relative overflow-hidden">
         <AbaNav transparent fixed />
         <div className="aba-home-hero__backdrop" aria-hidden="true">
-          <AbaOptimizedImage src={heroImage} alt="" width={1800} height={1200} priority quality={74} sizes="100vw" className="aba-home-hero__poster aba-ken-burns" />
-          <video className="aba-home-hero__video" src={abaCityVideos[0]} poster={heroImage} autoPlay muted loop playsInline preload="metadata" disablePictureInPicture tabIndex={-1} />
-          <div className="aba-home-hero__grain" />
+          <video className="aba-home-hero__video" autoPlay muted loop playsInline preload="metadata" disablePictureInPicture tabIndex={-1}>
+            <source src={abaCityVideos[1]} type="video/mp4" media="(min-width: 761px)" />
+            <source src={abaCityVideos[0]} type="video/mp4" />
+          </video>
         </div>
         <div className="relative z-10 mx-auto grid min-h-[100svh] max-w-[1600px] grid-cols-12 content-end gap-6 px-5 pb-12 pt-32 md:content-center md:px-16 md:pb-16 md:pt-32">
           <div className="col-span-12 md:col-span-8">
