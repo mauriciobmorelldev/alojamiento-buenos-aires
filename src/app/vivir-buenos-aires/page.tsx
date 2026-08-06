@@ -9,7 +9,7 @@ import AbaWhatsAppFloat from '@/components/aba/AbaWhatsAppFloat';
 import AbaFooter from '@/components/aba/AbaFooter';
 import { abaCultureImages, abaPropertyMoodImages } from '@/lib/abaMedia';
 
-export const revalidate = 120;
+export const revalidate = 300;
 
 const heroImage = abaCultureImages[7];
 

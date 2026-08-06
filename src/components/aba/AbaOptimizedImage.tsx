@@ -1,13 +1,14 @@
-import Image from "next/image";
+"use client";
+
 import type { CSSProperties, MouseEventHandler } from "react";
 import {
   getOptimizedPublicImageUrl,
+  getOptimizedPublicImageSrcSet,
   getSupabaseObjectPublicUrl,
   isSupabasePublicImage,
 } from "@/lib/publicImage";
 
 const isInlineImage = (src: string) => src.startsWith("data:") || src.startsWith("blob:");
-const isLocalPublicImage = (src: string) => src.startsWith("/");
 
 type AbaOptimizedImageProps = {
   src: string;
@@ -37,41 +38,40 @@ export default function AbaOptimizedImage({
   style,
 }: AbaOptimizedImageProps) {
   const publicSrc = getSupabaseObjectPublicUrl(src);
-  const optimizedSrc = getOptimizedPublicImageUrl(publicSrc, { width, quality });
-
-  if (isSupabasePublicImage(publicSrc) || isInlineImage(publicSrc)) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element -- Supabase render/image can reject valid public storage URLs in Next image optimizer.
-      <img
-        src={publicSrc}
-        sizes={sizes}
-        alt={alt}
-        width={width}
-        height={height}
-        loading={priority ? "eager" : "lazy"}
-        fetchPriority={priority ? "high" : "auto"}
-        decoding="async"
-        draggable={draggable}
-        onClick={onClick}
-        style={style}
-        className={className}
-      />
-    );
-  }
+  const isSupabaseImage = isSupabasePublicImage(publicSrc);
+  const optimizedSrc = isSupabaseImage
+    ? getOptimizedPublicImageUrl(publicSrc, { width, quality })
+    : publicSrc;
+  const responsiveWidths = Array.from(
+    new Set([Math.min(width, 480), Math.min(width, 960), width])
+  ).sort((a, b) => a - b);
 
   return (
-    <Image
-      src={isLocalPublicImage(optimizedSrc) ? optimizedSrc : publicSrc}
+    // eslint-disable-next-line @next/next/no-img-element -- Avoid routing public media through the constrained Next.js image optimizer.
+    <img
+      src={optimizedSrc}
+      srcSet={
+        isSupabaseImage && !isInlineImage(publicSrc)
+          ? getOptimizedPublicImageSrcSet(publicSrc, responsiveWidths, { quality })
+          : undefined
+      }
+      sizes={sizes}
       alt={alt}
       width={width}
       height={height}
-      priority={priority}
-      quality={quality}
-      sizes={sizes}
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
+      decoding="async"
       draggable={draggable}
       onClick={onClick}
       style={style}
       className={className}
+      onError={(event) => {
+        if (isSupabaseImage && event.currentTarget.src !== publicSrc) {
+          event.currentTarget.srcset = "";
+          event.currentTarget.src = publicSrc;
+        }
+      }}
     />
   );
 }

@@ -5,6 +5,7 @@ import {
   deleteEditorialPost,
   upsertEditorialPost,
 } from "@/lib/server/inmoRepository";
+import { revalidatePublicContent } from "@/lib/server/publicRevalidation";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 const noStoreHeaders = {
@@ -105,6 +106,7 @@ export async function PUT(request: Request) {
     if (isSupabaseConfigured() && result.source !== "supabase") {
       return unavailableWriteResponse();
     }
+    revalidatePublicContent({ editorialSlug: post.slug });
     return NextResponse.json({ ok: true, source: result.source }, { headers: noStoreHeaders });
   } catch (error) {
     return NextResponse.json(
@@ -133,6 +135,7 @@ export async function DELETE(request: Request) {
     if (isSupabaseConfigured() && result.source !== "supabase") {
       return unavailableWriteResponse();
     }
+    revalidatePublicContent();
     return NextResponse.json({ ok: true, source: result.source }, { headers: noStoreHeaders });
   } catch (error) {
     return NextResponse.json(

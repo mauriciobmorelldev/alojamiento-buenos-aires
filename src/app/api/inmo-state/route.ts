@@ -10,6 +10,7 @@ import {
   writeInmoState,
 } from "@/lib/server/inmoRepository";
 import { deleteRemovedStateMedia } from "@/lib/server/mediaStorage";
+import { revalidatePublicContent } from "@/lib/server/publicRevalidation";
 import {
   PUBLIC_CACHE_CONTROL,
   PUBLIC_CACHE_TTL,
@@ -172,6 +173,7 @@ export async function PUT(request: Request) {
         console.warn("No se pudieron borrar medios removidos", cleanupError);
       }
     }
+    revalidatePublicContent();
     return NextResponse.json({ ok: true, source: result.source });
   } catch (error) {
     return NextResponse.json(

@@ -272,21 +272,6 @@ const persistRemoteState = async (state: InmoState) => {
   }
 };
 
-const waitForPublicRefresh = () =>
-  new Promise<void>((resolve) => {
-    if (!isBrowser) {
-      resolve();
-      return;
-    }
-
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(() => resolve());
-      return;
-    }
-
-    window.setTimeout(resolve, 0);
-  });
-
 export const loadState = (): InmoState => {
   if (!isBrowser) return defaultState;
   if (inMemoryState) {
@@ -365,13 +350,6 @@ export const useInmoStore = (initialState?: Partial<InmoState>) => {
         inMemoryState = mergedInitial;
         setState(mergedInitial);
         setIsReady(true);
-        await waitForPublicRefresh();
-        const remote = await fetchRemoteState(scope, mode);
-        if (remote?.source === "supabase") {
-          const mergedRemote = mergeState(defaultState, remote.data);
-          inMemoryState = mergedRemote;
-          setState(mergedRemote);
-        }
         return;
       }
       if (scope === "admin") {

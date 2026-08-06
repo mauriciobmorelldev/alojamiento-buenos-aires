@@ -77,7 +77,7 @@ export default function ContactoPage() {
     <main className="aba-public aba-motion-scope">
       <section className="relative overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1599167758481-83f550bb49b3?auto=format&fit=crop&w=2200&q=85"
+          src="/aba-media/WhatsApp Image 2026-07-10 at 11.52.33 AM.jpeg"
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-45"
         />

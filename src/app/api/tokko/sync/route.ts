@@ -6,6 +6,7 @@ import {
 } from "@/lib/server/inmoRepository";
 import { requireOwnerFromRequest } from "@/lib/server/adminAuth";
 import { readTokkoSettings, syncTokkoProperties } from "@/lib/server/tokko";
+import { revalidatePublicContent } from "@/lib/server/publicRevalidation";
 
 export async function POST(request: Request) {
   const ownerContext = await requireOwnerFromRequest(request);
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
     log?.status === "success" && importedTokkoIds.length
       ? await deleteObsoleteTokkoListings(importedTokkoIds)
       : { source: "supabase" as const, deletedCount: 0 };
+  revalidatePublicContent();
   return NextResponse.json({
     ok: true,
     log,

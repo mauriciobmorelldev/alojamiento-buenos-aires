@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useInmoStore } from "@/lib/inmoStore";
 import {
   propertyTypeLabels,
@@ -113,18 +113,33 @@ export default function ResultsStitch({
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const incoming = params.get("operacion");
+    const incomingOperation = params.get("operacion") ?? params.get("operation");
     const incomingPage = Number(params.get("page") ?? 1);
-    if (Number.isFinite(incomingPage) && incomingPage > 1) {
-      setPage(Math.floor(incomingPage));
-    }
-    if (incoming === "venta" || incoming === "alquiler") {
-      const applyOperation = () => setOperation(incoming);
-      if (typeof queueMicrotask === "function") {
-        queueMicrotask(applyOperation);
-        return;
+    const incomingType = params.get("type");
+    const incomingRooms = Number(params.get("minRooms"));
+    const incomingSort = params.get("sort");
+    const applyIncomingFilters = () => {
+      if (Number.isFinite(incomingPage) && incomingPage > 1) {
+        setPage(Math.floor(incomingPage));
       }
-      window.setTimeout(applyOperation, 0);
+      if (incomingOperation === "venta" || incomingOperation === "alquiler") {
+        setOperation(incomingOperation);
+      }
+      if (incomingType && typeFilters.some((item) => item.id === incomingType)) {
+        setType(incomingType as PropertyTypeFilter);
+      }
+      if (Number.isFinite(incomingRooms) && incomingRooms > 0) {
+        setMinRooms(String(Math.min(Math.floor(incomingRooms), 20)));
+      }
+      if (incomingSort === "price-asc" || incomingSort === "price-desc") {
+        setSort(incomingSort);
+      }
+      setQuery((params.get("q") ?? "").trim().slice(0, 80));
+    };
+    if (typeof queueMicrotask === "function") {
+      queueMicrotask(applyIncomingFilters);
+    } else {
+      window.setTimeout(applyIncomingFilters, 0);
     }
   }, []);
 

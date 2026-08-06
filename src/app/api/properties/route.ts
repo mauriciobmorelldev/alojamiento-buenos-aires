@@ -9,6 +9,7 @@ import type {
 import { normalizeAdminRole } from "@/lib/inmoData";
 import { deleteListing, upsertListing } from "@/lib/server/inmoRepository";
 import { deleteRemovedListingMedia } from "@/lib/server/mediaStorage";
+import { revalidatePublicContent } from "@/lib/server/publicRevalidation";
 import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { sanitizeVideoUrls } from "@/lib/video";
 
@@ -163,6 +164,7 @@ export async function POST(request: Request) {
     } catch (cleanupError) {
       console.warn("No se pudieron borrar medios removidos de la propiedad", cleanupError);
     }
+    revalidatePublicContent({ propertyId: listing.id });
     return NextResponse.json({ ok: true, source: result.source, property: listing });
   } catch (error) {
     return NextResponse.json(
@@ -215,6 +217,7 @@ export async function DELETE(request: Request) {
     } catch (cleanupError) {
       console.warn("No se pudieron borrar medios de la propiedad eliminada", cleanupError);
     }
+    revalidatePublicContent({ propertyId });
     return NextResponse.json({ ok: true, source: result.source });
   } catch (error) {
     return NextResponse.json(

@@ -4,7 +4,7 @@ import { readPublicShell } from "@/lib/server/inmoRepository";
 import { PUBLIC_CACHE_TTL, readThroughCache } from "@/lib/server/responseCache";
 import { mergeState } from "@/lib/stateMerge";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 export default async function TrabajaConNosotrosPage() {
   const { value: shell } = await readThroughCache(

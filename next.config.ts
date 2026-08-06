@@ -4,12 +4,14 @@ const allowIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
 
 const nextConfig: NextConfig = {
   compress: true,
+  cacheMaxMemorySize: 16 * 1024 * 1024,
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86_400,
     remotePatterns: [
-      { protocol: "https", hostname: "**" },
-      { protocol: "http", hostname: "**" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "**.supabase.co" },
     ],
   },
   async headers() {

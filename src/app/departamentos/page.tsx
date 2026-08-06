@@ -4,14 +4,21 @@ import {
   readPublicListingsPage,
   readPublicShell,
 } from "@/lib/server/inmoRepository";
+import { PUBLIC_CACHE_TTL, readThroughCache } from "@/lib/server/responseCache";
 import { mergeState } from "@/lib/stateMerge";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 export default async function DepartamentosPage() {
-  const [shell, listings] = await Promise.all([
-    readPublicShell("catalog"),
-    readPublicListingsPage({ page: 1, pageSize: 24 }),
+  const [{ value: shell }, { value: listings }] = await Promise.all([
+    readThroughCache("page:departamentos:shell:v1", PUBLIC_CACHE_TTL.shell, () =>
+      readPublicShell("catalog")
+    ),
+    readThroughCache(
+      "page:departamentos:listings:v1",
+      PUBLIC_CACHE_TTL.catalogListings,
+      () => readPublicListingsPage({ page: 1, pageSize: 24 })
+    ),
   ]);
   const initialState = mergeState(defaultState, {
     ...shell.data,

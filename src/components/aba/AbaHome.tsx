@@ -30,18 +30,6 @@ const cityCollage = [
   { src: abaCultureImages[21], alt: "Tango en un bar porteño", label: "Ritual" },
 ];
 
-const heroFrames = [
-  { src: abaCultureImages[6], label: "Avenida" },
-  { src: abaCultureImages[24], label: "Café" },
-  { src: abaPropertyMoodImages[1], label: "Interior" },
-];
-
-const heroAtmosphere = [
-  { src: abaCultureImages[16], label: "Avenida" },
-  { src: abaCultureImages[3], label: "Café" },
-  { src: abaCultureImages[11], label: "Río" },
-];
-
 
 const parallaxArchive = [
   abaCultureImages[0],
@@ -77,19 +65,11 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
         <AbaNav transparent fixed />
         <div className="aba-home-hero__backdrop" aria-hidden="true">
           <AbaOptimizedImage src={heroImage} alt="" width={1800} height={1200} priority quality={74} sizes="100vw" className="aba-home-hero__poster aba-ken-burns" />
-          <video className="aba-home-hero__video" src={abaCityVideos[0]} poster={heroImage} autoPlay muted loop playsInline preload="metadata" tabIndex={-1} />
-          <div className="aba-home-hero__atmosphere">
-            {heroAtmosphere.map((item) => (
-              <figure key={item.src}>
-                <AbaOptimizedImage src={item.src} alt="" width={260} height={360} priority quality={66} sizes="110px" />
-                <figcaption>{item.label}</figcaption>
-              </figure>
-            ))}
-          </div>
+          <video className="aba-home-hero__video" src={abaCityVideos[0]} poster={heroImage} autoPlay muted loop playsInline preload="metadata" disablePictureInPicture tabIndex={-1} />
           <div className="aba-home-hero__grain" />
         </div>
         <div className="relative z-10 mx-auto grid min-h-[100svh] max-w-[1600px] grid-cols-12 content-end gap-6 px-5 pb-12 pt-32 md:content-center md:px-16 md:pb-16 md:pt-32">
-          <div className="col-span-12 md:col-span-7">
+          <div className="col-span-12 md:col-span-8">
             <p className="aba-label mb-7 text-[#e2c19b]">Alquiler temporario · Buenos Aires</p>
             <h1 className="aba-home-hero__title text-white" style={{ maxWidth: "10ch", fontSize: "clamp(3.6rem, 7.6vw, 8.2rem)", lineHeight: 0.84 }}>
               Nadie busca solo un lugar para vivir en Buenos Aires.
@@ -104,20 +84,8 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
             </div>
           </div>
 
-          <div className="aba-home-hero__stack col-span-12 md:col-span-5">
-            {heroFrames.map((frame, index) => (
-              <motion.figure
-                key={frame.src}
-                className={"aba-home-hero__stack-card aba-home-hero__stack-card--" + (index + 1)}
-                initial={{ opacity: 0, y: 36, rotate: index === 1 ? 3 : -3 }}
-                animate={{ opacity: 1, y: 0, rotate: index === 1 ? 1.4 : -1.4 }}
-                transition={{ duration: 0.75, delay: 0.22 + index * 0.12, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <AbaOptimizedImage src={frame.src} alt="" width={620} height={760} priority={index === 0} quality={72} sizes="(max-width: 768px) 70vw, 24vw" />
-                <figcaption>{frame.label}</figcaption>
-              </motion.figure>
-            ))}
-            <div className="aba-home-hero__quote">“Una llave abre un departamento. Un barrio abre Buenos Aires.”</div>
+          <div className="aba-home-hero__statement col-span-12 md:col-span-4">
+            “Una llave abre un departamento. Un barrio abre Buenos Aires.”
           </div>
 
           <div className="aba-home-hero__film-rail col-span-12 mt-10">

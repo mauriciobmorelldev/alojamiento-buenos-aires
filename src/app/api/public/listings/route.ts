@@ -10,16 +10,42 @@ import {
   readThroughCache,
 } from "@/lib/server/responseCache";
 
+const allowedTypes = new Set(["all", "tradicional", "temporario", "pozo", "listo"]);
+const allowedOperations = new Set(["all", "venta", "alquiler"]);
+const allowedSorts = new Set(["featured", "price-asc", "price-desc"]);
+
+const allowedValue = (value: string | null, allowed: Set<string>, fallback: string) =>
+  value && allowed.has(value) ? value : fallback;
+
+const positiveInteger = (value: string | null, fallback: number, maximum: number) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.min(Math.floor(parsed), maximum);
+};
+
 const safeJsonAttributes = (value: string | null): Record<string, string[]> => {
   if (!value) return {};
   try {
     const parsed = JSON.parse(value) as unknown;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     return Object.fromEntries(
-      Object.entries(parsed as Record<string, unknown>).map(([key, items]) => [
-        key,
-        Array.isArray(items) ? items.filter((item): item is string => typeof item === "string") : [],
-      ])
+      Object.entries(parsed as Record<string, unknown>)
+        .slice(0, 12)
+        .map(([key, items]) => [
+          key.trim().slice(0, 64),
+          Array.isArray(items)
+            ? Array.from(
+                new Set(
+                  items
+                    .filter((item): item is string => typeof item === "string")
+                    .map((item) => item.trim().slice(0, 64))
+                    .filter(Boolean)
+                    .slice(0, 12)
+                )
+              ).sort()
+            : [],
+        ])
+        .filter(([key]) => Boolean(key))
     );
   } catch {
     return {};
@@ -32,16 +58,16 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") === "home" ? "home" : "catalog";
     const pageOptions: PublicListingsPageOptions = {
-      page: Number(searchParams.get("page") ?? 1),
-      pageSize: Number(searchParams.get("pageSize") ?? 12),
-      query: searchParams.get("q") ?? "",
-      type: searchParams.get("type") ?? "all",
-      operation: searchParams.get("operation") ?? "all",
+      page: positiveInteger(searchParams.get("page"), 1, 500),
+      pageSize: positiveInteger(searchParams.get("pageSize"), 12, 24),
+      query: (searchParams.get("q") ?? "").trim().slice(0, 80),
+      type: allowedValue(searchParams.get("type"), allowedTypes, "all"),
+      operation: allowedValue(searchParams.get("operation"), allowedOperations, "all"),
       minRooms:
         searchParams.get("minRooms") && searchParams.get("minRooms") !== "all"
-          ? Number(searchParams.get("minRooms"))
+          ? positiveInteger(searchParams.get("minRooms"), 1, 20)
           : undefined,
-      sort: searchParams.get("sort") ?? "featured",
+      sort: allowedValue(searchParams.get("sort"), allowedSorts, "featured"),
       attributes: safeJsonAttributes(searchParams.get("attributes")),
     };
     const cacheKey =

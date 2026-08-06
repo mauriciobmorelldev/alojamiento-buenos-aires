@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireOwnerFromRequest } from "@/lib/server/adminAuth";
 import {
   getSupabaseServerClient,
   isSupabaseConfigured,
@@ -23,7 +24,14 @@ const tables = [
   "newsletter_subscribers",
 ];
 
-export async function GET() {
+export async function GET(request: Request) {
+  const ownerContext = await requireOwnerFromRequest(request);
+  if (!ownerContext) {
+    return NextResponse.json(
+      { ok: false, error: "Unauthorized" },
+      { status: 401, headers: { "Cache-Control": "private, no-store" } }
+    );
+  }
   const configured = isSupabaseConfigured();
   const supabase = getSupabaseServerClient();
 

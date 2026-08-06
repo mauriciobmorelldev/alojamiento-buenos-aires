@@ -697,7 +697,7 @@ export const defaultState: InmoState = {
       subtitle:
         "Una guía para entender dónde conviene vivir, cómo moverse, qué trámites anticipar y qué ritmo tiene cada zona antes de elegir propiedad.",
       heroImage:
-        "https://images.unsplash.com/photo-1599167758481-83f550bb49b3?auto=format&fit=crop&w=2200&q=85",
+        "/aba-media/WhatsApp Image 2026-07-10 at 11.52.33 AM.jpeg",
       heroVideo: "https://upload.wikimedia.org/wikipedia/commons/2/22/Buenos_Aires_-_Argentina.webm",
       primaryCtaLabel: "Empezar la guía",
       primaryCtaHref: "/vivir-buenos-aires",

@@ -7081,3 +7081,40 @@ html[data-theme="dark"] .turno-slot {
   outline: 2px solid #d7b66f;
   outline-offset: 2px;
 }
+
+/* ABA hero: video-first composition with a lighter processing pass. */
+@media (min-width: 901px) {
+  .aba-home-hero__video {
+    opacity: 1 !important;
+    filter: saturate(1.02) contrast(1.04) brightness(0.94) !important;
+    transform: scale(1.01) !important;
+  }
+
+  .aba-home-hero__backdrop::after {
+    background:
+      linear-gradient(90deg, rgba(5, 5, 5, 0.8) 0%, rgba(5, 5, 5, 0.48) 38%, rgba(5, 5, 5, 0.1) 70%, rgba(5, 5, 5, 0.34) 100%),
+      linear-gradient(to top, #050505 0%, rgba(5, 5, 5, 0.36) 15%, transparent 58%);
+  }
+
+  .aba-home-hero__statement {
+    align-self: end;
+    justify-self: end;
+    width: min(20rem, 100%);
+    margin-bottom: clamp(2rem, 8vh, 6rem);
+    border-left: 1px solid rgba(226, 193, 155, 0.68);
+    padding: 0.35rem 0 0.35rem 1.25rem;
+    color: rgba(255, 255, 255, 0.84);
+    font-family: var(--font-playfair), Georgia, serif;
+    font-size: clamp(1.35rem, 2vw, 2.05rem);
+    font-weight: 400;
+    line-height: 1.16;
+    text-wrap: balance;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.82);
+  }
+}
+
+@media (max-width: 900px) {
+  .aba-home-hero__statement {
+    display: none;
+  }
+}
