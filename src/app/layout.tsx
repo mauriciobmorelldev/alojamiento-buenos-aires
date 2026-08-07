@@ -41,7 +41,10 @@ const signature = Allura({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://alojamientobuenosaires.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Alojamiento Buenos Aires",
   description:
     "Departamentos amoblados de mediano plazo y guías culturales para vivir Buenos Aires.",

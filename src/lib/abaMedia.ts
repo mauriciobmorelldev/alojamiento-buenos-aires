@@ -48,3 +48,5 @@ export const abaCityVideos = [
   '/aba-media/ba-video-02.mp4',
   '/aba-media/ba-video-03.mp4',
 ];
+
+export const abaHeroDesktopVideo = '/aba-media/ba-hero-desktop-1080p.mp4';
