@@ -13,7 +13,7 @@ import AbaScrollCinema from "./AbaScrollCinema";
 import AbaParallaxGallery from "./AbaParallaxGallery";
 import AbaAboutBlock from "./AbaAboutBlock";
 import AbaHomeFocusMenu from "./AbaHomeFocusMenu";
-import { abaCityVideos, abaCultureImages, abaHeroDesktopVideo, abaPropertyMoodImages } from "@/lib/abaMedia";
+import { abaCultureImages, abaHeroDesktopVideo, abaPropertyMoodImages } from "@/lib/abaMedia";
 import AbaWhatsAppFloat from "./AbaWhatsAppFloat";
 import AbaOptimizedImage from "./AbaOptimizedImage";
 import AbaFooter from "./AbaFooter";
@@ -64,8 +64,7 @@ export default function AbaHome({ initialState }: { initialState: Partial<InmoSt
         <AbaNav transparent fixed />
         <div className="aba-home-hero__backdrop" aria-hidden="true">
           <video className="aba-home-hero__video" autoPlay muted loop playsInline preload="metadata" disablePictureInPicture tabIndex={-1}>
-            <source src={abaHeroDesktopVideo} type="video/mp4" media="(min-width: 761px)" />
-            <source src={abaCityVideos[0]} type="video/mp4" />
+            <source src={abaHeroDesktopVideo} type="video/mp4" />
           </video>
         </div>
         <div className="relative z-10 mx-auto grid min-h-[100svh] max-w-[1600px] grid-cols-12 content-end gap-6 px-5 pb-12 pt-32 md:content-center md:px-16 md:pb-16 md:pt-32">
